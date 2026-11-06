@@ -1,0 +1,1648 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-11-03",
+  "assets": {
+    "game-boy-500": {
+      "id": "game-boy-500",
+      "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7c/Game-Boy-FL.png/1280px-Game-Boy-FL.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Game-Boy-FL.png",
+      "width": 1280,
+      "height": 1552,
+      "bytes": 1165375,
+      "mime": "image/png",
+      "sha256": "98b99158e5f386b125e70d9f1bccbab8a54de0a7cbc401dc1b3f40271eeb1fd2",
+      "caption": "Nintendo Game Boy; photograph by Evan-Amos",
+      "credit": "Evan-Amos / Wikimedia Commons",
+      "rightsStatus": "public-domain",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/game-boy-1000--70ed65cf29da.webp",
+        "sha256": "70ed65cf29da2e313417c7aaedbf07037c490dfee92e45e0a3f919eff371e2ae",
+        "mime": "image/webp",
+        "bytes": 68450,
+        "width": 1280,
+        "height": 1552,
+        "sourceSha256": "98b99158e5f386b125e70d9f1bccbab8a54de0a7cbc401dc1b3f40271eeb1fd2",
+        "source": {
+          "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7c/Game-Boy-FL.png/1280px-Game-Boy-FL.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail",
+          "sha256": "98b99158e5f386b125e70d9f1bccbab8a54de0a7cbc401dc1b3f40271eeb1fd2",
+          "width": 1280,
+          "height": 1552
+        },
+        "transform": "Proportional full-canvas resize, long edge at most1600px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present.",
+        "longEdgeCap": 1600
+      },
+      "crop": {
+        "x": 57,
+        "y": 81,
+        "width": 1165,
+        "height": 1417,
+        "sourceWidth": 1280,
+        "sourceHeight": 1552,
+        "sourceSha256": "98b99158e5f386b125e70d9f1bccbab8a54de0a7cbc401dc1b3f40271eeb1fd2",
+        "method": "source-alpha-framing"
+      },
+      "masterSha256": "b51251ed9c9a8418ae63aabd5f38861d78b5ae4259b418a2e18bbbf853494c69",
+      "masterUrl": "https://upload.wikimedia.org/wikipedia/commons/7/7c/Game-Boy-FL.png",
+      "rightsEvidence": "Original file page explicitly identifies author Evan-Amos and worldwide public-domain dedication. This is the authored Commons thumbnail linked by the page."
+    },
+    "2000-crystal": {
+      "id": "2000-crystal",
+      "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2000/12/20191112%E3%82%AF%E3%83%AA%E3%82%B9%E3%82%BF%E3%83%AB.jpg",
+      "sourceUrl": "https://www.gamefreak.co.jp/works/pokemon/page/2/",
+      "width": 1800,
+      "height": 1002,
+      "bytes": 216740,
+      "mime": "image/jpeg",
+      "sha256": "620faa4a9c70827b95b66118e79312c573a5e901bdf6d28de9b7def36956cf23",
+      "caption": "Original Japanese Pokémon Crystal packaging",
+      "credit": "GAME FREAK / Nintendo / Creatures Inc. / The Pokémon Company",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/gf-1-06--24f7550c2389.webp",
+        "sha256": "24f7550c2389f1f3c07d20e006d8dff38c68fcb45e6dbd5ae1455eee4937b170",
+        "mime": "image/webp",
+        "bytes": 99094,
+        "width": 1600,
+        "height": 891,
+        "sourceSha256": "620faa4a9c70827b95b66118e79312c573a5e901bdf6d28de9b7def36956cf23",
+        "source": {
+          "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2000/12/20191112%E3%82%AF%E3%83%AA%E3%82%B9%E3%82%BF%E3%83%AB.jpg",
+          "sha256": "620faa4a9c70827b95b66118e79312c573a5e901bdf6d28de9b7def36956cf23",
+          "width": 1800,
+          "height": 1002
+        },
+        "transform": "Proportional full-canvas resize, long edge at most1600px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present.",
+        "longEdgeCap": 1600
+      },
+      "crop": {
+        "x": 532,
+        "y": 82,
+        "width": 735,
+        "height": 920,
+        "sourceWidth": 1800,
+        "sourceHeight": 1002,
+        "sourceSha256": "620faa4a9c70827b95b66118e79312c573a5e901bdf6d28de9b7def36956cf23",
+        "method": "source-white-margin-framing"
+      },
+      "releaseDate": "2000-12-14",
+      "releaseRegion": "Japan"
+    },
+    "corocoro-1996-pikachu": {
+      "id": "corocoro-1996-pikachu",
+      "width": 639,
+      "height": 1078,
+      "mime": "image/jpeg",
+      "caption": "Ivy Pikachu, 1996 glossy CoroCoro promo",
+      "url": "https://s3.amazonaws.com/ccg-corporate-production/news-images/Incorrect%20Illustrator_FR_lg20260529161502722.png",
+      "credit": "CGC Cards",
+      "recommended": true,
+      "crop": {
+        "x": 73,
+        "y": 318.5,
+        "width": 492,
+        "height": 687,
+        "sourceWidth": 639,
+        "sourceHeight": 1078,
+        "sourceSha256": "ad1f48788a59e5dd3ac1b308789fcdbf259279d1d4fac4e1a934fb7cc8a43479",
+        "method": "source-bound-card-outline-frame"
+      },
+      "identity": "The CGC label identifies Pokémon(1996) Japanese CoroCoro Comic Promo Glossy Incorrect Illustrator (Sugimori). Face visibly credits Ken Sugimori. This is the correct1996 giveaway variant, not marketing, matte booklet or1998 corrected-illustrator reprint.",
+      "quality": "Original slab photograph. Card face can be shown with the source-bound crop; slab labels are outside the crop. No card-face watermark visible.",
+      "bytes": 190872,
+      "sha256": "ad1f48788a59e5dd3ac1b308789fcdbf259279d1d4fac4e1a934fb7cc8a43479",
+      "originalBytesUnchanged": true,
+      "reuseRights": "Not established by public availability. Owner assets retained as supplied; remote sources retain credited owners. No public activation performed by this agent.",
+      "sourceUrl": "https://www.cgccards.uk/news/article/15297/ivy-pikachu-variant-guide/",
+      "cardOutline": {
+        "sourceSha256": "ad1f48788a59e5dd3ac1b308789fcdbf259279d1d4fac4e1a934fb7cc8a43479",
+        "sourceWidth": 639,
+        "sourceHeight": 1078,
+        "path": "M89 318.5 L86 319.5 L80 323.5 L80 324.5 L76 328.5 L74 332.5 L74 334.5 L73 335.5 L74 965.5 L74 976.5 L73 977.5 L73 993.5 L76 999.5 L81 1003.5 L85 1005.5 L553 1005.5 L555 1004.5 L558 1001.5 L558 1000.5 L563 995.5 L564 993.5 L564 348.5 L565 347.5 L565 342.5 L564 341.5 L564 335.5 L563 334.5 L563 332.5 L561 328.5 L557 324.5 L557 323.5 L548 319.5 L544 318.5 Z",
+        "bounds": {
+          "x": 73,
+          "y": 318.5,
+          "width": 492,
+          "height": 687
+        },
+        "method": "Source-pixel yellow-border boundary measurement; native corner pixel runs simplified to0.45px; straight body edges interpolate between measured corner junctions.",
+        "pointCount": 33
+      }
+    },
+    "corocoro-1996-jigglypuff": {
+      "id": "corocoro-1996-jigglypuff",
+      "width": 858,
+      "height": 1447,
+      "mime": "image/png",
+      "caption": "Jigglypuff, 1996 glossy CoroCoro promo",
+      "url": "https://images.ctfassets.net/t8bripszr2o9/b6VNyeF00irT8jglfQq3h/56996957575dc7974762a3d3f0920cfa/Jigglypuff_CoroCoro_Glossy_6220356002_OBV.png",
+      "credit": "CGC Cards",
+      "recommended": true,
+      "crop": {
+        "x": 95,
+        "y": 427.5,
+        "width": 658,
+        "height": 922,
+        "sourceWidth": 858,
+        "sourceHeight": 1447,
+        "sourceSha256": "0ba33271bed598d05c8606d1bf1d8714dcafc92e0329db0ce422800445944b18",
+        "method": "source-bound-card-outline-frame"
+      },
+      "identity": "CGC identifies the photographed card as1996 Japanese CoroCoro Comic Promo Glossy. Its contemporaneous paired giveaway with Ivy Pikachu is confirmed in the article.",
+      "quality": "Original slab photograph. Card face crop preserves identifying text and complete border. No card-face watermark visible. Original2MB; lazy loading is appropriate.",
+      "bytes": 2013024,
+      "sha256": "0ba33271bed598d05c8606d1bf1d8714dcafc92e0329db0ce422800445944b18",
+      "originalBytesUnchanged": true,
+      "reuseRights": "Not established by public availability. Owner assets retained as supplied; remote sources retain credited owners. No public activation performed by this agent.",
+      "sourceUrl": "https://www.cgcgrading.com/news/articles/jigglypuff-corocoro-record-sale-6WeWsiTggaqYEyr4vxNlzp/",
+      "cardOutline": {
+        "sourceSha256": "0ba33271bed598d05c8606d1bf1d8714dcafc92e0329db0ce422800445944b18",
+        "sourceWidth": 858,
+        "sourceHeight": 1447,
+        "path": "M120 427.5 L108 433.5 L104 437.5 L104 438.5 L102 440.5 L99 446.5 L97 538.5 L95 1327.5 L97 1330.5 L97 1332.5 L99 1336.5 L102 1339.5 L102 1340.5 L108 1345.5 L116 1349.5 L721 1349.5 L730 1348.5 L733 1347.5 L742 1342.5 L746 1338.5 L747 1335.5 L749 1334.5 L749 1333.5 L751 1331.5 L751 1329.5 L752 1328.5 L752 1322.5 L753 1321.5 L753 538.5 L751 448.5 L750 447.5 L750 444.5 L748 442.5 L747 439.5 L742 433.5 L730 427.5 Z",
+        "bounds": {
+          "x": 95,
+          "y": 427.5,
+          "width": 658,
+          "height": 922
+        },
+        "method": "Source-pixel yellow-border boundary measurement; native corner pixel runs simplified to0.45px; straight body edges interpolate between measured corner junctions.",
+        "pointCount": 36
+      }
+    },
+    "corocoro-2001-shining-mew-pokumon": {
+      "id": "corocoro-2001-shining-mew-pokumon",
+      "width": 432,
+      "height": 599,
+      "bytes": 89908,
+      "sha256": "4be40dd890d03233e820d6097bd4e3b31ec71f29e9afdd86c425b3c50250e4c2",
+      "mime": "image/jpeg",
+      "caption": "Shining Mew, May2001 CoroCoro promo",
+      "url": "https://cdn6966.templcdn.com/wp-content/uploads/2021/03/JP_U185Unnumbered.jpg",
+      "credit": "Pokumon",
+      "recommended": true,
+      "originalBytesUnchanged": true,
+      "identity": "Exact Japanese Shining Mew CoroCoro2001 unnumbered card. Printed top line states CoroCoro May issue bonus. Source page and authored og:image identify the exact card.",
+      "quality": "Visually checked complete card face,432x599 native, sharper than300x424 candidate; no visible watermark. Not4K; display at~216CSSpx for2x density.",
+      "reuseRights": "Not established by public availability; attribution retained. No public activation performed by this agent.",
+      "sourceUrl": "https://pokumon.com/card/shining-mew-corocoro-2001-unnumbered/",
+      "cardOutline": {
+        "sourceSha256": "4be40dd890d03233e820d6097bd4e3b31ec71f29e9afdd86c425b3c50250e4c2",
+        "sourceWidth": 432,
+        "sourceHeight": 599,
+        "path": "M11 0.5 L5 4.5 L1 12.5 L0 66.5 L0 587.5 L2 591.5 L4 592.5 L4 593.5 L8 596.5 L9 598.5 L416 598.5 L426 593.5 L426 592.5 L429 589.5 L429 587.5 L431 585.5 L432 563.5 L432 66.5 L431 10.5 L430 9.5 L430 7.5 L428 6.5 L431 5.5 L427 4.5 L424 0.5 Z",
+        "bounds": {
+          "x": 0,
+          "y": 0.5,
+          "width": 432,
+          "height": 598
+        },
+        "method": "Source-pixel yellow-border boundary measurement; native corner pixel runs simplified to0.45px; straight body edges interpolate between measured corner junctions.",
+        "pointCount": 25
+      },
+      "crop": {
+        "x": 0,
+        "y": 0.5,
+        "width": 432,
+        "height": 598,
+        "sourceWidth": 432,
+        "sourceHeight": 599,
+        "sourceSha256": "4be40dd890d03233e820d6097bd4e3b31ec71f29e9afdd86c425b3c50250e4c2",
+        "method": "source-bound-card-outline-frame"
+      }
+    },
+    "corocoro-1996-cover": {
+      "id": "corocoro-1996-cover",
+      "url": "https://www.zoidsland.com/1rebyu-/koro96-11-a82.jpg",
+      "sourceUrl": "https://www.zoidsland.com/1rebyu-/koro96-11.html",
+      "width": 757,
+      "height": 1000,
+      "bytes": 884879,
+      "mime": "image/jpeg",
+      "sha256": "6f510bbbbcaf14e80a349d137ba8341c50b4bb3e664be21a84dceb23d2e38dac",
+      "caption": "CoroCoro Comic, November 1996, No. 223",
+      "credit": "Zoidsland",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/corocoro-nov96-publisher--1886543be471.webp",
+        "sha256": "1886543be47185b912bcb38aec412f45ab9d93bf3990918f4a9a3815db9c063b",
+        "mime": "image/webp",
+        "bytes": 277694,
+        "width": 757,
+        "height": 1000,
+        "sourceSha256": "6f510bbbbcaf14e80a349d137ba8341c50b4bb3e664be21a84dceb23d2e38dac",
+        "source": {
+          "url": "https://www.zoidsland.com/1rebyu-/koro96-11-a82.jpg",
+          "sha256": "6f510bbbbcaf14e80a349d137ba8341c50b4bb3e664be21a84dceb23d2e38dac",
+          "width": 757,
+          "height": 1000
+        },
+        "transform": "Proportional full-canvas resize, long edge at most1600px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present.",
+        "longEdgeCap": 1600
+      },
+      "crop": {
+        "x": 42,
+        "y": 13,
+        "width": 677,
+        "height": 975,
+        "sourceWidth": 757,
+        "sourceHeight": 1000,
+        "sourceSha256": "6f510bbbbcaf14e80a349d137ba8341c50b4bb3e664be21a84dceb23d2e38dac",
+        "method": "source-subject-bounds-framing"
+      },
+      "subjectPolygon": [
+        [
+          44,
+          27
+        ],
+        [
+          716,
+          14
+        ],
+        [
+          712,
+          978
+        ],
+        [
+          80,
+          969
+        ]
+      ],
+      "registrationSourceSha256": "6f510bbbbcaf14e80a349d137ba8341c50b4bb3e664be21a84dceb23d2e38dac",
+      "subjectPolygonMethod": "Visually traced source-pixel magazine cover corners, approximately3px tolerance; crop/mask only, original image bytes unchanged."
+    },
+    "corocoro-2001-cover": {
+      "id": "corocoro-2001-cover",
+      "url": "https://zoidsland.com/1rebyu-/koro01-5-a61.jpg",
+      "sourceUrl": "https://zoidsland.com/1rebyu-/koro01-5b.html",
+      "width": 750,
+      "height": 1000,
+      "bytes": 896139,
+      "mime": "image/jpeg",
+      "sha256": "df1a3964d2ac20b30fa430a5ca63230b671699bfe0e4f464b2a798da652e5367",
+      "caption": "CoroCoro Comic, May 2001, No. 277",
+      "credit": "Zoidsland",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/corocoro-may01-publisher--21de813a8844.webp",
+        "sha256": "21de813a8844941ad703342eefb111f5a485d18a433b7af8b9c3494dfef0b665",
+        "mime": "image/webp",
+        "bytes": 297184,
+        "width": 750,
+        "height": 1000,
+        "sourceSha256": "df1a3964d2ac20b30fa430a5ca63230b671699bfe0e4f464b2a798da652e5367",
+        "source": {
+          "url": "https://zoidsland.com/1rebyu-/koro01-5-a61.jpg",
+          "sha256": "df1a3964d2ac20b30fa430a5ca63230b671699bfe0e4f464b2a798da652e5367",
+          "width": 750,
+          "height": 1000
+        },
+        "transform": "Proportional full-canvas resize, long edge at most1600px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present.",
+        "longEdgeCap": 1600
+      },
+      "crop": {
+        "x": 24,
+        "y": 5,
+        "width": 689,
+        "height": 988,
+        "sourceWidth": 750,
+        "sourceHeight": 1000,
+        "sourceSha256": "df1a3964d2ac20b30fa430a5ca63230b671699bfe0e4f464b2a798da652e5367",
+        "method": "source-subject-bounds-framing"
+      },
+      "subjectPolygon": [
+        [
+          25,
+          6
+        ],
+        [
+          709,
+          24
+        ],
+        [
+          696,
+          965
+        ],
+        [
+          58,
+          991
+        ]
+      ],
+      "registrationSourceSha256": "df1a3964d2ac20b30fa430a5ca63230b671699bfe0e4f464b2a798da652e5367",
+      "subjectPolygonMethod": "Visually traced source-pixel magazine cover corners, approximately3px tolerance; crop/mask only, original image bytes unchanged."
+    },
+    "1996-red-green-0": {
+      "id": "1996-red-green-0",
+      "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/1996/02/%E8%B5%A4%E7%B7%91_2700%C3%971500.png",
+      "sourceUrl": "https://www.gamefreak.co.jp/works/pokemon/page/2/",
+      "width": 2700,
+      "height": 1500,
+      "bytes": 4858347,
+      "mime": "image/png",
+      "sha256": "c4c3f3db28eba12d7fe766f1854a3c85734c9cf3f43b325341bc7114396d6dce",
+      "caption": "Pokémon Red — original Japanese packaging",
+      "credit": "GAME FREAK / Nintendo / Creatures Inc. / The Pokémon Company",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/gf-1-10--0bf5b5e402db.webp",
+        "sha256": "0bf5b5e402db9502b6c80754578fd22caaa6fac10b9c0b9bee7452d50e37e109",
+        "mime": "image/webp",
+        "bytes": 285536,
+        "width": 1600,
+        "height": 889,
+        "sourceSha256": "c4c3f3db28eba12d7fe766f1854a3c85734c9cf3f43b325341bc7114396d6dce",
+        "source": {
+          "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/1996/02/%E8%B5%A4%E7%B7%91_2700%C3%971500.png",
+          "sha256": "c4c3f3db28eba12d7fe766f1854a3c85734c9cf3f43b325341bc7114396d6dce",
+          "width": 2700,
+          "height": 1500
+        },
+        "transform": "Proportional full-canvas resize, long edge at most1600px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present.",
+        "longEdgeCap": 1600
+      },
+      "crop": {
+        "x": 225,
+        "y": 125,
+        "width": 1075,
+        "height": 1375,
+        "sourceWidth": 2700,
+        "sourceHeight": 1500,
+        "sourceSha256": "c4c3f3db28eba12d7fe766f1854a3c85734c9cf3f43b325341bc7114396d6dce",
+        "method": "source-white-margin-framing"
+      }
+    },
+    "1996-red-green-1": {
+      "id": "1996-red-green-1",
+      "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/1996/02/%E8%B5%A4%E7%B7%91_2700%C3%971500.png",
+      "sourceUrl": "https://www.gamefreak.co.jp/works/pokemon/page/2/",
+      "width": 2700,
+      "height": 1500,
+      "bytes": 4858347,
+      "mime": "image/png",
+      "sha256": "c4c3f3db28eba12d7fe766f1854a3c85734c9cf3f43b325341bc7114396d6dce",
+      "caption": "Pokémon Green — original Japanese packaging",
+      "credit": "GAME FREAK / Nintendo / Creatures Inc. / The Pokémon Company",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/gf-1-10--0bf5b5e402db.webp",
+        "sha256": "0bf5b5e402db9502b6c80754578fd22caaa6fac10b9c0b9bee7452d50e37e109",
+        "mime": "image/webp",
+        "bytes": 285536,
+        "width": 1600,
+        "height": 889,
+        "sourceSha256": "c4c3f3db28eba12d7fe766f1854a3c85734c9cf3f43b325341bc7114396d6dce",
+        "source": {
+          "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/1996/02/%E8%B5%A4%E7%B7%91_2700%C3%971500.png",
+          "sha256": "c4c3f3db28eba12d7fe766f1854a3c85734c9cf3f43b325341bc7114396d6dce",
+          "width": 2700,
+          "height": 1500
+        },
+        "transform": "Proportional full-canvas resize, long edge at most1600px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present.",
+        "longEdgeCap": 1600
+      },
+      "crop": {
+        "x": 1400,
+        "y": 125,
+        "width": 1075,
+        "height": 1375,
+        "sourceWidth": 2700,
+        "sourceHeight": 1500,
+        "sourceSha256": "c4c3f3db28eba12d7fe766f1854a3c85734c9cf3f43b325341bc7114396d6dce",
+        "method": "source-white-margin-framing"
+      }
+    },
+    "1999-gold-silver-0": {
+      "id": "1999-gold-silver-0",
+      "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/1999/11/%E9%87%91%E9%8A%80_2700%C3%971500.png",
+      "sourceUrl": "https://www.gamefreak.co.jp/works/pokemon/page/2/",
+      "width": 2700,
+      "height": 1500,
+      "bytes": 3168092,
+      "mime": "image/png",
+      "sha256": "7dbe37967cdb667e6155701589d351f6cb536c266a49d12cbbb3ef26ef936027",
+      "caption": "Pokémon Gold — original Japanese packaging",
+      "credit": "GAME FREAK / Nintendo / Creatures Inc. / The Pokémon Company",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/gf-1-07--faed851754fe.webp",
+        "sha256": "faed851754fe1cd83f2dc53337aaa6ab60e19ef9185d9b8f31b692eab9a0fa72",
+        "mime": "image/webp",
+        "bytes": 255252,
+        "width": 1600,
+        "height": 889,
+        "sourceSha256": "7dbe37967cdb667e6155701589d351f6cb536c266a49d12cbbb3ef26ef936027",
+        "source": {
+          "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/1999/11/%E9%87%91%E9%8A%80_2700%C3%971500.png",
+          "sha256": "7dbe37967cdb667e6155701589d351f6cb536c266a49d12cbbb3ef26ef936027",
+          "width": 2700,
+          "height": 1500
+        },
+        "transform": "Proportional full-canvas resize, long edge at most1600px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present.",
+        "longEdgeCap": 1600
+      },
+      "crop": {
+        "x": 200,
+        "y": 125,
+        "width": 1100,
+        "height": 1375,
+        "sourceWidth": 2700,
+        "sourceHeight": 1500,
+        "sourceSha256": "7dbe37967cdb667e6155701589d351f6cb536c266a49d12cbbb3ef26ef936027",
+        "method": "source-white-margin-framing"
+      }
+    },
+    "1999-gold-silver-1": {
+      "id": "1999-gold-silver-1",
+      "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/1999/11/%E9%87%91%E9%8A%80_2700%C3%971500.png",
+      "sourceUrl": "https://www.gamefreak.co.jp/works/pokemon/page/2/",
+      "width": 2700,
+      "height": 1500,
+      "bytes": 3168092,
+      "mime": "image/png",
+      "sha256": "7dbe37967cdb667e6155701589d351f6cb536c266a49d12cbbb3ef26ef936027",
+      "caption": "Pokémon Silver — original Japanese packaging",
+      "credit": "GAME FREAK / Nintendo / Creatures Inc. / The Pokémon Company",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/gf-1-07--faed851754fe.webp",
+        "sha256": "faed851754fe1cd83f2dc53337aaa6ab60e19ef9185d9b8f31b692eab9a0fa72",
+        "mime": "image/webp",
+        "bytes": 255252,
+        "width": 1600,
+        "height": 889,
+        "sourceSha256": "7dbe37967cdb667e6155701589d351f6cb536c266a49d12cbbb3ef26ef936027",
+        "source": {
+          "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/1999/11/%E9%87%91%E9%8A%80_2700%C3%971500.png",
+          "sha256": "7dbe37967cdb667e6155701589d351f6cb536c266a49d12cbbb3ef26ef936027",
+          "width": 2700,
+          "height": 1500
+        },
+        "transform": "Proportional full-canvas resize, long edge at most1600px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present.",
+        "longEdgeCap": 1600
+      },
+      "crop": {
+        "x": 1400,
+        "y": 125,
+        "width": 1100,
+        "height": 1375,
+        "sourceWidth": 2700,
+        "sourceHeight": 1500,
+        "sourceSha256": "7dbe37967cdb667e6155701589d351f6cb536c266a49d12cbbb3ef26ef936027",
+        "method": "source-white-margin-framing"
+      }
+    },
+    "mew-2001-original-insert": {
+      "url": "https://pokeboon.com/wp-content/uploads/2018/07/shiningmew-unopened.jpg",
+      "sha256": "c9afba0e4c6e5a88cc8be6b6d1bfce54c9a7bde1144580fd06b4d19413be5278",
+      "width": 600,
+      "height": 636,
+      "bytes": 81228,
+      "mime": "image/jpeg",
+      "id": "mew-2001-original-insert",
+      "caption": "Original sealed Shining Mew paper insert, CoroCoro May 2001",
+      "credit": "PokeBoon archive",
+      "sourceUrl": "https://pokeboon.com/corocoro_shiningmew_promo/",
+      "originalBytesUnchanged": true,
+      "crop": {
+        "x": 27,
+        "y": 21,
+        "width": 556,
+        "height": 594,
+        "sourceWidth": 600,
+        "sourceHeight": 636,
+        "sourceSha256": "c9afba0e4c6e5a88cc8be6b6d1bfce54c9a7bde1144580fd06b4d19413be5278",
+        "method": "source-bound-insert-viewport"
+      }
+    },
+    "corocoro-1996-original-mount": {
+      "file": "history-corocoro-1996-original-mount.jpg",
+      "url": "https://archives.bulbagarden.net/media/upload/4/44/Nov_1996_corocoro_insert.jpeg",
+      "sourceUrl": "https://archives.bulbagarden.net/wiki/File:Nov_1996_corocoro_insert.jpeg",
+      "width": 778,
+      "height": 831,
+      "mime": "image/jpeg",
+      "bytes": 181479,
+      "sha256": "abbdb8ab8b8b6882308b78925d2c2df725ecc5d86b5bddb9d2e715173b2591e5",
+      "credit": "Bulbagarden Archives · original magazine photograph",
+      "originalBytesUnchanged": true,
+      "rightsStatus": "unverified",
+      "id": "corocoro-1996-original-mount",
+      "caption": "Original November 1996 CoroCoro mount, with both card backs still attached",
+      "crop": {
+        "x": 96,
+        "y": 178,
+        "width": 670,
+        "height": 552,
+        "sourceWidth": 778,
+        "sourceHeight": 831,
+        "sourceSha256": "abbdb8ab8b8b6882308b78925d2c2df725ecc5d86b5bddb9d2e715173b2591e5",
+        "method": "source-bound-original-magazine-viewport"
+      }
+    },
+    "corocoro-1996-attached-back-left": {
+      "file": "history-corocoro-1996-original-mount.jpg",
+      "url": "https://archives.bulbagarden.net/media/upload/4/44/Nov_1996_corocoro_insert.jpeg",
+      "sourceUrl": "https://archives.bulbagarden.net/wiki/File:Nov_1996_corocoro_insert.jpeg",
+      "width": 778,
+      "height": 831,
+      "mime": "image/jpeg",
+      "bytes": 181479,
+      "sha256": "abbdb8ab8b8b6882308b78925d2c2df725ecc5d86b5bddb9d2e715173b2591e5",
+      "credit": "Bulbagarden Archives · original magazine photograph",
+      "originalBytesUnchanged": true,
+      "rightsStatus": "unverified",
+      "id": "corocoro-1996-attached-back-left",
+      "caption": "Original Japanese card back, still attached to the left side of the November 1996 mount",
+      "crop": {
+        "x": 112,
+        "y": 263,
+        "width": 350,
+        "height": 443,
+        "sourceWidth": 778,
+        "sourceHeight": 831,
+        "sourceSha256": "abbdb8ab8b8b6882308b78925d2c2df725ecc5d86b5bddb9d2e715173b2591e5",
+        "method": "source-bound-card-outline-frame"
+      },
+      "subjectPolygon": [
+        [
+          112,
+          267
+        ],
+        [
+          404,
+          263
+        ],
+        [
+          462,
+          687
+        ],
+        [
+          145,
+          706
+        ]
+      ],
+      "registrationSourceSha256": "abbdb8ab8b8b6882308b78925d2c2df725ecc5d86b5bddb9d2e715173b2591e5",
+      "cardOutline": {
+        "sourceSha256": "abbdb8ab8b8b6882308b78925d2c2df725ecc5d86b5bddb9d2e715173b2591e5",
+        "sourceWidth": 778,
+        "sourceHeight": 831,
+        "path": "M120.999 266.877 L395.001 263.123 Q404 263 405.22 271.917 L460.78 678.083 Q462 687 453.016 687.538 L153.984 705.462 Q145 706 144.325 697.025 L112.675 275.975 Q112 267 120.999 266.877 Z",
+        "bounds": {
+          "x": 112,
+          "y": 263,
+          "width": 350,
+          "height": 443
+        },
+        "method": "Source-registered original back quadrilateral with conservative9px corner joins kept inside the photographed print. The glued paper mount does not expose every physical card cut edge, so these corner joins are a presentation constraint rather than recovered hidden pixels."
+      }
+    },
+    "corocoro-1996-attached-back-right": {
+      "file": "history-corocoro-1996-original-mount.jpg",
+      "url": "https://archives.bulbagarden.net/media/upload/4/44/Nov_1996_corocoro_insert.jpeg",
+      "sourceUrl": "https://archives.bulbagarden.net/wiki/File:Nov_1996_corocoro_insert.jpeg",
+      "width": 778,
+      "height": 831,
+      "mime": "image/jpeg",
+      "bytes": 181479,
+      "sha256": "abbdb8ab8b8b6882308b78925d2c2df725ecc5d86b5bddb9d2e715173b2591e5",
+      "credit": "Bulbagarden Archives · original magazine photograph",
+      "originalBytesUnchanged": true,
+      "rightsStatus": "unverified",
+      "id": "corocoro-1996-attached-back-right",
+      "caption": "Original Japanese card back, still attached to the right side of the November 1996 mount",
+      "crop": {
+        "x": 419,
+        "y": 259,
+        "width": 329,
+        "height": 423,
+        "sourceWidth": 778,
+        "sourceHeight": 831,
+        "sourceSha256": "abbdb8ab8b8b6882308b78925d2c2df725ecc5d86b5bddb9d2e715173b2591e5",
+        "method": "source-bound-card-outline-frame"
+      },
+      "subjectPolygon": [
+        [
+          419,
+          263
+        ],
+        [
+          685,
+          259
+        ],
+        [
+          748,
+          656
+        ],
+        [
+          475,
+          682
+        ]
+      ],
+      "registrationSourceSha256": "abbdb8ab8b8b6882308b78925d2c2df725ecc5d86b5bddb9d2e715173b2591e5",
+      "cardOutline": {
+        "sourceSha256": "abbdb8ab8b8b6882308b78925d2c2df725ecc5d86b5bddb9d2e715173b2591e5",
+        "sourceWidth": 778,
+        "sourceHeight": 831,
+        "path": "M427.999 262.865 L676.001 259.135 Q685 259 686.411 267.889 L746.589 647.111 Q748 656 739.041 656.853 L483.959 681.147 Q475 682 473.808 673.079 L420.192 271.921 Q419 263 427.999 262.865 Z",
+        "bounds": {
+          "x": 419,
+          "y": 259,
+          "width": 329,
+          "height": 423
+        },
+        "method": "Source-registered original back quadrilateral with conservative9px corner joins kept inside the photographed print. The glued paper mount does not expose every physical card cut edge, so these corner joins are a presentation constraint rather than recovered hidden pixels."
+      }
+    },
+    "2002-ruby-sapphire-0": {
+      "id": "2002-ruby-sapphire-0",
+      "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2002/11/RS_3150%C3%971750.png",
+      "sourceUrl": "https://www.gamefreak.co.jp/works/pokemon/page/2/",
+      "width": 3150,
+      "height": 1750,
+      "bytes": 3632596,
+      "mime": "image/png",
+      "sha256": "891b96fc3f70cde1c601c27b423d115ee66455a6f8e3b1b124ed61a857cfc38a",
+      "caption": "Pokémon Ruby — original Japanese packaging",
+      "credit": "GAME FREAK / Nintendo / Creatures Inc. / The Pokémon Company",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/gf-1-05--ebb25749a5b3.webp",
+        "sha256": "ebb25749a5b382fe31939c13205ea3c7eaefa27bda1abebdc98e839ca8ca3e3d",
+        "mime": "image/webp",
+        "bytes": 251446,
+        "width": 2000,
+        "height": 1111,
+        "longEdgeCap": 2000,
+        "sourceSha256": "891b96fc3f70cde1c601c27b423d115ee66455a6f8e3b1b124ed61a857cfc38a",
+        "source": {
+          "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2002/11/RS_3150%C3%971750.png",
+          "sha256": "891b96fc3f70cde1c601c27b423d115ee66455a6f8e3b1b124ed61a857cfc38a",
+          "width": 3150,
+          "height": 1750
+        },
+        "transform": "Proportional full-canvas resize, long edge at most 2000px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present."
+      },
+      "crop": {
+        "x": 55,
+        "y": 475,
+        "width": 1495,
+        "height": 950,
+        "sourceWidth": 3150,
+        "sourceHeight": 1750,
+        "sourceSha256": "891b96fc3f70cde1c601c27b423d115ee66455a6f8e3b1b124ed61a857cfc38a",
+        "method": "source-white-margin-framing"
+      }
+    },
+    "2002-ruby-sapphire-1": {
+      "id": "2002-ruby-sapphire-1",
+      "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2002/11/RS_3150%C3%971750.png",
+      "sourceUrl": "https://www.gamefreak.co.jp/works/pokemon/page/2/",
+      "width": 3150,
+      "height": 1750,
+      "bytes": 3632596,
+      "mime": "image/png",
+      "sha256": "891b96fc3f70cde1c601c27b423d115ee66455a6f8e3b1b124ed61a857cfc38a",
+      "caption": "Pokémon Sapphire — original Japanese packaging",
+      "credit": "GAME FREAK / Nintendo / Creatures Inc. / The Pokémon Company",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/gf-1-05--ebb25749a5b3.webp",
+        "sha256": "ebb25749a5b382fe31939c13205ea3c7eaefa27bda1abebdc98e839ca8ca3e3d",
+        "mime": "image/webp",
+        "bytes": 251446,
+        "width": 2000,
+        "height": 1111,
+        "longEdgeCap": 2000,
+        "sourceSha256": "891b96fc3f70cde1c601c27b423d115ee66455a6f8e3b1b124ed61a857cfc38a",
+        "source": {
+          "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2002/11/RS_3150%C3%971750.png",
+          "sha256": "891b96fc3f70cde1c601c27b423d115ee66455a6f8e3b1b124ed61a857cfc38a",
+          "width": 3150,
+          "height": 1750
+        },
+        "transform": "Proportional full-canvas resize, long edge at most 2000px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present."
+      },
+      "crop": {
+        "x": 1600,
+        "y": 475,
+        "width": 1495,
+        "height": 950,
+        "sourceWidth": 3150,
+        "sourceHeight": 1750,
+        "sourceSha256": "891b96fc3f70cde1c601c27b423d115ee66455a6f8e3b1b124ed61a857cfc38a",
+        "method": "source-white-margin-framing"
+      }
+    },
+    "2004-fire-leaf-0": {
+      "id": "2004-fire-leaf-0",
+      "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2004/01/FRLG_3150%C3%971750.png",
+      "sourceUrl": "https://www.gamefreak.co.jp/works/pokemon/page/2/",
+      "width": 3150,
+      "height": 1750,
+      "bytes": 3713190,
+      "mime": "image/png",
+      "sha256": "6ed10112e0f6aa52631bfbd8e39c4c437ec1c7616acdada0413cf054d91b1198",
+      "caption": "Pokémon FireRed — original Japanese packaging",
+      "credit": "GAME FREAK / Nintendo / Creatures Inc. / The Pokémon Company",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/gf-1-04--4da890171df7.webp",
+        "sha256": "4da890171df771dfb89126691788101fdd1f76dcf213752e5721a6c6b8ffa548",
+        "mime": "image/webp",
+        "bytes": 280156,
+        "width": 2000,
+        "height": 1111,
+        "longEdgeCap": 2000,
+        "sourceSha256": "6ed10112e0f6aa52631bfbd8e39c4c437ec1c7616acdada0413cf054d91b1198",
+        "source": {
+          "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2004/01/FRLG_3150%C3%971750.png",
+          "sha256": "6ed10112e0f6aa52631bfbd8e39c4c437ec1c7616acdada0413cf054d91b1198",
+          "width": 3150,
+          "height": 1750
+        },
+        "transform": "Proportional full-canvas resize, long edge at most 2000px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present."
+      },
+      "crop": {
+        "x": 55,
+        "y": 475,
+        "width": 1495,
+        "height": 950,
+        "sourceWidth": 3150,
+        "sourceHeight": 1750,
+        "sourceSha256": "6ed10112e0f6aa52631bfbd8e39c4c437ec1c7616acdada0413cf054d91b1198",
+        "method": "source-white-margin-framing"
+      }
+    },
+    "2004-fire-leaf-1": {
+      "id": "2004-fire-leaf-1",
+      "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2004/01/FRLG_3150%C3%971750.png",
+      "sourceUrl": "https://www.gamefreak.co.jp/works/pokemon/page/2/",
+      "width": 3150,
+      "height": 1750,
+      "bytes": 3713190,
+      "mime": "image/png",
+      "sha256": "6ed10112e0f6aa52631bfbd8e39c4c437ec1c7616acdada0413cf054d91b1198",
+      "caption": "Pokémon LeafGreen — original Japanese packaging",
+      "credit": "GAME FREAK / Nintendo / Creatures Inc. / The Pokémon Company",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/gf-1-04--4da890171df7.webp",
+        "sha256": "4da890171df771dfb89126691788101fdd1f76dcf213752e5721a6c6b8ffa548",
+        "mime": "image/webp",
+        "bytes": 280156,
+        "width": 2000,
+        "height": 1111,
+        "longEdgeCap": 2000,
+        "sourceSha256": "6ed10112e0f6aa52631bfbd8e39c4c437ec1c7616acdada0413cf054d91b1198",
+        "source": {
+          "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2004/01/FRLG_3150%C3%971750.png",
+          "sha256": "6ed10112e0f6aa52631bfbd8e39c4c437ec1c7616acdada0413cf054d91b1198",
+          "width": 3150,
+          "height": 1750
+        },
+        "transform": "Proportional full-canvas resize, long edge at most 2000px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present."
+      },
+      "crop": {
+        "x": 1600,
+        "y": 475,
+        "width": 1495,
+        "height": 950,
+        "sourceWidth": 3150,
+        "sourceHeight": 1750,
+        "sourceSha256": "6ed10112e0f6aa52631bfbd8e39c4c437ec1c7616acdada0413cf054d91b1198",
+        "method": "source-white-margin-framing"
+      }
+    },
+    "2006-diamond-pearl-0": {
+      "id": "2006-diamond-pearl-0",
+      "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2006/09/DP_3150%C3%971750.png",
+      "sourceUrl": "https://www.gamefreak.co.jp/works/pokemon/page/2/",
+      "width": 3150,
+      "height": 1750,
+      "bytes": 4990356,
+      "mime": "image/png",
+      "sha256": "09e3425768684a9a242a223827a69116d2975adb1d2af6c5ebd88e358955fe1a",
+      "caption": "Pokémon Diamond — original Japanese packaging",
+      "credit": "GAME FREAK / Nintendo / Creatures Inc. / The Pokémon Company",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/gf-1-02--4d46753e9e99.webp",
+        "sha256": "4d46753e9e996e301ef8783d3b35498c6486cb86b1c50fb17c0ef3356ea16b65",
+        "mime": "image/webp",
+        "bytes": 280914,
+        "width": 2000,
+        "height": 1111,
+        "longEdgeCap": 2000,
+        "sourceSha256": "09e3425768684a9a242a223827a69116d2975adb1d2af6c5ebd88e358955fe1a",
+        "source": {
+          "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2006/09/DP_3150%C3%971750.png",
+          "sha256": "09e3425768684a9a242a223827a69116d2975adb1d2af6c5ebd88e358955fe1a",
+          "width": 3150,
+          "height": 1750
+        },
+        "transform": "Proportional full-canvas resize, long edge at most 2000px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present."
+      },
+      "crop": {
+        "x": 112,
+        "y": 300,
+        "width": 1438,
+        "height": 1300,
+        "sourceWidth": 3150,
+        "sourceHeight": 1750,
+        "sourceSha256": "09e3425768684a9a242a223827a69116d2975adb1d2af6c5ebd88e358955fe1a",
+        "method": "source-white-margin-framing"
+      }
+    },
+    "2006-diamond-pearl-1": {
+      "id": "2006-diamond-pearl-1",
+      "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2006/09/DP_3150%C3%971750.png",
+      "sourceUrl": "https://www.gamefreak.co.jp/works/pokemon/page/2/",
+      "width": 3150,
+      "height": 1750,
+      "bytes": 4990356,
+      "mime": "image/png",
+      "sha256": "09e3425768684a9a242a223827a69116d2975adb1d2af6c5ebd88e358955fe1a",
+      "caption": "Pokémon Pearl — original Japanese packaging",
+      "credit": "GAME FREAK / Nintendo / Creatures Inc. / The Pokémon Company",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/gf-1-02--4d46753e9e99.webp",
+        "sha256": "4d46753e9e996e301ef8783d3b35498c6486cb86b1c50fb17c0ef3356ea16b65",
+        "mime": "image/webp",
+        "bytes": 280914,
+        "width": 2000,
+        "height": 1111,
+        "longEdgeCap": 2000,
+        "sourceSha256": "09e3425768684a9a242a223827a69116d2975adb1d2af6c5ebd88e358955fe1a",
+        "source": {
+          "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2006/09/DP_3150%C3%971750.png",
+          "sha256": "09e3425768684a9a242a223827a69116d2975adb1d2af6c5ebd88e358955fe1a",
+          "width": 3150,
+          "height": 1750
+        },
+        "transform": "Proportional full-canvas resize, long edge at most 2000px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present."
+      },
+      "crop": {
+        "x": 1600,
+        "y": 300,
+        "width": 1438,
+        "height": 1300,
+        "sourceWidth": 3150,
+        "sourceHeight": 1750,
+        "sourceSha256": "09e3425768684a9a242a223827a69116d2975adb1d2af6c5ebd88e358955fe1a",
+        "method": "source-white-margin-framing"
+      }
+    },
+    "2009-heartgold-soulsilver-0": {
+      "id": "2009-heartgold-soulsilver-0",
+      "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2009/09/HGSS_3150%C3%971750.png",
+      "sourceUrl": "https://www.gamefreak.co.jp/works/pokemon/page/2/",
+      "width": 3150,
+      "height": 1750,
+      "bytes": 4998744,
+      "mime": "image/png",
+      "sha256": "0e6e0a255cb82352cf7016d25416e0a3d07966916d99a6911bdd3600cc865cd0",
+      "caption": "Pokémon HeartGold — original Japanese packaging",
+      "credit": "GAME FREAK / Nintendo / Creatures Inc. / The Pokémon Company",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/gf-1-00--dfd2b40c9165.webp",
+        "sha256": "dfd2b40c9165252517e326845f9fbd23e992a33fc20b846bab626a79d73b2f14",
+        "mime": "image/webp",
+        "bytes": 352470,
+        "width": 2000,
+        "height": 1111,
+        "longEdgeCap": 2000,
+        "sourceSha256": "0e6e0a255cb82352cf7016d25416e0a3d07966916d99a6911bdd3600cc865cd0",
+        "source": {
+          "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2009/09/HGSS_3150%C3%971750.png",
+          "sha256": "0e6e0a255cb82352cf7016d25416e0a3d07966916d99a6911bdd3600cc865cd0",
+          "width": 3150,
+          "height": 1750
+        },
+        "transform": "Proportional full-canvas resize, long edge at most 2000px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present."
+      },
+      "crop": {
+        "x": 72,
+        "y": 275,
+        "width": 1478,
+        "height": 1350,
+        "sourceWidth": 3150,
+        "sourceHeight": 1750,
+        "sourceSha256": "0e6e0a255cb82352cf7016d25416e0a3d07966916d99a6911bdd3600cc865cd0",
+        "method": "source-white-margin-framing"
+      }
+    },
+    "2009-heartgold-soulsilver-1": {
+      "id": "2009-heartgold-soulsilver-1",
+      "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2009/09/HGSS_3150%C3%971750.png",
+      "sourceUrl": "https://www.gamefreak.co.jp/works/pokemon/page/2/",
+      "width": 3150,
+      "height": 1750,
+      "bytes": 4998744,
+      "mime": "image/png",
+      "sha256": "0e6e0a255cb82352cf7016d25416e0a3d07966916d99a6911bdd3600cc865cd0",
+      "caption": "Pokémon SoulSilver — original Japanese packaging",
+      "credit": "GAME FREAK / Nintendo / Creatures Inc. / The Pokémon Company",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/gf-1-00--dfd2b40c9165.webp",
+        "sha256": "dfd2b40c9165252517e326845f9fbd23e992a33fc20b846bab626a79d73b2f14",
+        "mime": "image/webp",
+        "bytes": 352470,
+        "width": 2000,
+        "height": 1111,
+        "longEdgeCap": 2000,
+        "sourceSha256": "0e6e0a255cb82352cf7016d25416e0a3d07966916d99a6911bdd3600cc865cd0",
+        "source": {
+          "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2009/09/HGSS_3150%C3%971750.png",
+          "sha256": "0e6e0a255cb82352cf7016d25416e0a3d07966916d99a6911bdd3600cc865cd0",
+          "width": 3150,
+          "height": 1750
+        },
+        "transform": "Proportional full-canvas resize, long edge at most 2000px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present."
+      },
+      "crop": {
+        "x": 1599,
+        "y": 275,
+        "width": 1479,
+        "height": 1350,
+        "sourceWidth": 3150,
+        "sourceHeight": 1750,
+        "sourceSha256": "0e6e0a255cb82352cf7016d25416e0a3d07966916d99a6911bdd3600cc865cd0",
+        "method": "source-white-margin-framing"
+      }
+    },
+    "2010-black-white-0": {
+      "id": "2010-black-white-0",
+      "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2010/09/BW_3150%C3%971750.png",
+      "sourceUrl": "https://www.gamefreak.co.jp/works/pokemon/",
+      "width": 3150,
+      "height": 1750,
+      "bytes": 2411416,
+      "mime": "image/png",
+      "sha256": "942f305c2bdbc3889289d1f104b95c8c776f826ad57555e03886306d81e582b8",
+      "caption": "Pokémon Black — original Japanese packaging",
+      "credit": "GAME FREAK / Nintendo / Creatures Inc. / The Pokémon Company",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/gf-0-14--1033230ddea2.webp",
+        "sha256": "1033230ddea26bb3ebf17b4f0e7eba50018a8a3491eb06f97d561c6e8811b285",
+        "mime": "image/webp",
+        "bytes": 233010,
+        "width": 2000,
+        "height": 1111,
+        "longEdgeCap": 2000,
+        "sourceSha256": "942f305c2bdbc3889289d1f104b95c8c776f826ad57555e03886306d81e582b8",
+        "source": {
+          "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2010/09/BW_3150%C3%971750.png",
+          "sha256": "942f305c2bdbc3889289d1f104b95c8c776f826ad57555e03886306d81e582b8",
+          "width": 3150,
+          "height": 1750
+        },
+        "transform": "Proportional full-canvas resize, long edge at most 2000px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present."
+      },
+      "crop": {
+        "x": 71,
+        "y": 275,
+        "width": 1479,
+        "height": 1350,
+        "sourceWidth": 3150,
+        "sourceHeight": 1750,
+        "sourceSha256": "942f305c2bdbc3889289d1f104b95c8c776f826ad57555e03886306d81e582b8",
+        "method": "source-white-margin-framing"
+      }
+    },
+    "2010-black-white-1": {
+      "id": "2010-black-white-1",
+      "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2010/09/BW_3150%C3%971750.png",
+      "sourceUrl": "https://www.gamefreak.co.jp/works/pokemon/",
+      "width": 3150,
+      "height": 1750,
+      "bytes": 2411416,
+      "mime": "image/png",
+      "sha256": "942f305c2bdbc3889289d1f104b95c8c776f826ad57555e03886306d81e582b8",
+      "caption": "Pokémon White — original Japanese packaging",
+      "credit": "GAME FREAK / Nintendo / Creatures Inc. / The Pokémon Company",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/gf-0-14--1033230ddea2.webp",
+        "sha256": "1033230ddea26bb3ebf17b4f0e7eba50018a8a3491eb06f97d561c6e8811b285",
+        "mime": "image/webp",
+        "bytes": 233010,
+        "width": 2000,
+        "height": 1111,
+        "longEdgeCap": 2000,
+        "sourceSha256": "942f305c2bdbc3889289d1f104b95c8c776f826ad57555e03886306d81e582b8",
+        "source": {
+          "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2010/09/BW_3150%C3%971750.png",
+          "sha256": "942f305c2bdbc3889289d1f104b95c8c776f826ad57555e03886306d81e582b8",
+          "width": 3150,
+          "height": 1750
+        },
+        "transform": "Proportional full-canvas resize, long edge at most 2000px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present."
+      },
+      "crop": {
+        "x": 1599,
+        "y": 275,
+        "width": 1480,
+        "height": 1350,
+        "sourceWidth": 3150,
+        "sourceHeight": 1750,
+        "sourceSha256": "942f305c2bdbc3889289d1f104b95c8c776f826ad57555e03886306d81e582b8",
+        "method": "source-white-margin-framing"
+      }
+    },
+    "2012-black-white-2-0": {
+      "id": "2012-black-white-2-0",
+      "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2024/08/BW2_3150%C3%971750.png",
+      "sourceUrl": "https://www.gamefreak.co.jp/works/pokemon/",
+      "width": 3150,
+      "height": 1750,
+      "bytes": 4763071,
+      "mime": "image/png",
+      "sha256": "8fdc944683c1731e439001257c015a31a43c16087c6f2052beeb763a29755fa1",
+      "caption": "Pokémon Black 2 — original Japanese packaging",
+      "credit": "GAME FREAK / Nintendo / Creatures Inc. / The Pokémon Company",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/gf-0-13--7b8a74c266c0.webp",
+        "sha256": "7b8a74c266c0605923f2c1f27af7ec46b410647e9932ba2cd24e9a2f10ad0de3",
+        "mime": "image/webp",
+        "bytes": 289244,
+        "width": 2000,
+        "height": 1111,
+        "longEdgeCap": 2000,
+        "sourceSha256": "8fdc944683c1731e439001257c015a31a43c16087c6f2052beeb763a29755fa1",
+        "source": {
+          "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2024/08/BW2_3150%C3%971750.png",
+          "sha256": "8fdc944683c1731e439001257c015a31a43c16087c6f2052beeb763a29755fa1",
+          "width": 3150,
+          "height": 1750
+        },
+        "transform": "Proportional full-canvas resize, long edge at most 2000px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present."
+      },
+      "crop": {
+        "x": 104,
+        "y": 296,
+        "width": 1445,
+        "height": 1307,
+        "sourceWidth": 3150,
+        "sourceHeight": 1750,
+        "sourceSha256": "8fdc944683c1731e439001257c015a31a43c16087c6f2052beeb763a29755fa1",
+        "method": "source-white-margin-framing"
+      }
+    },
+    "2012-black-white-2-1": {
+      "id": "2012-black-white-2-1",
+      "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2024/08/BW2_3150%C3%971750.png",
+      "sourceUrl": "https://www.gamefreak.co.jp/works/pokemon/",
+      "width": 3150,
+      "height": 1750,
+      "bytes": 4763071,
+      "mime": "image/png",
+      "sha256": "8fdc944683c1731e439001257c015a31a43c16087c6f2052beeb763a29755fa1",
+      "caption": "Pokémon White 2 — original Japanese packaging",
+      "credit": "GAME FREAK / Nintendo / Creatures Inc. / The Pokémon Company",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/gf-0-13--7b8a74c266c0.webp",
+        "sha256": "7b8a74c266c0605923f2c1f27af7ec46b410647e9932ba2cd24e9a2f10ad0de3",
+        "mime": "image/webp",
+        "bytes": 289244,
+        "width": 2000,
+        "height": 1111,
+        "longEdgeCap": 2000,
+        "sourceSha256": "8fdc944683c1731e439001257c015a31a43c16087c6f2052beeb763a29755fa1",
+        "source": {
+          "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2024/08/BW2_3150%C3%971750.png",
+          "sha256": "8fdc944683c1731e439001257c015a31a43c16087c6f2052beeb763a29755fa1",
+          "width": 3150,
+          "height": 1750
+        },
+        "transform": "Proportional full-canvas resize, long edge at most 2000px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present."
+      },
+      "crop": {
+        "x": 1601,
+        "y": 296,
+        "width": 1445,
+        "height": 1307,
+        "sourceWidth": 3150,
+        "sourceHeight": 1750,
+        "sourceSha256": "8fdc944683c1731e439001257c015a31a43c16087c6f2052beeb763a29755fa1",
+        "method": "source-white-margin-framing"
+      }
+    },
+    "2013-xy-0": {
+      "id": "2013-xy-0",
+      "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2013/10/XY_3150%C3%971750.png",
+      "sourceUrl": "https://www.gamefreak.co.jp/works/pokemon/",
+      "width": 3150,
+      "height": 1750,
+      "bytes": 4916850,
+      "mime": "image/png",
+      "sha256": "8ef8957c8723da628690d5f814ba3ebec53e7a2ef4fd87b350e47f2a9d866993",
+      "caption": "Pokémon X — original Japanese packaging",
+      "credit": "GAME FREAK / Nintendo / Creatures Inc. / The Pokémon Company",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/gf-0-12--5d9b3e4e2d98.webp",
+        "sha256": "5d9b3e4e2d9893f0f2e9640b5aab152d6cd74e380cd6f8f686e9bbf7f05f10ee",
+        "mime": "image/webp",
+        "bytes": 262178,
+        "width": 2000,
+        "height": 1111,
+        "longEdgeCap": 2000,
+        "sourceSha256": "8ef8957c8723da628690d5f814ba3ebec53e7a2ef4fd87b350e47f2a9d866993",
+        "source": {
+          "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2013/10/XY_3150%C3%971750.png",
+          "sha256": "8ef8957c8723da628690d5f814ba3ebec53e7a2ef4fd87b350e47f2a9d866993",
+          "width": 3150,
+          "height": 1750
+        },
+        "transform": "Proportional full-canvas resize, long edge at most 2000px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present."
+      },
+      "crop": {
+        "x": 132,
+        "y": 301,
+        "width": 1375,
+        "height": 1299,
+        "sourceWidth": 3150,
+        "sourceHeight": 1750,
+        "sourceSha256": "8ef8957c8723da628690d5f814ba3ebec53e7a2ef4fd87b350e47f2a9d866993",
+        "method": "source-white-margin-framing"
+      }
+    },
+    "2013-xy-1": {
+      "id": "2013-xy-1",
+      "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2013/10/XY_3150%C3%971750.png",
+      "sourceUrl": "https://www.gamefreak.co.jp/works/pokemon/",
+      "width": 3150,
+      "height": 1750,
+      "bytes": 4916850,
+      "mime": "image/png",
+      "sha256": "8ef8957c8723da628690d5f814ba3ebec53e7a2ef4fd87b350e47f2a9d866993",
+      "caption": "Pokémon Y — original Japanese packaging",
+      "credit": "GAME FREAK / Nintendo / Creatures Inc. / The Pokémon Company",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/gf-0-12--5d9b3e4e2d98.webp",
+        "sha256": "5d9b3e4e2d9893f0f2e9640b5aab152d6cd74e380cd6f8f686e9bbf7f05f10ee",
+        "mime": "image/webp",
+        "bytes": 262178,
+        "width": 2000,
+        "height": 1111,
+        "longEdgeCap": 2000,
+        "sourceSha256": "8ef8957c8723da628690d5f814ba3ebec53e7a2ef4fd87b350e47f2a9d866993",
+        "source": {
+          "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2013/10/XY_3150%C3%971750.png",
+          "sha256": "8ef8957c8723da628690d5f814ba3ebec53e7a2ef4fd87b350e47f2a9d866993",
+          "width": 3150,
+          "height": 1750
+        },
+        "transform": "Proportional full-canvas resize, long edge at most 2000px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present."
+      },
+      "crop": {
+        "x": 1603,
+        "y": 301,
+        "width": 1375,
+        "height": 1299,
+        "sourceWidth": 3150,
+        "sourceHeight": 1750,
+        "sourceSha256": "8ef8957c8723da628690d5f814ba3ebec53e7a2ef4fd87b350e47f2a9d866993",
+        "method": "source-white-margin-framing"
+      }
+    },
+    "2014-omega-alpha-0": {
+      "id": "2014-omega-alpha-0",
+      "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2014/11/ORAS_2835%C3%971575.png",
+      "sourceUrl": "https://www.gamefreak.co.jp/works/pokemon/",
+      "width": 2835,
+      "height": 1575,
+      "bytes": 4633700,
+      "mime": "image/png",
+      "sha256": "07976634556df31f1572c7fc36e3b60b925984cae5bb9f06f56274b9e5be06d3",
+      "caption": "Pokémon Omega Ruby — original Japanese packaging",
+      "credit": "GAME FREAK / Nintendo / Creatures Inc. / The Pokémon Company",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/gf-0-11--e5afac399236.webp",
+        "sha256": "e5afac399236f635da716d6d715e5e8884b32dfd4024b2ac952dfc2e3353e09d",
+        "mime": "image/webp",
+        "bytes": 309808,
+        "width": 2000,
+        "height": 1111,
+        "longEdgeCap": 2000,
+        "sourceSha256": "07976634556df31f1572c7fc36e3b60b925984cae5bb9f06f56274b9e5be06d3",
+        "source": {
+          "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2014/11/ORAS_2835%C3%971575.png",
+          "sha256": "07976634556df31f1572c7fc36e3b60b925984cae5bb9f06f56274b9e5be06d3",
+          "width": 2835,
+          "height": 1575
+        },
+        "transform": "Proportional full-canvas resize, long edge at most 2000px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present."
+      },
+      "crop": {
+        "x": 116,
+        "y": 270,
+        "width": 1279,
+        "height": 1170,
+        "sourceWidth": 2835,
+        "sourceHeight": 1575,
+        "sourceSha256": "07976634556df31f1572c7fc36e3b60b925984cae5bb9f06f56274b9e5be06d3",
+        "method": "source-white-margin-framing"
+      }
+    },
+    "2014-omega-alpha-1": {
+      "id": "2014-omega-alpha-1",
+      "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2014/11/ORAS_2835%C3%971575.png",
+      "sourceUrl": "https://www.gamefreak.co.jp/works/pokemon/",
+      "width": 2835,
+      "height": 1575,
+      "bytes": 4633700,
+      "mime": "image/png",
+      "sha256": "07976634556df31f1572c7fc36e3b60b925984cae5bb9f06f56274b9e5be06d3",
+      "caption": "Pokémon Alpha Sapphire — original Japanese packaging",
+      "credit": "GAME FREAK / Nintendo / Creatures Inc. / The Pokémon Company",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/gf-0-11--e5afac399236.webp",
+        "sha256": "e5afac399236f635da716d6d715e5e8884b32dfd4024b2ac952dfc2e3353e09d",
+        "mime": "image/webp",
+        "bytes": 309808,
+        "width": 2000,
+        "height": 1111,
+        "longEdgeCap": 2000,
+        "sourceSha256": "07976634556df31f1572c7fc36e3b60b925984cae5bb9f06f56274b9e5be06d3",
+        "source": {
+          "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2014/11/ORAS_2835%C3%971575.png",
+          "sha256": "07976634556df31f1572c7fc36e3b60b925984cae5bb9f06f56274b9e5be06d3",
+          "width": 2835,
+          "height": 1575
+        },
+        "transform": "Proportional full-canvas resize, long edge at most 2000px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present."
+      },
+      "crop": {
+        "x": 1442,
+        "y": 270,
+        "width": 1279,
+        "height": 1170,
+        "sourceWidth": 2835,
+        "sourceHeight": 1575,
+        "sourceSha256": "07976634556df31f1572c7fc36e3b60b925984cae5bb9f06f56274b9e5be06d3",
+        "method": "source-white-margin-framing"
+      }
+    },
+    "2016-sun-moon-0": {
+      "id": "2016-sun-moon-0",
+      "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2016/11/SM_3150%C3%971750.png",
+      "sourceUrl": "https://www.gamefreak.co.jp/works/pokemon/",
+      "width": 3150,
+      "height": 1750,
+      "bytes": 3847947,
+      "mime": "image/png",
+      "sha256": "e0ef8fbccb2e8ff189b61d2bf60cecf97108f6c0e89c11abac80f2ff95e58ea4",
+      "caption": "Pokémon Sun — original Japanese packaging",
+      "credit": "GAME FREAK / Nintendo / Creatures Inc. / The Pokémon Company",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/gf-0-10--959cd7ae89f4.webp",
+        "sha256": "959cd7ae89f41c0f30a92f6c170ced3021613859584bf687d78520dfa0307c5a",
+        "mime": "image/webp",
+        "bytes": 269528,
+        "width": 2000,
+        "height": 1111,
+        "longEdgeCap": 2000,
+        "sourceSha256": "e0ef8fbccb2e8ff189b61d2bf60cecf97108f6c0e89c11abac80f2ff95e58ea4",
+        "source": {
+          "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2016/11/SM_3150%C3%971750.png",
+          "sha256": "e0ef8fbccb2e8ff189b61d2bf60cecf97108f6c0e89c11abac80f2ff95e58ea4",
+          "width": 3150,
+          "height": 1750
+        },
+        "transform": "Proportional full-canvas resize, long edge at most 2000px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present."
+      },
+      "crop": {
+        "x": 132,
+        "y": 301,
+        "width": 1376,
+        "height": 1299,
+        "sourceWidth": 3150,
+        "sourceHeight": 1750,
+        "sourceSha256": "e0ef8fbccb2e8ff189b61d2bf60cecf97108f6c0e89c11abac80f2ff95e58ea4",
+        "method": "source-white-margin-framing"
+      }
+    },
+    "2016-sun-moon-1": {
+      "id": "2016-sun-moon-1",
+      "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2016/11/SM_3150%C3%971750.png",
+      "sourceUrl": "https://www.gamefreak.co.jp/works/pokemon/",
+      "width": 3150,
+      "height": 1750,
+      "bytes": 3847947,
+      "mime": "image/png",
+      "sha256": "e0ef8fbccb2e8ff189b61d2bf60cecf97108f6c0e89c11abac80f2ff95e58ea4",
+      "caption": "Pokémon Moon — original Japanese packaging",
+      "credit": "GAME FREAK / Nintendo / Creatures Inc. / The Pokémon Company",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/gf-0-10--959cd7ae89f4.webp",
+        "sha256": "959cd7ae89f41c0f30a92f6c170ced3021613859584bf687d78520dfa0307c5a",
+        "mime": "image/webp",
+        "bytes": 269528,
+        "width": 2000,
+        "height": 1111,
+        "longEdgeCap": 2000,
+        "sourceSha256": "e0ef8fbccb2e8ff189b61d2bf60cecf97108f6c0e89c11abac80f2ff95e58ea4",
+        "source": {
+          "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2016/11/SM_3150%C3%971750.png",
+          "sha256": "e0ef8fbccb2e8ff189b61d2bf60cecf97108f6c0e89c11abac80f2ff95e58ea4",
+          "width": 3150,
+          "height": 1750
+        },
+        "transform": "Proportional full-canvas resize, long edge at most 2000px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present."
+      },
+      "crop": {
+        "x": 1603,
+        "y": 301,
+        "width": 1375,
+        "height": 1299,
+        "sourceWidth": 3150,
+        "sourceHeight": 1750,
+        "sourceSha256": "e0ef8fbccb2e8ff189b61d2bf60cecf97108f6c0e89c11abac80f2ff95e58ea4",
+        "method": "source-white-margin-framing"
+      }
+    },
+    "2017-ultra-sun-moon-0": {
+      "id": "2017-ultra-sun-moon-0",
+      "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2017/11/USUM_2835%C3%971575.png",
+      "sourceUrl": "https://www.gamefreak.co.jp/works/pokemon/",
+      "width": 2835,
+      "height": 1575,
+      "bytes": 4830401,
+      "mime": "image/png",
+      "sha256": "dbac3700464813b92460742a474dba1b1707f211871c746606bbf4ca01bcb2c2",
+      "caption": "Pokémon Ultra Sun — original Japanese packaging",
+      "credit": "GAME FREAK / Nintendo / Creatures Inc. / The Pokémon Company",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/gf-0-09--6aaf3d23078d.webp",
+        "sha256": "6aaf3d23078d59dd68b3e2c68980e1fc619d32f8abe6780306703e2f16d64205",
+        "mime": "image/webp",
+        "bytes": 372108,
+        "width": 2000,
+        "height": 1111,
+        "longEdgeCap": 2000,
+        "sourceSha256": "dbac3700464813b92460742a474dba1b1707f211871c746606bbf4ca01bcb2c2",
+        "source": {
+          "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2017/11/USUM_2835%C3%971575.png",
+          "sha256": "dbac3700464813b92460742a474dba1b1707f211871c746606bbf4ca01bcb2c2",
+          "width": 2835,
+          "height": 1575
+        },
+        "transform": "Proportional full-canvas resize, long edge at most 2000px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present."
+      },
+      "crop": {
+        "x": 116,
+        "y": 270,
+        "width": 1279,
+        "height": 1171,
+        "sourceWidth": 2835,
+        "sourceHeight": 1575,
+        "sourceSha256": "dbac3700464813b92460742a474dba1b1707f211871c746606bbf4ca01bcb2c2",
+        "method": "source-white-margin-framing"
+      }
+    },
+    "2017-ultra-sun-moon-1": {
+      "id": "2017-ultra-sun-moon-1",
+      "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2017/11/USUM_2835%C3%971575.png",
+      "sourceUrl": "https://www.gamefreak.co.jp/works/pokemon/",
+      "width": 2835,
+      "height": 1575,
+      "bytes": 4830401,
+      "mime": "image/png",
+      "sha256": "dbac3700464813b92460742a474dba1b1707f211871c746606bbf4ca01bcb2c2",
+      "caption": "Pokémon Ultra Moon — original Japanese packaging",
+      "credit": "GAME FREAK / Nintendo / Creatures Inc. / The Pokémon Company",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/gf-0-09--6aaf3d23078d.webp",
+        "sha256": "6aaf3d23078d59dd68b3e2c68980e1fc619d32f8abe6780306703e2f16d64205",
+        "mime": "image/webp",
+        "bytes": 372108,
+        "width": 2000,
+        "height": 1111,
+        "longEdgeCap": 2000,
+        "sourceSha256": "dbac3700464813b92460742a474dba1b1707f211871c746606bbf4ca01bcb2c2",
+        "source": {
+          "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2017/11/USUM_2835%C3%971575.png",
+          "sha256": "dbac3700464813b92460742a474dba1b1707f211871c746606bbf4ca01bcb2c2",
+          "width": 2835,
+          "height": 1575
+        },
+        "transform": "Proportional full-canvas resize, long edge at most 2000px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present."
+      },
+      "crop": {
+        "x": 1441,
+        "y": 270,
+        "width": 1279,
+        "height": 1171,
+        "sourceWidth": 2835,
+        "sourceHeight": 1575,
+        "sourceSha256": "dbac3700464813b92460742a474dba1b1707f211871c746606bbf4ca01bcb2c2",
+        "method": "source-white-margin-framing"
+      }
+    },
+    "2019-sword-shield-0": {
+      "id": "2019-sword-shield-0",
+      "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2019/02/20191112%E3%82%BD%E3%83%BC%E3%83%88%E3%82%99%E3%82%B7%E3%83%BC%E3%83%AB%E3%83%88%E3%82%99%E3%83%8F%E3%82%9A%E3%83%83%E3%82%B1%E3%83%BC%E3%82%B7%E3%82%99.jpg",
+      "sourceUrl": "https://www.gamefreak.co.jp/works/pokemon/",
+      "width": 900,
+      "height": 501,
+      "bytes": 123130,
+      "mime": "image/jpeg",
+      "sha256": "b9334ce2022ac8f36fc5306e19aeb4c33de220bbc7f1e4fe5614875fd81f7988",
+      "caption": "Pokémon Sword — original Japanese packaging",
+      "credit": "GAME FREAK / Nintendo / Creatures Inc. / The Pokémon Company",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/gf-0-07--584e88a5f589.webp",
+        "sha256": "584e88a5f58999f48877ac5defe62dfead03557ba13ae2534f64c40974208d88",
+        "mime": "image/webp",
+        "bytes": 73088,
+        "width": 900,
+        "height": 501,
+        "sourceSha256": "b9334ce2022ac8f36fc5306e19aeb4c33de220bbc7f1e4fe5614875fd81f7988",
+        "source": {
+          "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2019/02/20191112%E3%82%BD%E3%83%BC%E3%83%88%E3%82%99%E3%82%B7%E3%83%BC%E3%83%AB%E3%83%88%E3%82%99%E3%83%8F%E3%82%9A%E3%83%83%E3%82%B1%E3%83%BC%E3%82%B7%E3%82%99.jpg",
+          "sha256": "b9334ce2022ac8f36fc5306e19aeb4c33de220bbc7f1e4fe5614875fd81f7988",
+          "width": 900,
+          "height": 501
+        },
+        "transform": "Proportional full-canvas resize, long edge at most1600px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present.",
+        "longEdgeCap": 1600
+      },
+      "crop": {
+        "x": 149,
+        "y": 30,
+        "width": 290,
+        "height": 471,
+        "sourceWidth": 900,
+        "sourceHeight": 501,
+        "sourceSha256": "b9334ce2022ac8f36fc5306e19aeb4c33de220bbc7f1e4fe5614875fd81f7988",
+        "method": "source-white-margin-framing"
+      }
+    },
+    "2019-sword-shield-1": {
+      "id": "2019-sword-shield-1",
+      "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2019/02/20191112%E3%82%BD%E3%83%BC%E3%83%88%E3%82%99%E3%82%B7%E3%83%BC%E3%83%AB%E3%83%88%E3%82%99%E3%83%8F%E3%82%9A%E3%83%83%E3%82%B1%E3%83%BC%E3%82%B7%E3%82%99.jpg",
+      "sourceUrl": "https://www.gamefreak.co.jp/works/pokemon/",
+      "width": 900,
+      "height": 501,
+      "bytes": 123130,
+      "mime": "image/jpeg",
+      "sha256": "b9334ce2022ac8f36fc5306e19aeb4c33de220bbc7f1e4fe5614875fd81f7988",
+      "caption": "Pokémon Shield — original Japanese packaging",
+      "credit": "GAME FREAK / Nintendo / Creatures Inc. / The Pokémon Company",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/gf-0-07--584e88a5f589.webp",
+        "sha256": "584e88a5f58999f48877ac5defe62dfead03557ba13ae2534f64c40974208d88",
+        "mime": "image/webp",
+        "bytes": 73088,
+        "width": 900,
+        "height": 501,
+        "sourceSha256": "b9334ce2022ac8f36fc5306e19aeb4c33de220bbc7f1e4fe5614875fd81f7988",
+        "source": {
+          "url": "https://www.gamefreak.co.jp/wordpress/wp-content/uploads/2019/02/20191112%E3%82%BD%E3%83%BC%E3%83%88%E3%82%99%E3%82%B7%E3%83%BC%E3%83%AB%E3%83%88%E3%82%99%E3%83%8F%E3%82%9A%E3%83%83%E3%82%B1%E3%83%BC%E3%82%B7%E3%82%99.jpg",
+          "sha256": "b9334ce2022ac8f36fc5306e19aeb4c33de220bbc7f1e4fe5614875fd81f7988",
+          "width": 900,
+          "height": 501
+        },
+        "transform": "Proportional full-canvas resize, long edge at most1600px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present.",
+        "longEdgeCap": 1600
+      },
+      "crop": {
+        "x": 462,
+        "y": 30,
+        "width": 290,
+        "height": 471,
+        "sourceWidth": 900,
+        "sourceHeight": 501,
+        "sourceSha256": "b9334ce2022ac8f36fc5306e19aeb4c33de220bbc7f1e4fe5614875fd81f7988",
+        "method": "source-white-margin-framing"
+      }
+    },
+    "2005-mystery-dungeon-0": {
+      "id": "2005-mystery-dungeon-0",
+      "url": "https://pokemondungeon.com/wp-content/uploads/2026/09/MD_Blue_JP_boxart.png",
+      "sourceUrl": "https://pokemondungeon.com/pokemon-mystery-dungeon-blue-rescue-team-box-art/",
+      "width": 600,
+      "height": 542,
+      "bytes": 474116,
+      "mime": "image/png",
+      "sha256": "7168d537dc2f3a5f80c9cde1a6feeae417ca356607dbc53444d95ed61e519a46",
+      "caption": "Pokémon Mystery Dungeon: Blue Rescue Team — original Japanese Nintendo DS box front",
+      "credit": "Nintendo / The Pokémon Company; archival scan published by Pokémon Dungeon",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/pd-2005-mystery-dungeon-blue--dfd778d8ee7a.webp",
+        "sha256": "dfd778d8ee7af74001f74cdc2c97e18bf4fcfaddc476e00a444236d6519e5a5a",
+        "mime": "image/webp",
+        "bytes": 74052,
+        "width": 600,
+        "height": 542,
+        "sourceSha256": "7168d537dc2f3a5f80c9cde1a6feeae417ca356607dbc53444d95ed61e519a46",
+        "source": {
+          "url": "https://pokemondungeon.com/wp-content/uploads/2026/09/MD_Blue_JP_boxart.png",
+          "sha256": "7168d537dc2f3a5f80c9cde1a6feeae417ca356607dbc53444d95ed61e519a46",
+          "width": 600,
+          "height": 542
+        },
+        "transform": "Proportional full-canvas resize, long edge at most1600px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present.",
+        "longEdgeCap": 1600
+      },
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 600,
+        "height": 542,
+        "sourceWidth": 600,
+        "sourceHeight": 542,
+        "sourceSha256": "7168d537dc2f3a5f80c9cde1a6feeae417ca356607dbc53444d95ed61e519a46",
+        "method": "source-full-face-framing"
+      }
+    },
+    "2005-mystery-dungeon-1": {
+      "id": "2005-mystery-dungeon-1",
+      "url": "https://pokemondungeon.com/wp-content/uploads/2026/09/MD_Red_JP_boxart.png",
+      "sourceUrl": "https://pokemondungeon.com/pokemon-mystery-dungeon-red-rescue-team-box-art/",
+      "width": 800,
+      "height": 510,
+      "bytes": 727786,
+      "mime": "image/png",
+      "sha256": "9001afcb460804332311c3ad1f0e745279af390f3ff94fb3ca2c92f307f8f150",
+      "caption": "Pokémon Mystery Dungeon: Red Rescue Team — original Japanese Game Boy Advance box front",
+      "credit": "Nintendo / The Pokémon Company; archival scan published by Pokémon Dungeon",
+      "rightsStatus": "unverified",
+      "originalBytesUnchanged": true,
+      "delivery": {
+        "file": "history-renditions/pd-2005-mystery-dungeon-red--a83c13b419f0.webp",
+        "sha256": "a83c13b419f014173dbbac9e1a5c3466b67c9d47f2eaeb4f5e8fade2b1b1ea4e",
+        "mime": "image/webp",
+        "bytes": 99362,
+        "width": 800,
+        "height": 510,
+        "sourceSha256": "9001afcb460804332311c3ad1f0e745279af390f3ff94fb3ca2c92f307f8f150",
+        "source": {
+          "url": "https://pokemondungeon.com/wp-content/uploads/2026/09/MD_Red_JP_boxart.png",
+          "sha256": "9001afcb460804332311c3ad1f0e745279af390f3ff94fb3ca2c92f307f8f150",
+          "width": 800,
+          "height": 510
+        },
+        "transform": "Proportional full-canvas resize, long edge at most1600px, Lanczos3, WebP quality90, alpha quality100, no enlargement or sharpening. Original colour profile retained where present.",
+        "longEdgeCap": 1600
+      },
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 510,
+        "sourceWidth": 800,
+        "sourceHeight": 510,
+        "sourceSha256": "9001afcb460804332311c3ad1f0e745279af390f3ff94fb3ca2c92f307f8f150",
+        "method": "source-full-face-framing"
+      }
+    }
+  }
+}

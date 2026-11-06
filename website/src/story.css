@@ -1,0 +1,46 @@
+/* A single branded opening, with two clear destinations beneath the main actions. */
+.home-opening{position:relative;isolation:isolate;overflow:hidden;width:100%;background:radial-gradient(ellipse at 82% 8%,#f5e7e1 0,transparent 36%),radial-gradient(ellipse at 10% 77%,#e7d8fa 0,transparent 46%),linear-gradient(155deg,#f3ecff 0%,#faf7ff 53%,#efe4fa 100%)}
+.home-colour{position:absolute;z-index:-1;pointer-events:none;background:center/contain no-repeat}
+.home-colour-lilac{width:330px;height:330px;left:-205px;top:-175px;background-image:url('assets/brand-shape-lilac.svg');opacity:.65;transform:rotate(-24deg)}
+.home-colour-purple{width:380px;height:380px;left:-235px;bottom:-115px;background-image:url('assets/brand-shape-purple.svg');opacity:.56;transform:rotate(17deg)}
+.home-colour-orange{width:320px;height:320px;right:-190px;top:-100px;background-image:url('assets/brand-shape-orange.svg');opacity:.67;transform:rotate(-25deg)}
+body[data-phone-screen=home] .home-opening .stackr-hero{background:none;border:0;box-shadow:none;min-height:0;padding-top:42px;padding-bottom:20px}
+.home-opening .stackr-hero:before,.home-opening .stackr-hero:after{content:none}
+.shop-feature-links{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:min(1000px,calc(100% - var(--page-gutter)*2));margin:0 auto;padding:12px 0 34px;background:none;border:0;gap:18px;z-index:1}
+.shop-feature-links>a{position:relative;display:grid;grid-template-columns:76px minmax(0,1fr) 22px;align-items:center;gap:18px;min-width:0;min-height:124px;padding:20px 22px;border:1px solid #e4d7ef;border-radius:18px;background:#ffffffb8;color:var(--ink);text-decoration:none;box-shadow:0 5px 18px #52337205;transition:background .2s,border-color .2s,transform .2s}
+.shop-feature-links>a.home-history-link{background:linear-gradient(120deg,#ffffffc9,#fff2e9bb);border-color:#e9d5d2}
+.home-feature-picture{display:flex;align-items:center;justify-content:center;width:76px;height:80px;min-width:0}
+.home-feature-picture img{display:block;max-width:100%;width:auto;height:100%;object-fit:contain;transition:transform 220ms var(--ease)}
+.home-story-link .home-feature-picture img{width:72px;height:72px;border-radius:50%}
+.home-history-link .home-feature-picture img{height:78px;transform:rotate(5deg);filter:drop-shadow(0 7px 6px #29183e20)}
+.home-feature-copy{display:flex;flex-direction:column;gap:7px;min-width:0}
+.home-feature-copy>strong{font-family:var(--display-font);font-size:23px;line-height:1.2;font-weight:600;letter-spacing:-.025em}
+.home-feature-copy>span{font-size:14px;line-height:1.5;color:var(--muted);max-width:28ch}
+.home-feature-arrow{width:20px;height:20px;transition:transform 180ms var(--ease)}
+.shop-feature-links>a:hover{background:#fff;border-color:#b49ad7;transform:translateY(-2px)}
+.shop-feature-links>a:hover .home-feature-arrow{transform:translateX(3px)}
+.shop-feature-links>a:focus-visible{outline:3px solid var(--brand);outline-offset:4px}
+@media(max-width:760px){
+ body[data-phone-screen=home] .home-opening .stackr-hero{padding:28px 20px 12px;gap:16px}
+ .home-colour-lilac{width:240px;height:240px;left:-160px;top:-135px;opacity:.7}
+ .home-colour-purple{width:270px;height:270px;left:-185px;bottom:-80px;opacity:.52}
+ .home-colour-orange{width:230px;height:230px;right:-145px;top:-95px;opacity:.67}
+ .home-opening .shop-feature-links{width:100%;grid-template-columns:1fr;gap:10px;margin:0;padding:16px 20px 26px}
+ .shop-feature-links>a{grid-template-columns:60px minmax(0,1fr) 18px;gap:15px;min-height:100px;padding:16px;border-radius:16px}
+ .home-feature-picture{width:60px;height:64px}
+ .home-story-link .home-feature-picture img{width:60px;height:60px}
+ .home-history-link .home-feature-picture img{height:64px}
+ .home-feature-copy{gap:5px}
+ .home-feature-copy>strong{font-size:20px;line-height:1.2}
+ .home-feature-copy>span{font-size:13px;line-height:1.5;max-width:28ch}
+ .home-feature-arrow{width:18px;height:18px}
+ body[data-phone-screen=home] .home-opening .opening-product-empty{margin:0;padding:0}
+ .opening-product-empty p{margin:4px 0 0}
+}
+@media(max-width:350px){
+ .home-opening .shop-feature-links{padding-inline:16px}
+ .shop-feature-links>a{padding:14px 12px;gap:12px;grid-template-columns:50px minmax(0,1fr) 16px}
+ .home-feature-picture{width:50px;height:58px}.home-story-link .home-feature-picture img{width:50px;height:50px}.home-history-link .home-feature-picture img{height:56px}
+ .home-feature-copy>strong{font-size:18px}.home-feature-copy>span{font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){.shop-feature-links>a,.home-feature-picture img,.home-feature-arrow{transition:none}.shop-feature-links>a:hover,.shop-feature-links>a:hover .home-feature-arrow{transform:none}}

@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "products": {
+    "black-bundle": {
+      "language": "English",
+      "photos": [
+        {
+          "id": "view-1",
+          "label": "Front and side",
+          "url": "https://cdn.shopify.com/s/files/1/0455/4499/7013/files/black-bolt-booster-bundle.jpg?v=1760556024",
+          "sourceUrl": "https://www.chiefcards.co.uk/products/pokemon-black-bolt-booster-bundle",
+          "width": 1200,
+          "height": 1200,
+          "sha256": "69ccc4d2b688952178ecfef78bf127f5e32602efd6cff00d1f60ba3787df32c8"
+        },
+        {
+          "id": "view-2",
+          "label": "Back and side",
+          "url": "https://cdn.shopify.com/s/files/1/0455/4499/7013/files/black-bolt-booster-bundle-back.jpg?v=1760556024",
+          "sourceUrl": "https://www.chiefcards.co.uk/products/pokemon-black-bolt-booster-bundle",
+          "width": 1200,
+          "height": 1200,
+          "sha256": "a0a0d1c529a02f2cda16fac13767463f2bf51031b8671ba026016ffd12bdbabd"
+        },
+        {
+          "id": "view-3",
+          "label": "Six booster packs",
+          "url": "https://cdn.shopify.com/s/files/1/0455/4499/7013/files/black-bolt-booster-bundle-packs.jpg?v=1760554958",
+          "sourceUrl": "https://www.chiefcards.co.uk/products/pokemon-black-bolt-booster-bundle",
+          "width": 1200,
+          "height": 1200,
+          "sha256": "3319a3923f51a327425794b1f9ceed441f731e72e889025f52255928716427ef"
+        }
+      ]
+    },
+    "charizard-upc": {
+      "language": "English",
+      "photos": [
+        {
+          "id": "view-1",
+          "label": "Front and side",
+          "url": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010065109_1.jpg?v=1791574451",
+          "sourceUrl": "https://www.asmodee.co.uk/products/pok1010065109-pokemon-tcg-mega-charizard-ultra-premium-collection",
+          "width": 2000,
+          "height": 2000,
+          "sha256": "7dae26ec3c4049c8473bbcdb3401d52b63ba138f9e0bff843401b77f57ad406f"
+        },
+        {
+          "id": "view-2",
+          "label": "Front",
+          "url": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010065109_2.jpg?v=1791574453",
+          "sourceUrl": "https://www.asmodee.co.uk/products/pok1010065109-pokemon-tcg-mega-charizard-ultra-premium-collection",
+          "width": 2000,
+          "height": 2000,
+          "sha256": "4e676415834946b23b83bf52f7da7d4d624d1c1d8acbcaf6c7c614dacc72513b"
+        },
+        {
+          "id": "view-3",
+          "label": "Box contents",
+          "url": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010065109_3.jpg?v=1791574456",
+          "sourceUrl": "https://www.asmodee.co.uk/products/pok1010065109-pokemon-tcg-mega-charizard-ultra-premium-collection",
+          "width": 2000,
+          "height": 2000,
+          "sha256": "b67001f6368b727f92f7b1875ea8dd6aae7317d6d628b15fd1fbd390e66cf65f"
+        }
+      ]
+    },
+    "white-bundle": {
+      "language": "English",
+      "photos": [
+        {
+          "id": "view-1",
+          "label": "Left view",
+          "url": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010035114_1.jpg?v=1776006461",
+          "sourceUrl": "https://www.asmodee.co.uk/products/pok1010035114-pokemon-tcg-scarlet-violet-10-5-white-flare-booster-bundle-cdu-10",
+          "width": 2000,
+          "height": 2000,
+          "sha256": "0d0daf0b4f5fda9ce010475cd1dae1de91c92225510841752c8f7114d99441d9"
+        },
+        {
+          "id": "view-2",
+          "label": "Right view",
+          "url": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010035114_2.jpg?v=1776006462",
+          "sourceUrl": "https://www.asmodee.co.uk/products/pok1010035114-pokemon-tcg-scarlet-violet-10-5-white-flare-booster-bundle-cdu-10",
+          "width": 2000,
+          "height": 2000,
+          "sha256": "4f3d1f21e6173568aaa358600458d437dc9d8a2400f564bd9cfee6ef6eb32252"
+        },
+        {
+          "id": "view-3",
+          "label": "Six booster packs",
+          "url": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010035114_3.jpg?v=1776006463",
+          "sourceUrl": "https://www.asmodee.co.uk/products/pok1010035114-pokemon-tcg-scarlet-violet-10-5-white-flare-booster-bundle-cdu-10",
+          "width": 2000,
+          "height": 2000,
+          "sha256": "f4a920cdd41063d2899364c8184218ae5f70aec4c9d7b344d156a0a59bc14082"
+        }
+      ]
+    },
+    "prism-etb": {
+      "language": "English",
+      "photos": [
+        {
+          "id": "view-1",
+          "label": "Left view",
+          "url": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK10010013_1_372cad51-2b0a-4bfb-aa4b-b186a59adb73.jpg?v=1776006257",
+          "sourceUrl": "https://www.asmodee.co.uk/products/pok10010013-pokemon-tcg-scarlet-violet-8-5-prismatic-evolutions-elite-trainer-box",
+          "width": 2000,
+          "height": 2000,
+          "sha256": "bf2319acc66cc51e3dd575aa7edda83a53ba1d16c2b6de0892f165a541a06d41"
+        },
+        {
+          "id": "view-2",
+          "label": "Front",
+          "url": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK10010013_2_e936bc3e-9d8b-498f-9c48-aa722d481c95.jpg?v=1776006257",
+          "sourceUrl": "https://www.asmodee.co.uk/products/pok10010013-pokemon-tcg-scarlet-violet-8-5-prismatic-evolutions-elite-trainer-box",
+          "width": 2000,
+          "height": 2000,
+          "sha256": "3fd4b0979a2f00d5dda7ba48c212fd850836ab654703cbd5acc7071190629d4e"
+        },
+        {
+          "id": "view-3",
+          "label": "Right view",
+          "url": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK10010013_3_ab5c48ca-1b5e-4ebe-b5d5-141f1be19e94.jpg?v=1776006258",
+          "sourceUrl": "https://www.asmodee.co.uk/products/pok10010013-pokemon-tcg-scarlet-violet-8-5-prismatic-evolutions-elite-trainer-box",
+          "width": 2000,
+          "height": 2000,
+          "sha256": "959de5d78415cf36736cfe86cfcb724d16cbd89def8e7d7a3e9e36578b5d9c3e"
+        },
+        {
+          "id": "view-4",
+          "label": "Box contents",
+          "url": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK10010013_4_370a6ff0-bd34-4faf-9307-d7ff1a2e4e84.jpg?v=1776006258",
+          "sourceUrl": "https://www.asmodee.co.uk/products/pok10010013-pokemon-tcg-scarlet-violet-8-5-prismatic-evolutions-elite-trainer-box",
+          "width": 2000,
+          "height": 2000,
+          "sha256": "be7a4c24d47b50106d7b6f55e81cd67f5608307f522914fe30e3a0441ce99393"
+        }
+      ]
+    }
+  }
+}

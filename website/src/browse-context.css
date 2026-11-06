@@ -1,0 +1,16 @@
+.filter-sheet{width:min(560px,100%);max-height:90dvh;padding:0;border:0;border-radius:14px 14px 0 0;color:var(--ink);background:var(--paper,#fff);margin:auto auto 0;box-shadow:0 -12px 38px #07145f22}
+.filter-sheet::backdrop{background:#07145f66}
+.filter-sheet form{display:grid;grid-template-rows:auto minmax(0,1fr) auto;max-height:90dvh}
+.filter-sheet-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;border-bottom:1px solid var(--line)}
+.filter-sheet-head h2{font-size:24px;margin:0}.filter-sheet-head button{width:44px;height:44px;padding:11px;border:0;background:transparent;color:inherit}.filter-sheet-head svg{width:22px;height:22px}
+.filter-sheet-fields{padding:22px 24px;display:grid;gap:20px;overflow:auto;overscroll-behavior:contain}
+.filter-sheet-fields label{display:grid;gap:8px;font-size:14px;font-weight:600}.filter-sheet-fields select{width:100%;min-height:48px;padding:10px 12px;font:inherit;background:#fff;border:1px solid var(--line);border-radius:4px;color:var(--ink)}
+.filter-sheet-fields p{font-size:13px;line-height:1.6;margin:0;color:var(--muted)}
+.filter-sheet-foot{padding:16px 24px max(20px,env(safe-area-inset-bottom));display:grid;grid-template-columns:auto 1fr;gap:14px;border-top:1px solid var(--line);background:var(--paper,#fff)}
+.filter-sheet-foot output{grid-column:1/-1;font-size:14px}.filter-sheet-foot button{min-height:48px;padding:12px 18px;border-radius:4px;font:inherit;font-weight:600}.filter-sheet-reset{border:1px solid var(--line);background:transparent;color:var(--ink)}.filter-sheet-apply{border:1px solid var(--brand);background:var(--brand);color:#fff}
+.search-product-result{display:flex;align-items:center;gap:12px;width:100%;min-height:68px;text-align:left;padding:10px 14px;border:0;border-top:1px solid var(--line);background:#fff;color:var(--ink)}
+.search-product-result>span{flex:1;min-width:0}.search-product-result strong{display:block;font-size:14px;line-height:1.4}.search-product-result small{display:block;margin-top:4px;font-size:12px;color:var(--muted)}.search-product-result>svg{width:18px;height:18px;flex:none}
+.search-product-result:hover,.search-product-result:focus-visible{background:var(--wash,#f3efff)}
+.toast[hidden]{display:none!important}
+@media(min-width:901px){.filter-sheet{margin:auto;border-radius:12px;max-height:85dvh}}
+@media(prefers-reduced-motion:reduce){.filter-sheet{scroll-behavior:auto}}

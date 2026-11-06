@@ -1,0 +1,1483 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-11-06",
+  "source": "https://api.stackrtcg.com/v1/sets",
+  "scope": "Read-only catalogue metadata; pages of at most 50. Exact language and set code or unambiguous full name. Presentation links only; no ownership migration.",
+  "matches": {
+    "black-bolt": {
+      "setId": "ba4fbfd1-901d-4a00-b27f-a30eb8946bb2",
+      "language": "en",
+      "setCode": "sv10.5b",
+      "displayName": "Black Bolt",
+      "nativeName": "Black Bolt",
+      "matchMethod": "exact_language_and_full_set_name",
+      "shopSetName": "Black Bolt",
+      "shopSetCode": "zsv10pt5"
+    },
+    "white-flare": {
+      "setId": "e7196d4a-f97d-466a-853c-87c58d6456cd",
+      "language": "en",
+      "setCode": "sv10.5w",
+      "displayName": "White Flare",
+      "nativeName": "White Flare",
+      "matchMethod": "exact_language_and_full_set_name",
+      "shopSetName": "White Flare",
+      "shopSetCode": "rsv10pt5"
+    },
+    "prismatic-evolutions": {
+      "setId": "fb3cd93c-9006-42f5-b026-96a9fedcf269",
+      "language": "en",
+      "setCode": "sv08.5",
+      "displayName": "Prismatic Evolutions",
+      "nativeName": "Prismatic Evolutions",
+      "matchMethod": "exact_language_and_full_set_name",
+      "shopSetName": "Prismatic Evolutions",
+      "shopSetCode": "sv8pt5"
+    },
+    "journey-together": {
+      "setId": "4f3046f3-9ab7-4068-a7df-dbe2b08c263c",
+      "language": "en",
+      "setCode": "sv09",
+      "displayName": "Journey Together",
+      "nativeName": "Journey Together",
+      "matchMethod": "exact_language_and_full_set_name",
+      "shopSetName": "Journey Together",
+      "shopSetCode": "sv9",
+      "binderReady": true
+    },
+    "destined-rivals": {
+      "setId": "8794c18f-e977-4e4a-965e-a0cb712435be",
+      "language": "en",
+      "setCode": "sv10",
+      "displayName": "Destined Rivals",
+      "nativeName": "Destined Rivals",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Destined Rivals",
+      "shopSetCode": "sv10"
+    },
+    "phantasmal-flames": {
+      "setId": "977bf107-e10c-4d93-a7a4-3d7b775c5003",
+      "language": "en",
+      "setCode": "me02",
+      "displayName": "Phantasmal Flames",
+      "nativeName": "Phantasmal Flames",
+      "matchMethod": "exact_language_and_full_set_name",
+      "shopSetName": "Phantasmal Flames",
+      "shopSetCode": "me2",
+      "binderReady": true
+    },
+    "ascended-heroes": {
+      "setId": "ddc668c0-316e-4dab-8c51-625167508fd6",
+      "language": "en",
+      "setCode": "me02.5",
+      "displayName": "Ascended Heroes",
+      "nativeName": "Ascended Heroes",
+      "matchMethod": "exact_language_and_full_set_name",
+      "shopSetName": "Ascended Heroes",
+      "shopSetCode": "me2pt5",
+      "binderReady": true
+    },
+    "mega-evolution": {
+      "setId": "42d59aab-eccf-413f-8c19-d88f63664057",
+      "language": "en",
+      "setCode": "me01",
+      "displayName": "Mega Evolution",
+      "nativeName": "Mega Evolution",
+      "matchMethod": "exact_language_and_full_set_name",
+      "shopSetName": "Mega Evolution",
+      "shopSetCode": "me1"
+    },
+    "perfect-order": {
+      "setId": "a6a2829a-c5e6-444f-8d92-d6e0de9fdf64",
+      "language": "en",
+      "setCode": "me03",
+      "displayName": "Perfect Order",
+      "nativeName": "Perfect Order",
+      "matchMethod": "exact_language_and_full_set_name",
+      "shopSetName": "Perfect Order",
+      "shopSetCode": "me3"
+    },
+    "chaos-rising": {
+      "setId": "816ff627-a585-4953-99c4-a15c9b0b80e5",
+      "language": "en",
+      "setCode": "me04",
+      "displayName": "Chaos Rising",
+      "nativeName": "Chaos Rising",
+      "matchMethod": "exact_language_and_full_set_name",
+      "shopSetName": "Chaos Rising",
+      "shopSetCode": "me4",
+      "binderReady": true
+    },
+    "jp-black-bolt": {
+      "setId": "9f85e389-ab18-4448-948c-fdc067aa188b",
+      "language": "ja",
+      "setCode": "SV11B",
+      "displayName": "Black Bolt",
+      "nativeName": "ブラックボルト",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Black Bolt",
+      "shopSetCode": "SV11B"
+    },
+    "jp-white-flare": {
+      "setId": "316ec693-c6dc-408c-aaca-2b57afdb9249",
+      "language": "ja",
+      "setCode": "SV11W",
+      "displayName": "White Flare",
+      "nativeName": "ホワイトフレア",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "White Flare",
+      "shopSetCode": "SV11W"
+    },
+    "jp-mega-symphonia": {
+      "setId": "b94f87ff-5d32-436a-87e4-50149151dba0",
+      "language": "ja",
+      "setCode": "M1S",
+      "displayName": "Mega Symphonia",
+      "nativeName": "メガシンフォニア",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Mega Symphonia",
+      "shopSetCode": "M1S"
+    },
+    "cn-pursue-glory-together": {
+      "setId": "8f5e256e-b756-4a9c-8aa4-80cb8fe6f5fe",
+      "language": "zh-cn",
+      "setCode": "csv10c",
+      "displayName": "Together in Pursuit of Glory",
+      "nativeName": "共逐荣光",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Pursue Glory Together",
+      "shopSetCode": "CSV10C"
+    },
+    "cn-terastal-grand-crystal-gathering": {
+      "setId": "034890ae-726c-44ec-bae9-b3e7d1ffdf45",
+      "language": "zh-cn",
+      "setCode": "csv9.5c",
+      "displayName": "Terastal Gathering",
+      "nativeName": "太晶盛聚",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Terastal Grand Crystal Gathering",
+      "shopSetCode": "CSV9.5C"
+    },
+    "pitch-black": {
+      "setId": "d6d58c17-5923-496e-94ef-5819f34ae10c",
+      "language": "en",
+      "setCode": "me05",
+      "displayName": "Pitch Black",
+      "nativeName": "Pitch Black",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Pitch Black",
+      "shopSetCode": "me05",
+      "binderReady": true
+    },
+    "celebration-30th": {
+      "setId": "258cb8e5-c769-540d-9e3c-40d4ed4dafdb",
+      "language": "en",
+      "setCode": "30C",
+      "displayName": "30th Celebration",
+      "nativeName": "30th Celebration",
+      "matchMethod": "exact_language_and_full_set_name",
+      "shopSetName": "30th Celebration",
+      "shopSetCode": "30th",
+      "binderReady": true
+    },
+    "jp-30th-celebration": {
+      "setId": "88e351b5-8191-5ef4-854b-2978046cda53",
+      "language": "ja",
+      "setCode": "M6a",
+      "displayName": "30th Celebration",
+      "nativeName": "30th CELEBRATION",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "30th Celebration",
+      "shopSetCode": "M6a"
+    },
+    "jp-storm-emeralda": {
+      "setId": "903d5baa-27c7-5690-b1d7-2395c770204a",
+      "language": "ja",
+      "setCode": "M6",
+      "displayName": "Storm Emeralda",
+      "nativeName": "ストームエメラルダ",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Storm Emeralda",
+      "shopSetCode": "m6"
+    },
+    "jp-abyss-eye": {
+      "setId": "91be8fc7-b2ed-4169-b41e-0d374e4d466a",
+      "language": "ja",
+      "setCode": "M5",
+      "displayName": "Abyss Eye",
+      "nativeName": "アビスアイ",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Abyss Eye",
+      "shopSetCode": "m5"
+    },
+    "jp-ninja-spinner": {
+      "setId": "c263caec-8234-4348-9ade-34d25ad4e6e7",
+      "language": "ja",
+      "setCode": "M4",
+      "displayName": "Ninja Spinner",
+      "nativeName": "ニンジャスピナー",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Ninja Spinner",
+      "shopSetCode": "m4"
+    },
+    "jp-nihil-zero": {
+      "setId": "4be18668-d39a-44a8-831c-98e250f10538",
+      "language": "ja",
+      "setCode": "M3",
+      "displayName": "Nihil Zero",
+      "nativeName": "ムニキスゼロ",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Nihil Zero",
+      "shopSetCode": "m3"
+    },
+    "jp-mega-dream-ex-high-class": {
+      "setId": "53abf462-8a8c-4f05-8e75-57726a38ce9e",
+      "language": "ja",
+      "setCode": "M2a",
+      "displayName": "MEGA Dream ex",
+      "nativeName": "MEGAドリームex",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Mega Dream ex High Class",
+      "shopSetCode": "m2a"
+    },
+    "jp-inferno-x": {
+      "setId": "8822dd6b-6f88-4ea6-9c59-0f766b63fc2b",
+      "language": "ja",
+      "setCode": "M2",
+      "displayName": "Inferno X",
+      "nativeName": "インフェルノX",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Inferno X",
+      "shopSetCode": "m2"
+    },
+    "jp-mega-brave": {
+      "setId": "a05ee14c-d4fb-4598-8470-e677e3c06f22",
+      "language": "ja",
+      "setCode": "M1L",
+      "displayName": "Mega Brave",
+      "nativeName": "メガブレイブ",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Mega Brave",
+      "shopSetCode": "m1L"
+    },
+    "jp-white-flare-deluxe": {
+      "setId": "316ec693-c6dc-408c-aaca-2b57afdb9249",
+      "language": "ja",
+      "setCode": "SV11W",
+      "displayName": "White Flare",
+      "nativeName": "ホワイトフレア",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "White Flare Deluxe",
+      "shopSetCode": "SV11W"
+    },
+    "jp-black-bolt-deluxe": {
+      "setId": "9f85e389-ab18-4448-948c-fdc067aa188b",
+      "language": "ja",
+      "setCode": "SV11B",
+      "displayName": "Black Bolt",
+      "nativeName": "ブラックボルト",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Black Bolt Deluxe",
+      "shopSetCode": "SV11B"
+    },
+    "jp-glory-of-team-rocket": {
+      "setId": "db4076ae-7ab9-408d-988c-34aa33b7b906",
+      "language": "ja",
+      "setCode": "SV10",
+      "displayName": "Glory of the Rocket Gang",
+      "nativeName": "ロケット団の栄光",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Glory of Team Rocket",
+      "shopSetCode": "SV10"
+    },
+    "jp-heatwave-arena": {
+      "setId": "ff9ddb2d-d5c3-4c2c-bc48-89e68ea03d96",
+      "language": "ja",
+      "setCode": "SV9a",
+      "displayName": "Hot Wind Arena",
+      "nativeName": "熱風のアリーナ",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Heatwave Arena",
+      "shopSetCode": "sv9a"
+    },
+    "jp-battle-partners": {
+      "setId": "a65593d7-236b-4891-9c88-670650f4faaf",
+      "language": "ja",
+      "setCode": "SV9",
+      "displayName": "Battle Partners",
+      "nativeName": "バトルパートナーズ",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Battle Partners",
+      "shopSetCode": "sv9"
+    },
+    "jp-eeveelutions-terastal-festival-ex-high-class": {
+      "setId": "a7459948-3544-4122-8fec-7fc6aecfd2e5",
+      "language": "ja",
+      "setCode": "SV8a",
+      "displayName": "Terastal Fest ex",
+      "nativeName": "テラスタルフェスex",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Eeveelutions Terastal Festival ex High Class",
+      "shopSetCode": "SV8a"
+    },
+    "jp-super-electric-breaker": {
+      "setId": "5f0817f3-5386-4a29-9391-0529c5fcb98b",
+      "language": "ja",
+      "setCode": "SV8",
+      "displayName": "Super Electric Breaker",
+      "nativeName": "超電ブレイカー",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Super Electric Breaker",
+      "shopSetCode": "SV8"
+    },
+    "jp-paradise-dragona": {
+      "setId": "98a82354-b058-4bda-ad66-359a7bd7c36f",
+      "language": "ja",
+      "setCode": "SV7a",
+      "displayName": "Paradise Dragona",
+      "nativeName": "楽園ドラゴーナ",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Paradise Dragona",
+      "shopSetCode": "SV7a"
+    },
+    "jp-stellar-miracle": {
+      "setId": "f09d1e6a-c76e-4a2d-bb45-971e54983c2d",
+      "language": "ja",
+      "setCode": "SV7",
+      "displayName": "Stellar Miracle",
+      "nativeName": "ステラミラクル",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Stellar Miracle",
+      "shopSetCode": "sv7"
+    },
+    "jp-night-wanderer": {
+      "setId": "6e698306-d093-44e9-8673-cc513e36bd8d",
+      "language": "ja",
+      "setCode": "SV6a",
+      "displayName": "Night Wanderer",
+      "nativeName": "ナイトワンダラー",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Night Wanderer",
+      "shopSetCode": "sv6a"
+    },
+    "jp-mask-of-change": {
+      "setId": "5b61106a-7ae7-4ee6-90cc-c101fb8738b8",
+      "language": "ja",
+      "setCode": "SV6",
+      "displayName": "Transformation Mask",
+      "nativeName": "変幻の仮面",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Mask of Change",
+      "shopSetCode": "SV6"
+    },
+    "jp-crimson-haze": {
+      "setId": "5f94a6e3-99a2-4eba-b6c7-c689dd509da8",
+      "language": "ja",
+      "setCode": "SV5a",
+      "displayName": "Crimson Haze",
+      "nativeName": "クリムゾンヘイズ",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Crimson Haze",
+      "shopSetCode": "sv5a"
+    },
+    "jp-cyber-judge": {
+      "setId": "987716a9-9030-4dc8-89c2-db2bdf1a409d",
+      "language": "ja",
+      "setCode": "SV5M",
+      "displayName": "Cyber Judge",
+      "nativeName": "サイバージャッジ",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Cyber Judge",
+      "shopSetCode": "sv5M"
+    },
+    "jp-wild-force": {
+      "setId": "688851ac-3d75-4431-a008-664294279341",
+      "language": "ja",
+      "setCode": "SV5K",
+      "displayName": "Wild Force",
+      "nativeName": "ワイルドフォース",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Wild Force",
+      "shopSetCode": "SV5K"
+    },
+    "jp-future-flash": {
+      "setId": "344551fb-6b1b-418a-8b59-680096d4c9bf",
+      "language": "ja",
+      "setCode": "SV4M",
+      "displayName": "Future Flash",
+      "nativeName": "未来の一閃",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Future Flash",
+      "shopSetCode": "sv4M"
+    },
+    "jp-ancient-roar": {
+      "setId": "be25b6d3-a750-48a3-b8af-804ddc355452",
+      "language": "ja",
+      "setCode": "SV4K",
+      "displayName": "Ancient Roar",
+      "nativeName": "古代の咆哮",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Ancient Roar",
+      "shopSetCode": "SV4K"
+    },
+    "jp-shiny-treasure-ex-high-class": {
+      "setId": "9e539009-b72c-43e2-8f25-f183aa4bc4b7",
+      "language": "ja",
+      "setCode": "SV4a",
+      "displayName": "Shiny Treasure ex",
+      "nativeName": "シャイニートレジャーex",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Shiny Treasure ex High Class",
+      "shopSetCode": "SV4a"
+    },
+    "jp-raging-surf": {
+      "setId": "92afb596-5060-44b4-a53a-12d815e94f52",
+      "language": "ja",
+      "setCode": "SV3a",
+      "displayName": "Raging Surf",
+      "nativeName": "レイジングサーフ",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Raging Surf",
+      "shopSetCode": "SV3a"
+    },
+    "jp-ruler-of-the-black-flame": {
+      "setId": "d1ce7f2b-1f52-452e-9d90-0155bbfdb6e6",
+      "language": "ja",
+      "setCode": "SV3",
+      "displayName": "Ruler of the Black Flame",
+      "nativeName": "黒炎の支配者",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Ruler Of The Black Flame",
+      "shopSetCode": "SV3"
+    },
+    "jp-151": {
+      "setId": "e42556b8-3e82-44bb-8c52-c06b893ee4a3",
+      "language": "ja",
+      "setCode": "SV2a",
+      "displayName": "Pokémon Card 151",
+      "nativeName": "ポケモンカード151",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "151",
+      "shopSetCode": "SV2a"
+    },
+    "jp-snow-hazard": {
+      "setId": "a6a65a33-74fa-48d5-bdc0-38d6eaa08ef3",
+      "language": "ja",
+      "setCode": "SV2P",
+      "displayName": "Snow Hazard",
+      "nativeName": "スノーハザード",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Snow Hazard",
+      "shopSetCode": "sv2P"
+    },
+    "jp-clay-burst": {
+      "setId": "44906e0e-477b-4417-a71d-5330528d3d82",
+      "language": "ja",
+      "setCode": "SV2D",
+      "displayName": "Clay Burst",
+      "nativeName": "クレイバースト",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Clay Burst",
+      "shopSetCode": "sv2D"
+    },
+    "jp-triplet-beat": {
+      "setId": "ca01c7f7-c1b0-4a4a-8aa0-e2c0f617d306",
+      "language": "ja",
+      "setCode": "SV1a",
+      "displayName": "Triplet Beat",
+      "nativeName": "トリプレットビート",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Triplet Beat",
+      "shopSetCode": "sv1a"
+    },
+    "jp-violet-ex": {
+      "setId": "fffb3282-3442-41e4-b4a2-9be06199186f",
+      "language": "ja",
+      "setCode": "SV1V",
+      "displayName": "Violet ex",
+      "nativeName": "バイオレットex",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Violet ex",
+      "shopSetCode": "sv1V"
+    },
+    "jp-scarlet-ex": {
+      "setId": "cf6f4a09-69a3-4497-9c40-beb1221063ea",
+      "language": "ja",
+      "setCode": "SV1S",
+      "displayName": "Scarlet ex",
+      "nativeName": "スカーレットex",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Scarlet ex",
+      "shopSetCode": "SV1S"
+    },
+    "jp-vstar-universe-high-class": {
+      "setId": "d6a23ad9-7d3d-482c-a477-304584a335e3",
+      "language": "ja",
+      "setCode": "S12a",
+      "displayName": "VSTAR Universe",
+      "nativeName": "VSTARユニバース",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "VSTAR Universe High Class",
+      "shopSetCode": "S12a"
+    },
+    "jp-paradigm-trigger": {
+      "setId": "7f99a1ea-2a6b-4cdc-8ac5-c484716d164b",
+      "language": "ja",
+      "setCode": "S12",
+      "displayName": "Paradigm Trigger",
+      "nativeName": "パラダイムトリガー",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Paradigm Trigger",
+      "shopSetCode": "S12"
+    },
+    "jp-incandescent-arcana": {
+      "setId": "1d7afdcf-03bc-4e5e-a213-4b0439924ee9",
+      "language": "ja",
+      "setCode": "S11a",
+      "displayName": "Incandescent Arcana",
+      "nativeName": "白熱のアルカナ",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Incandescent Arcana",
+      "shopSetCode": "s11a"
+    },
+    "jp-lost-abyss": {
+      "setId": "18813c1f-2394-468e-91d4-7a81cf6fb201",
+      "language": "ja",
+      "setCode": "S11",
+      "displayName": "Lost Abyss",
+      "nativeName": "ロストアビス",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Lost Abyss",
+      "shopSetCode": "s11"
+    },
+    "jp-space-juggler": {
+      "setId": "50caa26f-e963-4122-a83b-3399c3eea056",
+      "language": "ja",
+      "setCode": "S10P",
+      "displayName": "Space Juggler",
+      "nativeName": "スペースジャグラー",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Space Juggler",
+      "shopSetCode": "s10P"
+    },
+    "jp-time-gazer": {
+      "setId": "50fc7442-25ac-4bfc-851b-7e7bf9b30c2d",
+      "language": "ja",
+      "setCode": "S10D",
+      "displayName": "Time Gazer",
+      "nativeName": "タイムゲイザー",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Time Gazer",
+      "shopSetCode": "s10D"
+    },
+    "jp-go": {
+      "setId": "baeee2c6-c600-422d-a4b2-6d84ac4baaba",
+      "language": "ja",
+      "setCode": "S10b",
+      "displayName": "Pokémon GO",
+      "nativeName": "Pokémon GO",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "GO",
+      "shopSetCode": "s10b"
+    },
+    "jp-battle-region": {
+      "setId": "52d75bb6-e7a0-42a5-a847-923254ac906c",
+      "language": "ja",
+      "setCode": "S9a",
+      "displayName": "Battle Region",
+      "nativeName": "バトルリージョン",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Battle Region",
+      "shopSetCode": "S9a"
+    },
+    "jp-star-birth": {
+      "setId": "43d798d9-3dbe-4997-a6eb-ed65af962403",
+      "language": "ja",
+      "setCode": "S9",
+      "displayName": "Star Birth",
+      "nativeName": "スターバース",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Star Birth",
+      "shopSetCode": "S9"
+    },
+    "jp-blue-sky-stream": {
+      "setId": "60a21d2e-cfa7-4103-ba7c-8e35f1b42070",
+      "language": "ja",
+      "setCode": "S7R",
+      "displayName": "Blue Sky Stream",
+      "nativeName": "蒼空ストリーム",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Blue Sky Stream",
+      "shopSetCode": "s7R"
+    },
+    "jp-towering-perfection": {
+      "setId": "ff823ecc-020f-4804-9194-3671ce9a1a81",
+      "language": "ja",
+      "setCode": "S7D",
+      "displayName": "Skyscraping Perfection",
+      "nativeName": "摩天パーフェクト",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Towering Perfection",
+      "shopSetCode": "s7D"
+    },
+    "jp-silver-lance": {
+      "setId": "60d3fc64-7e36-473b-ae5c-b071c5aa6c98",
+      "language": "ja",
+      "setCode": "S6H",
+      "displayName": "Silver Lance",
+      "nativeName": "白銀のランス",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Silver Lance",
+      "shopSetCode": "s6H"
+    },
+    "jp-eevee-heroes": {
+      "setId": "5659e6b4-48db-4a4c-8883-e26b64f2c41f",
+      "language": "ja",
+      "setCode": "S6a",
+      "displayName": "Eevee Heroes",
+      "nativeName": "イーブイヒーローズ",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Eevee Heroes",
+      "shopSetCode": "s6a"
+    },
+    "jp-rapid-strike-master": {
+      "setId": "d770730a-ab9c-4e53-acfa-aff8cbec8c0b",
+      "language": "ja",
+      "setCode": "S5R",
+      "displayName": "Rapid Strike Master",
+      "nativeName": "連撃マスター",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Rapid Strike Master",
+      "shopSetCode": "s5R"
+    },
+    "jp-matchless-fighters": {
+      "setId": "84bcceee-6caf-4ca9-b3d9-883b42773dfc",
+      "language": "ja",
+      "setCode": "S5a",
+      "displayName": "Peerless Fighters",
+      "nativeName": "双璧のファイター",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Matchless Fighters",
+      "shopSetCode": "s5a"
+    },
+    "jp-shiny-star-v-high-class": {
+      "setId": "9bd12a10-0bc3-4f75-ba74-d62c50293184",
+      "language": "ja",
+      "setCode": "S4a",
+      "displayName": "Shiny Star V",
+      "nativeName": "シャイニースターV",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Shiny Star V High Class",
+      "shopSetCode": "s4a"
+    },
+    "jp-infinity-zone": {
+      "setId": "fa32c0cb-7818-4123-ab6e-9f6cfe2a9950",
+      "language": "ja",
+      "setCode": "S3",
+      "displayName": "Infinity Zone",
+      "nativeName": "ムゲンゾーン",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Infinity Zone",
+      "shopSetCode": "s3"
+    },
+    "jp-explosive-flame-walker": {
+      "setId": "d64f8486-fa52-4f0d-be4d-be6dc27d1671",
+      "language": "ja",
+      "setCode": "S2a",
+      "displayName": "Explosive Walker",
+      "nativeName": "爆炎ウォーカー",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Explosive Flame Walker",
+      "shopSetCode": "s2a"
+    },
+    "jp-rebellion-crash": {
+      "setId": "50370e02-5cc9-44ce-95bd-44743d477934",
+      "language": "ja",
+      "setCode": "S2",
+      "displayName": "Rebellion Crash",
+      "nativeName": "反逆クラッシュ",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Rebellion Crash",
+      "shopSetCode": "s2"
+    },
+    "jp-vmax-rising": {
+      "setId": "41462e36-155b-40f1-92ee-29a94b4cb353",
+      "language": "ja",
+      "setCode": "S1a",
+      "displayName": "VMAX Rising",
+      "nativeName": "VMAXライジング",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "VMAX Rising",
+      "shopSetCode": "s1a"
+    },
+    "jp-sword": {
+      "setId": "5287277e-bcbe-4f21-b2d3-c7187bc752dc",
+      "language": "ja",
+      "setCode": "S1W",
+      "displayName": "Sword",
+      "nativeName": "ソード",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Sword",
+      "shopSetCode": "s1W"
+    },
+    "jp-tag-team-all-stars-gx": {
+      "setId": "fe68fe5a-4e40-477a-8bcc-0fa35ef392ef",
+      "language": "ja",
+      "setCode": "SM12a",
+      "displayName": "TAG TEAM GX: Tag All Stars",
+      "nativeName": "TAG TEAM GX タッグオールスターズ",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Tag Team All Stars GX",
+      "shopSetCode": "sm12a"
+    },
+    "jp-alter-genesis": {
+      "setId": "80ffb692-f29d-450a-95eb-a3ddd60257b8",
+      "language": "ja",
+      "setCode": "SM12",
+      "displayName": "Alter Genesis",
+      "nativeName": "オルタージェネシス",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Alter Genesis",
+      "shopSetCode": "sm12"
+    },
+    "jp-dream-league": {
+      "setId": "5249f6c6-8418-41fe-8283-af5948b26c63",
+      "language": "ja",
+      "setCode": "SM11b",
+      "displayName": "Dream League",
+      "nativeName": "ドリームリーグ",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Dream League",
+      "shopSetCode": "sm11b"
+    },
+    "jp-remix-bout": {
+      "setId": "54c662ed-8c6b-428c-b07d-1bb58e74f5a0",
+      "language": "ja",
+      "setCode": "SM11a",
+      "displayName": "Remix Bout",
+      "nativeName": "リミックスバウト",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Remix Bout",
+      "shopSetCode": "sm11a"
+    },
+    "jp-detective-pikachu-smp2": {
+      "setId": "59ec63a0-5a2a-452b-a03c-90d9264b90da",
+      "language": "ja",
+      "setCode": "SMP2",
+      "displayName": "Movie Special Pack Great Detective Pikachu",
+      "nativeName": "ムービースペシャルパック 名探偵ピカチュウ",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Detective Pikachu",
+      "shopSetCode": "SMP2"
+    },
+    "jp-sky-legend": {
+      "setId": "2e159940-3f5c-4ec9-8805-c53219263641",
+      "language": "ja",
+      "setCode": "SM10b",
+      "displayName": "Sky Legend",
+      "nativeName": "スカイレジェンド",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Sky Legend",
+      "shopSetCode": "sm10b"
+    },
+    "jp-full-metal-wall": {
+      "setId": "30e027c6-8973-4b8a-93b8-682251f39f28",
+      "language": "ja",
+      "setCode": "SM9b",
+      "displayName": "Full Metal Wall",
+      "nativeName": "フルメタルウォール",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Full Metal Wall",
+      "shopSetCode": "sm9b"
+    },
+    "jp-dark-order": {
+      "setId": "3466c5e7-e660-4467-a756-44f4d5f7a853",
+      "language": "ja",
+      "setCode": "SM8a",
+      "displayName": "Dark Order",
+      "nativeName": "ダークオーダー",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Dark Order",
+      "shopSetCode": "sm8a"
+    },
+    "jp-super-burst-impact": {
+      "setId": "3e80bfaf-77fd-4f5d-82ec-4e407a74d722",
+      "language": "ja",
+      "setCode": "SM8",
+      "displayName": "Super-Burst Impact",
+      "nativeName": "超爆インパクト",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Super Burst Impact",
+      "shopSetCode": "sm8"
+    },
+    "jp-fairy-rise": {
+      "setId": "f34565be-80cb-47cb-914b-b4c20984cf79",
+      "language": "ja",
+      "setCode": "SM7b",
+      "displayName": "Fairy Rise",
+      "nativeName": "フェアリーライズ",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Fairy Rise",
+      "shopSetCode": "sm7b"
+    },
+    "jp-thunderclap-spark": {
+      "setId": "728a72e3-7bf2-4436-8ea1-92b54a8d38f6",
+      "language": "ja",
+      "setCode": "SM7a",
+      "displayName": "Thunderclap Spark",
+      "nativeName": "迅雷スパーク",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Thunderclap Spark",
+      "shopSetCode": "sm7a"
+    },
+    "jp-forbidden-light": {
+      "setId": "04fe9fe1-7206-4215-b9ab-ccea25916593",
+      "language": "ja",
+      "setCode": "SM6",
+      "displayName": "Forbidden Light",
+      "nativeName": "禁断の光",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Forbidden Light",
+      "shopSetCode": "sm6"
+    },
+    "jp-ultra-force": {
+      "setId": "759e4007-8afe-41e1-9a61-68adb0a05c00",
+      "language": "ja",
+      "setCode": "SM5+",
+      "displayName": "Ultra Force",
+      "nativeName": "ウルトラフォース",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Ultra Force",
+      "shopSetCode": "SM5+"
+    },
+    "cn-stellar-crystal": {
+      "setId": "2034da87-a87d-40e9-a8f2-85ca06fb8b5f",
+      "language": "zh-cn",
+      "setCode": "csv9c",
+      "displayName": "Stellar Crystal",
+      "nativeName": "星彩晶璃",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Stellar Crystal",
+      "shopSetCode": "CSV9C"
+    },
+    "cn-gem-pack-vol-5": {
+      "setId": "67ae722c-a017-4446-a14e-50d70df1f98d",
+      "language": "zh-cn",
+      "setCode": "cbb5c",
+      "displayName": "Gem Pack Vol. 5",
+      "nativeName": "宝石包VOL.5",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Gem Pack Vol. 5",
+      "shopSetCode": "CBB5C"
+    },
+    "cn-brilliant-illusions": {
+      "setId": "488ef846-c6f3-42e6-8fc1-7bf2928b2bcf",
+      "language": "zh-cn",
+      "setCode": "csv8c",
+      "displayName": "Sparkling Fable",
+      "nativeName": "璀璨诡幻",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Brilliant Illusions",
+      "shopSetCode": "CSV8C"
+    },
+    "cn-gem-pack-vol-4": {
+      "setId": "ceddde89-0705-4372-95f2-88c20b89fddd",
+      "language": "zh-cn",
+      "setCode": "cbb4c",
+      "displayName": "Gem Pack Vol. 4",
+      "nativeName": "宝石包VOL.4",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Gem Pack Vol. 4",
+      "shopSetCode": "CBB4C"
+    },
+    "cn-blade-awakening": {
+      "setId": "1f37ca26-f79b-47b6-9ba8-87f6c14b03fa",
+      "language": "zh-cn",
+      "setCode": "csv7c",
+      "displayName": "Blade Awakening",
+      "nativeName": "利刃猛醒",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Blade Awakening",
+      "shopSetCode": "CSV7C"
+    },
+    "cn-paradox-veil": {
+      "setId": "b921de8d-c127-44c4-825b-bac5dd7e5661",
+      "language": "zh-cn",
+      "setCode": "csv6c",
+      "displayName": "Arcane Truth",
+      "nativeName": "真实玄虚",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Paradox Veil",
+      "shopSetCode": "CSV6C"
+    },
+    "cn-black-crystal-blaze": {
+      "setId": "9cc48fa9-3a36-4069-b58a-3f29854cca74",
+      "language": "zh-cn",
+      "setCode": "csv5c",
+      "displayName": "Ardent Obsidian",
+      "nativeName": "黑晶炽诚",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Black Crystal Blaze",
+      "shopSetCode": "CSV5C"
+    },
+    "cn-fearless-terastal": {
+      "setId": "1170881a-cba2-4979-acc8-e705d80b9894",
+      "language": "zh-cn",
+      "setCode": "csv3c",
+      "displayName": "Fearless Terastal",
+      "nativeName": "无畏太晶",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Fearless Terastal",
+      "shopSetCode": "CSV3C"
+    },
+    "cn-eternal-beginnings": {
+      "setId": "31225f01-ead5-4e8d-83f8-c06978e706da",
+      "language": "zh-cn",
+      "setCode": "csv1c",
+      "displayName": "Ancient Times, Future Progress",
+      "nativeName": "亘古开来",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Eternal Beginnings",
+      "shopSetCode": "CSV1C"
+    },
+    "cn-shadow-of-the-blue-sea-giratina": {
+      "setId": "3c74abe8-5236-4c84-ae5b-5a5f367b63d4",
+      "language": "zh-cn",
+      "setCode": "cs6bc",
+      "displayName": "Marine Shadow: Banish",
+      "nativeName": "碧海暗影 逐",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Shadow Of The Blue Sea Giratina",
+      "shopSetCode": "CS6BC"
+    },
+    "cn-shadow-of-the-blue-sea-lugia": {
+      "setId": "786678a0-e593-4205-b391-b392f1e71592",
+      "language": "zh-cn",
+      "setCode": "cs6ac",
+      "displayName": "Marine Shadow: Roar",
+      "nativeName": "碧海暗影 啸",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Shadow Of The Blue Sea Lugia",
+      "shopSetCode": "CS6AC"
+    },
+    "cn-shadow-of-glory": {
+      "setId": "44f0abf2-b693-4d4f-8587-18106f976a3d",
+      "language": "zh-cn",
+      "setCode": "cs5.5c",
+      "displayName": "Overshadowed Radiance",
+      "nativeName": "暗影夺辉",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Shadow of Glory",
+      "shopSetCode": "CS5.5C"
+    },
+    "cn-brave-stars-lucario": {
+      "setId": "a952240f-194f-45a1-bd38-e8f5827c1200",
+      "language": "zh-cn",
+      "setCode": "cs5bc",
+      "displayName": "Gallant Galaxy: Brave",
+      "nativeName": "勇魅群星 勇",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Brave Stars Lucario",
+      "shopSetCode": "CS5BC"
+    },
+    "cn-brave-stars-typhlosion": {
+      "setId": "92ffa013-edb7-4c49-8ed1-c50f0162d41d",
+      "language": "zh-cn",
+      "setCode": "cs5ac",
+      "displayName": "Gallant Galaxy: Charm",
+      "nativeName": "勇魅群星 魅",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Brave Stars Typhlosion",
+      "shopSetCode": "CS5AC"
+    },
+    "cn-final-flame-dance": {
+      "setId": "cd9dbc9a-2f9b-46af-b94a-faaeeb026395",
+      "language": "zh-cn",
+      "setCode": "cs4.5c",
+      "displayName": "Flame Dance of the End",
+      "nativeName": "终末炎舞",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Final Flame Dance",
+      "shopSetCode": "CS4.5C"
+    },
+    "cn-nine-colors-gathering-eevee-heroes": {
+      "setId": "210bbf2d-5f63-4e1b-8af0-a2e093c53746",
+      "language": "zh-cn",
+      "setCode": "cs4ac",
+      "displayName": "Polychromatic Gathering: Friends",
+      "nativeName": "九彩汇聚 朋",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Nine Colors Gathering Eevee Heroes",
+      "shopSetCode": "CS4AC"
+    },
+    "cn-nine-colors-gathering-mew": {
+      "setId": "7846702c-18c4-4d74-9ac1-2932017fa467",
+      "language": "zh-cn",
+      "setCode": "cs4bc",
+      "displayName": "Polychromatic Gathering: Origin",
+      "nativeName": "九彩汇聚 源",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Nine Colors Gathering Mew",
+      "shopSetCode": "CS4BC"
+    },
+    "cn-primordial-arts-blastoise": {
+      "setId": "f9223984-d0cf-445e-9d9f-7d447855a904",
+      "language": "zh-cn",
+      "setCode": "cs3bc",
+      "displayName": "Primordial Arts: Torrent",
+      "nativeName": "洪荒演武 激",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Primordial Arts Blastoise",
+      "shopSetCode": "CS3BC"
+    },
+    "cn-primordial-arts-venusaur": {
+      "setId": "42e798dd-f171-4f0b-916e-2386fd2a353f",
+      "language": "zh-cn",
+      "setCode": "cs3ac",
+      "displayName": "Primordial Arts: Overgrow",
+      "nativeName": "洪荒演武 茂",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Primordial Arts Venusaur",
+      "shopSetCode": "CS3AC"
+    },
+    "cn-brilliant-counterattack": {
+      "setId": "ad94757c-4ad8-43a2-848b-3ac6dd4ca89d",
+      "language": "zh-cn",
+      "setCode": "cs2.5c",
+      "displayName": "Brilliant Counterattack",
+      "nativeName": "璀璨反击",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Brilliant Counterattack",
+      "shopSetCode": "CS2.5C"
+    },
+    "cn-vivid-portrayals-charizard": {
+      "setId": "96cbe78b-6461-4875-a678-c2fc65b0d756",
+      "language": "zh-cn",
+      "setCode": "cs2ac",
+      "displayName": "Vivid Portrayals: Obsidian",
+      "nativeName": "浓墨重彩 黎",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Vivid Portrayals Charizard",
+      "shopSetCode": "CS2AC"
+    },
+    "cn-extreme-attack-defence": {
+      "setId": "8fa6e9bb-57f0-41d9-a4dd-611af3e1daf8",
+      "language": "zh-cn",
+      "setCode": "cs1.5c",
+      "displayName": "Dynamax Tactics",
+      "nativeName": "极巨攻防",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Extreme Attack & Defence",
+      "shopSetCode": "CS1.5C"
+    },
+    "cn-dynamax-clash": {
+      "setId": "01859240-c3d3-4074-832f-782f61c4fcb6",
+      "language": "zh-cn",
+      "setCode": "cs1bc",
+      "displayName": "Dynamax Clash: Flame",
+      "nativeName": "极巨争锋 焰",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Dynamax Clash",
+      "shopSetCode": "CS1BC"
+    },
+    "cn-shine-together-csm2c-c": {
+      "setId": "a31177e5-6f44-4236-8d84-b8afaecd825f",
+      "language": "zh-cn",
+      "setCode": "csm2cc",
+      "displayName": "Shining Synergy: Summon",
+      "nativeName": "交相辉映 唤",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Shine Together csm2c C",
+      "shopSetCode": "CSM2CC"
+    },
+    "cn-shine-together-csm2b-c": {
+      "setId": "1c9493a2-e579-4007-89f2-c72fdc66a2d9",
+      "language": "zh-cn",
+      "setCode": "csm2bc",
+      "displayName": "Shining Synergy: Supreme",
+      "nativeName": "交相辉映 魁",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Shine Together csm2b C",
+      "shopSetCode": "CSM2BC"
+    },
+    "cn-battle-elite-csm1-5-c": {
+      "setId": "06c44056-4885-486e-a343-d7069742a403",
+      "language": "zh-cn",
+      "setCode": "csm1.5c",
+      "displayName": "Battle Elite",
+      "nativeName": "对战精英",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Battle Elite csm1.5 C",
+      "shopSetCode": "CSM1.5C"
+    },
+    "cn-storming-emergence-csm1c-c": {
+      "setId": "195b9d09-dd64-4e41-9b7d-0c9fb7f2062c",
+      "language": "zh-cn",
+      "setCode": "csm1cc",
+      "displayName": "Storming Emergence: Abundant",
+      "nativeName": "横空出世 泽",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Storming Emergence csm1c C",
+      "shopSetCode": "CSM1CC"
+    },
+    "cn-storming-emergence-csm1b-c": {
+      "setId": "64e14d7e-e9f0-49d1-9e43-f79eafc02f53",
+      "language": "zh-cn",
+      "setCode": "csm1bc",
+      "displayName": "Storming Emergence: Verdant",
+      "nativeName": "横空出世 苍",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Storming Emergence csm1b C",
+      "shopSetCode": "CSM1BC"
+    },
+    "ko-mask-of-change": {
+      "setId": "d71a741c-669f-47cb-b57e-f0e443d7b1c6",
+      "language": "ko",
+      "setCode": "SV6",
+      "displayName": "변환의 가면",
+      "nativeName": "변환의 가면",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Mask of Change",
+      "shopSetCode": "sv6"
+    },
+    "ko-cyber-judge": {
+      "setId": "f0f6e2f4-0149-43dd-b911-1e2d02d198a2",
+      "language": "ko",
+      "setCode": "SV5M",
+      "displayName": "사이버저지",
+      "nativeName": "사이버저지",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Cyber Judge",
+      "shopSetCode": "sv5M"
+    },
+    "ko-shiny-treasure-ex": {
+      "setId": "01612af8-b359-46c0-a026-f085be73d33f",
+      "language": "ko",
+      "setCode": "SV4a",
+      "displayName": "샤이니트레저 ex",
+      "nativeName": "샤이니트레저 ex",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Shiny Treasure ex",
+      "shopSetCode": "sv4a"
+    },
+    "ko-151": {
+      "setId": "c5c680dc-6c74-47a0-a0b1-c3bfdad05628",
+      "language": "ko",
+      "setCode": "SV2a",
+      "displayName": "포켓몬 카드 151",
+      "nativeName": "포켓몬 카드 151",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "151",
+      "shopSetCode": "sv2a"
+    },
+    "ko-clay-burst": {
+      "setId": "89931a3e-7397-446e-8eec-3fc413f48c22",
+      "language": "ko",
+      "setCode": "SV2D",
+      "displayName": "클레이버스트",
+      "nativeName": "클레이버스트",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Clay Burst",
+      "shopSetCode": "sv2D"
+    },
+    "ko-lost-abyss": {
+      "setId": "9af84642-1702-4c14-a462-8b94a4efe9af",
+      "language": "ko",
+      "setCode": "S11",
+      "displayName": "트리플렛비트",
+      "nativeName": "트리플렛비트",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Lost Abyss",
+      "shopSetCode": "s11"
+    },
+    "ko-go": {
+      "setId": "1481d746-5dec-4f87-93a9-3e9a5ef5ae07",
+      "language": "ko",
+      "setCode": "S10b",
+      "displayName": "Pokémon GO",
+      "nativeName": "Pokémon GO",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "GO",
+      "shopSetCode": "s10b"
+    },
+    "ko-star-birth": {
+      "setId": "0242ed49-1d30-425b-9d98-a35a33d21c6e",
+      "language": "ko",
+      "setCode": "S9",
+      "displayName": "스타버스",
+      "nativeName": "스타버스",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Star Birth",
+      "shopSetCode": "s9"
+    },
+    "ko-vmax-climax": {
+      "setId": "b2cd67dc-4698-4437-9709-0811944fa47b",
+      "language": "ko",
+      "setCode": "S8b",
+      "displayName": "VMAX 클라이맥스",
+      "nativeName": "VMAX 클라이맥스",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "VMAX Climax",
+      "shopSetCode": "s8b"
+    },
+    "ko-25th-anniversary-collection": {
+      "setId": "fc3050ab-f999-48fe-ad93-6ab87d75d3df",
+      "language": "ko",
+      "setCode": "S8a",
+      "displayName": "25th Anniversary",
+      "nativeName": "25th Anniversary",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "25th Anniversary Collection",
+      "shopSetCode": "s8a"
+    },
+    "ko-fusion-arts": {
+      "setId": "abbba736-ff55-4feb-bc30-737ad431e169",
+      "language": "ko",
+      "setCode": "S8",
+      "displayName": "퓨전아츠",
+      "nativeName": "퓨전아츠",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Fusion Arts",
+      "shopSetCode": "s8"
+    },
+    "ko-blue-sky-stream": {
+      "setId": "7cc1dd36-879d-4d58-95c2-22ded590c845",
+      "language": "ko",
+      "setCode": "S7R",
+      "displayName": "창공의스트림",
+      "nativeName": "창공의스트림",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Blue Sky Stream",
+      "shopSetCode": "s7R"
+    },
+    "ko-eevee-heroes": {
+      "setId": "a2205adf-ee26-400a-88a5-3c027af4cc8f",
+      "language": "ko",
+      "setCode": "S6a",
+      "displayName": "이브이 히어로즈",
+      "nativeName": "이브이 히어로즈",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Eevee Heroes",
+      "shopSetCode": "s6a"
+    },
+    "scarlet-violet": {
+      "setId": "23addc10-7c42-4f3d-aa94-21a2a6ec6011",
+      "language": "en",
+      "setCode": "sv01",
+      "displayName": "Scarlet & Violet",
+      "nativeName": "Scarlet & Violet",
+      "matchMethod": "exact_language_and_full_set_name",
+      "shopSetName": "Scarlet & Violet",
+      "shopSetCode": "sv1"
+    },
+    "astral-radiance": {
+      "setId": "819d7be8-9fa9-4f20-975c-9328a7ffbd9c",
+      "language": "en",
+      "setCode": "swsh10",
+      "displayName": "Astral Radiance",
+      "nativeName": "Astral Radiance",
+      "matchMethod": "exact_language_and_set_code",
+      "shopSetName": "Astral Radiance",
+      "shopSetCode": "swsh10"
+    },
+    "shrouded-fable": {
+      "setId": "10cc2b5d-b4e5-4c68-841b-b02b7cc4f06e",
+      "language": "en",
+      "setCode": "sv06.5",
+      "displayName": "Shrouded Fable",
+      "nativeName": "Shrouded Fable",
+      "matchMethod": "exact_language_and_full_set_name",
+      "shopSetName": "Shrouded Fable",
+      "shopSetCode": "sv6pt5"
+    },
+    "delta-reign": {
+      "setId": "a1bde625-6996-5451-bcda-fb80fe5b428b",
+      "language": "en",
+      "setCode": "DLR",
+      "displayName": "Delta Reign",
+      "nativeName": "Delta Reign",
+      "matchMethod": "reviewed_exact_canonical_set_and_language",
+      "shopSetName": "Delta Reign",
+      "shopSetCode": "ME06",
+      "binderReady": true
+    }
+  },
+  "unmatched": [
+    {
+      "key": "ko-black-bolt",
+      "language": "ko",
+      "setName": "Black Bolt",
+      "setCode": "sv11B",
+      "candidateIds": [],
+      "reason": "no_exact_match"
+    },
+    {
+      "key": "ko-white-flare",
+      "language": "ko",
+      "setName": "White Flare",
+      "setCode": "sv11W",
+      "candidateIds": [],
+      "reason": "no_exact_match"
+    },
+    {
+      "key": "cn-gem-pack-vol-6",
+      "language": "zh-cn",
+      "setName": "Gem Pack Vol. 6",
+      "setCode": "CBB6C",
+      "candidateIds": [],
+      "reason": "no_exact_match"
+    },
+    {
+      "key": "cn-collect-151-gathering-151-c",
+      "language": "zh-cn",
+      "setName": "Collect 151 Gathering 151 C",
+      "setCode": "151C4",
+      "candidateIds": [],
+      "reason": "no_exact_match"
+    },
+    {
+      "key": "cn-collect-151-surprise-151-c",
+      "language": "zh-cn",
+      "setName": "Collect 151 Surprise 151 C",
+      "setCode": "151C3",
+      "candidateIds": [],
+      "reason": "no_exact_match"
+    },
+    {
+      "key": "cn-collect-151-hope-151-c",
+      "language": "zh-cn",
+      "setName": "Collect 151 Hope 151 C",
+      "setCode": "151C2",
+      "candidateIds": [],
+      "reason": "no_exact_match"
+    },
+    {
+      "key": "cn-collect-151-journey-151-c",
+      "language": "zh-cn",
+      "setName": "Collect 151 Journey 151 C",
+      "setCode": "151C1",
+      "candidateIds": [],
+      "reason": "no_exact_match"
+    },
+    {
+      "key": "ko-30th-celebration",
+      "language": "ko",
+      "setName": "30th Celebration",
+      "setCode": "m6a",
+      "candidateIds": [],
+      "reason": "no_exact_match"
+    },
+    {
+      "key": "ko-storm-emeralda",
+      "language": "ko",
+      "setName": "Storm Emeralda",
+      "setCode": "m6",
+      "candidateIds": [],
+      "reason": "no_exact_match"
+    },
+    {
+      "key": "ko-abyss-eye",
+      "language": "ko",
+      "setName": "Abyss Eye",
+      "setCode": "m5",
+      "candidateIds": [],
+      "reason": "no_exact_match"
+    },
+    {
+      "key": "ko-ninja-spinner",
+      "language": "ko",
+      "setName": "Ninja Spinner",
+      "setCode": "m4",
+      "candidateIds": [],
+      "reason": "no_exact_match"
+    },
+    {
+      "key": "ko-mega-dream-ex-high-class",
+      "language": "ko",
+      "setName": "Mega Dream ex High Class",
+      "setCode": "m2a",
+      "candidateIds": [],
+      "reason": "no_exact_match"
+    },
+    {
+      "key": "ko-inferno-x",
+      "language": "ko",
+      "setName": "Inferno X",
+      "setCode": "m2",
+      "candidateIds": [],
+      "reason": "no_exact_match"
+    },
+    {
+      "key": "ko-mega-symphonia",
+      "language": "ko",
+      "setName": "Mega Symphonia",
+      "setCode": "m1S",
+      "candidateIds": [],
+      "reason": "no_exact_match"
+    },
+    {
+      "key": "ko-mega-brave",
+      "language": "ko",
+      "setName": "Mega Brave",
+      "setCode": "m1L",
+      "candidateIds": [],
+      "reason": "no_exact_match"
+    },
+    {
+      "key": "ko-glory-of-team-rocket",
+      "language": "ko",
+      "setName": "Glory of Team Rocket",
+      "setCode": "sv10",
+      "candidateIds": [],
+      "reason": "no_exact_match"
+    },
+    {
+      "key": "ko-heatwave-arena",
+      "language": "ko",
+      "setName": "Heatwave Arena",
+      "setCode": "sv9a",
+      "candidateIds": [],
+      "reason": "no_exact_match"
+    },
+    {
+      "key": "ko-battle-partners",
+      "language": "ko",
+      "setName": "Battle Partners",
+      "setCode": "sv9",
+      "candidateIds": [],
+      "reason": "no_exact_match"
+    },
+    {
+      "key": "ko-eeveelutions-terastal-festival-ex-high-class",
+      "language": "ko",
+      "setName": "Eeveelutions Terastal Festival ex High Class",
+      "setCode": "sv8a",
+      "candidateIds": [],
+      "reason": "no_exact_match"
+    },
+    {
+      "key": "ko-super-electric-breaker",
+      "language": "ko",
+      "setName": "Super Electric Breaker",
+      "setCode": "sv8",
+      "candidateIds": [],
+      "reason": "no_exact_match"
+    },
+    {
+      "key": "cn-30th-celebration",
+      "language": "zh-cn",
+      "setName": "30th Celebration",
+      "setCode": "30THC",
+      "candidateIds": [],
+      "reason": "no_exact_match"
+    },
+    {
+      "key": "cn-gem-pack-vol-7",
+      "language": "zh-cn",
+      "setName": "Gem Pack Vol. 7",
+      "setCode": "CBB7C",
+      "candidateIds": [],
+      "reason": "no_exact_match"
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "repository": "tberridge86/Stackr",
+  "sourceCommit": "665523719b1d637ec4c06fbcbfd209e565a4a01f",
+  "assets": [
+    {
+      "repositoryPath": "assets/loading/card.png",
+      "blobSha": "c1ca7cb505d58c736a8017785d8ac20973c2f6bc",
+      "originalFile": "originals/loading/card.png",
+      "originalSha256": "0c43bb2f0f3b7d12d05ff4c6959d1f84823bfea83bfbf7f8a11dcd0621edd1f8",
+      "originalBytes": 17554,
+      "originalSize": [
+        306,
+        426
+      ],
+      "file": "stackr-loading-card.webp",
+      "sha256": "4bf143653e32749bbc47eca45744f904b6c737689a3dceea8ef9b39e2ca188bd",
+      "width": 184,
+      "height": 256,
+      "bytes": 5744,
+      "processing": "Contained resize with alpha preserved; lossless WebP, no crop or redrawing."
+    },
+    {
+      "repositoryPath": "assets/loading/sleeve.png",
+      "blobSha": "1bedadebcabbc6e00084a163423b9645b940c3c0",
+      "originalFile": "originals/loading/sleeve.png",
+      "originalSha256": "ecaa9be55e3631233e6e768d527b1718e78b476303c08d2e4f9d65744eed0aa2",
+      "originalBytes": 21902,
+      "originalSize": [
+        336,
+        456
+      ],
+      "file": "stackr-loading-sleeve.webp",
+      "sha256": "01a9626edd43ccf0de6fd40f3c0b7ac7a262153b3124e51c83fb90d72ff17ed3",
+      "width": 189,
+      "height": 256,
+      "bytes": 22388,
+      "processing": "Contained resize with alpha preserved; lossless WebP, no crop or redrawing."
+    },
+    {
+      "repositoryPath": "assets/loading/loader.png",
+      "blobSha": "0083966165e1329b13f442b32a4f71096cbbf051",
+      "originalFile": "originals/loading/loader.png",
+      "originalSha256": "32045b2bb6c8130cf9194b834b01afcc2f5d3b37103456fcbddea57b873f0500",
+      "originalBytes": 36067,
+      "originalSize": [
+        390,
+        516
+      ],
+      "file": "stackr-loading-loader.webp",
+      "sha256": "914644b0aed8d3ce288418a139788a206e4e9a71916194dfd3a5a57766a93ede",
+      "width": 192,
+      "height": 254,
+      "bytes": 20254,
+      "processing": "Contained resize with alpha preserved; lossless WebP, no crop or redrawing."
+    },
+    {
+      "repositoryPath": "assets/loading/sheen.png",
+      "blobSha": "864e3a429be02982a01e77e5aa91075757775331",
+      "originalFile": "originals/loading/sheen.png",
+      "originalSha256": "471c082ff70891db1d7f7dabad29af40bd9fa3668b796a252ce4c686186f2b53",
+      "originalBytes": 2947,
+      "originalSize": [
+        66,
+        438
+      ],
+      "file": "stackr-loading-sheen.webp",
+      "sha256": "3e356be4f03974d2c8dc09c050e1a14626d823e06ff7f0eaada2460143a1f08f",
+      "width": 39,
+      "height": 256,
+      "bytes": 1428,
+      "processing": "Contained resize with alpha preserved; lossless WebP, no crop or redrawing."
+    },
+    {
+      "repositoryPath": "assets/rev2/01-brand/logos/stackr-letter-s.png",
+      "blobSha": "c11a4d9a2e271a531821e700c2fd3fc30ddccdf4",
+      "originalFile": "originals/loading/stackr-letter-s.png",
+      "originalSha256": "d7a21a4fa43b7c16a8e6b0cbe41f6ab2f9802a52b16497e1b907637e6f1235d4",
+      "originalBytes": 321966,
+      "originalSize": [
+        1254,
+        1254
+      ],
+      "file": "stackr-loading-letter.webp",
+      "sha256": "3ae2deec17a5848f41c8e567891e27b4edc6ca5a13ed31b82df0f5efe9a76e82",
+      "width": 96,
+      "height": 96,
+      "bytes": 3024,
+      "processing": "Contained resize with alpha preserved; lossless WebP, no crop or redrawing."
+    }
+  ]
+}

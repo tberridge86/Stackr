@@ -1,0 +1,4684 @@
+{
+  "verifiedAt": "2026-11-01T12:59:10.633Z",
+  "products": {
+    "asc-etb": {
+      "edition": "Standard English Elite Trainer Box",
+      "source": "https://www.pokemon.com/us/pokemon-tcg/product-gallery/mega-evolution-ascended-heroes-elite-trainer-box",
+      "photo": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010315101_2_2448174a-d748-492f-9001-df4dca322a2a.jpg?v=1776006810",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 9,
+          "label": "Booster packs",
+          "detail": "From this expansion"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Full-art foil promo",
+          "detail": "N’s Zekrom"
+        },
+        {
+          "kind": "sleeves",
+          "quantity": 65,
+          "label": "Card sleeves",
+          "detail": "Protect your cards"
+        },
+        {
+          "kind": "energy",
+          "quantity": 40,
+          "label": "Energy cards",
+          "detail": "Pokémon TCG"
+        },
+        {
+          "kind": "dice",
+          "quantity": 6,
+          "label": "Damage-counter dice",
+          "detail": "Plus 1 competition-legal coin-flip die"
+        },
+        {
+          "kind": "coin",
+          "quantity": 1,
+          "label": "Plastic coin",
+          "detail": "Included accessory"
+        },
+        {
+          "kind": "box",
+          "quantity": 1,
+          "label": "Collector’s box",
+          "detail": "6 dividers"
+        },
+        {
+          "kind": "guide",
+          "quantity": 1,
+          "label": "Player’s guide",
+          "detail": "For this expansion"
+        },
+        {
+          "kind": "code",
+          "quantity": 1,
+          "label": "Code card",
+          "detail": "Pokémon TCG Live"
+        }
+      ],
+      "photoSha256": "14314e55b7e711edcffb4ada54938ab2bb8af900eb9202d2b1dca3eb9b2ec56c"
+    },
+    "black-etb": {
+      "edition": "Standard English Elite Trainer Box",
+      "source": "https://www.pokemon.com/us/pokemon-tcg/product-gallery/scarlet-violet-black-bolt-elite-trainer-box-scarlet-violet-white-flare-elite-trainer-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 9,
+          "label": "Booster packs",
+          "detail": "From this expansion"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Full-art foil promo",
+          "detail": "Thundurus"
+        },
+        {
+          "kind": "sleeves",
+          "quantity": 65,
+          "label": "Card sleeves",
+          "detail": "Protect your cards"
+        },
+        {
+          "kind": "energy",
+          "quantity": 45,
+          "label": "Energy cards",
+          "detail": "Pokémon TCG"
+        },
+        {
+          "kind": "dice",
+          "quantity": 6,
+          "label": "Damage-counter dice",
+          "detail": "Plus 1 competition-legal coin-flip die"
+        },
+        {
+          "kind": "markers",
+          "quantity": 2,
+          "label": "Condition markers",
+          "detail": "Plastic markers"
+        },
+        {
+          "kind": "box",
+          "quantity": 1,
+          "label": "Collector’s box",
+          "detail": "4 dividers"
+        },
+        {
+          "kind": "guide",
+          "quantity": 1,
+          "label": "Player’s guide",
+          "detail": "For this expansion"
+        },
+        {
+          "kind": "code",
+          "quantity": 1,
+          "label": "Code card",
+          "detail": "Pokémon TCG Live"
+        }
+      ],
+      "photo": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010037112_4.jpg?v=1776173075",
+      "photoSha256": "98d3b8b1af0b5d2eb3f210d55c8bebe68718eb0e29d10c13d94bb7b0e045f7ec"
+    },
+    "white-etb": {
+      "edition": "Standard English Elite Trainer Box",
+      "source": "https://www.pokemon.com/us/pokemon-tcg/product-gallery/scarlet-violet-black-bolt-elite-trainer-box-scarlet-violet-white-flare-elite-trainer-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 9,
+          "label": "Booster packs",
+          "detail": "From this expansion"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Full-art foil promo",
+          "detail": "Tornadus"
+        },
+        {
+          "kind": "sleeves",
+          "quantity": 65,
+          "label": "Card sleeves",
+          "detail": "Protect your cards"
+        },
+        {
+          "kind": "energy",
+          "quantity": 45,
+          "label": "Energy cards",
+          "detail": "Pokémon TCG"
+        },
+        {
+          "kind": "dice",
+          "quantity": 6,
+          "label": "Damage-counter dice",
+          "detail": "Plus 1 competition-legal coin-flip die"
+        },
+        {
+          "kind": "markers",
+          "quantity": 2,
+          "label": "Condition markers",
+          "detail": "Plastic markers"
+        },
+        {
+          "kind": "box",
+          "quantity": 1,
+          "label": "Collector’s box",
+          "detail": "4 dividers"
+        },
+        {
+          "kind": "guide",
+          "quantity": 1,
+          "label": "Player’s guide",
+          "detail": "For this expansion"
+        },
+        {
+          "kind": "code",
+          "quantity": 1,
+          "label": "Code card",
+          "detail": "Pokémon TCG Live"
+        }
+      ],
+      "photo": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010037107_4.jpg?v=1776006473",
+      "photoSha256": "4bbc5b752c8d6fbba4f6bd08aaed913a8b93c578b0e731f1d008d74020120879"
+    },
+    "prism-etb": {
+      "edition": "Standard English Elite Trainer Box",
+      "source": "https://www.pokemon.com/us/pokemon-tcg/product-gallery/scarlet-violet-prismatic-evolutions-elite-trainer-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 9,
+          "label": "Booster packs",
+          "detail": "From this expansion"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Full-art foil promo",
+          "detail": "Eevee"
+        },
+        {
+          "kind": "sleeves",
+          "quantity": 65,
+          "label": "Card sleeves",
+          "detail": "Protect your cards"
+        },
+        {
+          "kind": "energy",
+          "quantity": 45,
+          "label": "Energy cards",
+          "detail": "Pokémon TCG"
+        },
+        {
+          "kind": "dice",
+          "quantity": 6,
+          "label": "Damage-counter dice",
+          "detail": "Plus 1 competition-legal coin-flip die"
+        },
+        {
+          "kind": "markers",
+          "quantity": 2,
+          "label": "Condition markers",
+          "detail": "Plastic markers"
+        },
+        {
+          "kind": "box",
+          "quantity": 1,
+          "label": "Collector’s box",
+          "detail": "4 dividers"
+        },
+        {
+          "kind": "guide",
+          "quantity": 1,
+          "label": "Player’s guide",
+          "detail": "For this expansion"
+        },
+        {
+          "kind": "code",
+          "quantity": 1,
+          "label": "Code card",
+          "detail": "Pokémon TCG Live"
+        }
+      ],
+      "photo": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK10010013_4_370a6ff0-bd34-4faf-9307-d7ff1a2e4e84.jpg?v=1776006258",
+      "photoSha256": "be7a4c24d47b50106d7b6f55e81cd67f5608307f522914fe30e3a0441ce99393"
+    },
+    "journey-etb": {
+      "edition": "Standard English Elite Trainer Box",
+      "source": "https://www.pokemon.com/us/pokemon-tcg/product-gallery/scarlet-violet-journey-together-elite-trainer-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 9,
+          "label": "Booster packs",
+          "detail": "From this expansion"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Full-art foil promo",
+          "detail": "N’s Zorua"
+        },
+        {
+          "kind": "sleeves",
+          "quantity": 65,
+          "label": "Card sleeves",
+          "detail": "Protect your cards"
+        },
+        {
+          "kind": "energy",
+          "quantity": 45,
+          "label": "Energy cards",
+          "detail": "Pokémon TCG"
+        },
+        {
+          "kind": "dice",
+          "quantity": 6,
+          "label": "Damage-counter dice",
+          "detail": "Plus 1 competition-legal coin-flip die"
+        },
+        {
+          "kind": "markers",
+          "quantity": 2,
+          "label": "Condition markers",
+          "detail": "Plastic markers"
+        },
+        {
+          "kind": "box",
+          "quantity": 1,
+          "label": "Collector’s box",
+          "detail": "4 dividers"
+        },
+        {
+          "kind": "guide",
+          "quantity": 1,
+          "label": "Player’s guide",
+          "detail": "For this expansion"
+        },
+        {
+          "kind": "code",
+          "quantity": 1,
+          "label": "Code card",
+          "detail": "Pokémon TCG Live"
+        }
+      ],
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK10010355_4_e5c088ca-393c-4b04-a7b1-be9922b689a3.jpg?v=1776006309",
+          "sha256": "c25457e3e6d8544b2a8882985061cbd95a12abe27d43fb763c0c34fba2677dd7",
+          "label": "Damage dice and condition markers",
+          "caption": "Accessory subset"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK10010355_5_1a0eb52b-07c6-491a-8343-077986065107.jpg?v=1776006310",
+          "sha256": "9e3e5f19446f162a6721a9bc5df3cc2605c193de7f64c6e17433c107797ccdf4",
+          "label": "Sleeves and dividers",
+          "caption": "Accessory subset"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK10010355_6_03ae64f1-413b-49af-9865-d9da9dfdbe52.jpg?v=1776006310",
+          "sha256": "be06de29ad546d0a0eec54d0347e1c6425403661504620f89902f2a243dab77b",
+          "label": "Nine booster packs and code card",
+          "caption": "Pack subset; no full contents layout"
+        }
+      ]
+    },
+    "phantasmal-etb": {
+      "edition": "Standard English Elite Trainer Box",
+      "source": "https://www.pokemon.com/us/pokemon-tcg/product-gallery/mega-evolution-phantasmal-flames-elite-trainer-box",
+      "photo": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010186101_6_ef538c88-8fac-49b9-b524-9b29e4b925ca.jpg?v=1776006687",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 9,
+          "label": "Booster packs",
+          "detail": "From this expansion"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Full-art foil promo",
+          "detail": "Charcadet"
+        },
+        {
+          "kind": "sleeves",
+          "quantity": 65,
+          "label": "Card sleeves",
+          "detail": "Protect your cards"
+        },
+        {
+          "kind": "energy",
+          "quantity": 40,
+          "label": "Energy cards",
+          "detail": "Pokémon TCG"
+        },
+        {
+          "kind": "dice",
+          "quantity": 6,
+          "label": "Damage-counter dice",
+          "detail": "Plus 1 competition-legal coin-flip die"
+        },
+        {
+          "kind": "coin",
+          "quantity": 1,
+          "label": "Plastic coin",
+          "detail": "Included accessory"
+        },
+        {
+          "kind": "box",
+          "quantity": 1,
+          "label": "Collector’s box",
+          "detail": "6 dividers"
+        },
+        {
+          "kind": "guide",
+          "quantity": 1,
+          "label": "Player’s guide",
+          "detail": "For this expansion"
+        },
+        {
+          "kind": "code",
+          "quantity": 1,
+          "label": "Code card",
+          "detail": "Pokémon TCG Live"
+        }
+      ],
+      "photoSha256": "66db96931ad78c2ee39dd7071db916a03c2ce9146d3d6e43972b9f92c84de2fc"
+    },
+    "black-bundle": {
+      "edition": "English · Booster bundle",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 6,
+          "label": "Booster packs",
+          "detail": "Black Bolt"
+        }
+      ],
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0455/4499/7013/files/black-bolt-booster-bundle-packs.jpg?v=1760554958",
+          "sha256": "3319a3923f51a327425794b1f9ceed441f731e72e889025f52255928716427ef",
+          "label": "Six booster packs",
+          "caption": "Complete pack contents"
+        }
+      ]
+    },
+    "phantasmal-box": {
+      "edition": "English · Booster box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 36,
+          "label": "Booster packs",
+          "detail": "Phantasmal Flames"
+        }
+      ]
+    },
+    "destined-blister": {
+      "edition": "English · 3-pack blister",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 3,
+          "label": "Booster packs",
+          "detail": "Destined Rivals"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Foil promo card",
+          "detail": "Artwork may vary"
+        }
+      ],
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK10010634_4_7e43008c-0655-4242-aa96-e1b69c25b9fe.jpg?v=1776006358",
+          "sha256": "ec0556f381bf8910214ea8a8bce70d0662742e27cab9e814ad67a70689e43f97",
+          "label": "Booster pack artwork",
+          "caption": "Packs only; promo card not shown"
+        }
+      ]
+    },
+    "charizard-upc": {
+      "edition": "English · Ultra-Premium Collection",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 18,
+          "label": "Booster packs",
+          "detail": "Pokémon TCG"
+        },
+        {
+          "kind": "promo",
+          "quantity": 2,
+          "label": "Foil promo cards",
+          "detail": "Mega Charizard X ex and Oricorio ex"
+        },
+        {
+          "kind": "box",
+          "quantity": 1,
+          "label": "Playmat",
+          "detail": "Plus themed sleeves and accessories"
+        }
+      ],
+      "photo": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010065109_3.jpg?v=1791574456",
+      "photoSha256": "b67001f6368b727f92f7b1875ea8dd6aae7317d6d628b15fd1fbd390e66cf65f"
+    },
+    "white-bundle": {
+      "edition": "English · Booster bundle",
+      "source": "https://www.asmodee.co.uk/products/pok1010035114-pokemon-tcg-scarlet-violet-10-5-white-flare-booster-bundle-cdu-10",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 6,
+          "label": "Booster packs",
+          "detail": "White Flare"
+        }
+      ],
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010035114_3.jpg?v=1776006463",
+          "sha256": "f4a920cdd41063d2899364c8184218ae5f70aec4c9d7b344d156a0a59bc14082",
+          "label": "Six booster packs",
+          "caption": "Complete pack contents"
+        }
+      ]
+    },
+    "prism-bundle": {
+      "edition": "English · Booster bundle",
+      "source": "https://www.asmodee.co.uk/products/pok10010111-pokemon-tcg-scarlet-violet-8-5-prismatic-evolutions-booster-bundle-cdu",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 6,
+          "label": "Booster packs",
+          "detail": "Prismatic Evolutions"
+        }
+      ],
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK10010111_6_dc8261ba-dd37-40f9-b986-68ad0a4fe3a5.jpg?v=1776172339",
+          "sha256": "912d461c5f4a4e812e0072a6d46ba673ea456f6628f7b65ec520f42c1cf142aa",
+          "label": "Six booster packs",
+          "caption": "Complete pack contents"
+        }
+      ]
+    },
+    "prism-pouch": {
+      "edition": "English · Special collection",
+      "source": "https://www.asmodee.co.uk/products/pok10026-pokemon-tcg-scarlet-violet-8-5-prismatic-evolutions-accessory-pouch-special-collection",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 5,
+          "label": "Booster packs",
+          "detail": "Prismatic Evolutions"
+        },
+        {
+          "kind": "box",
+          "quantity": 1,
+          "label": "Accessory pouch",
+          "detail": "Eevee drawstring design"
+        }
+      ],
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK10026_4_12080394-4945-48d6-8649-4cae57ceefbf.jpg?v=1776006388",
+          "sha256": "a69b7815489852b6cf9fb25f2bdf4cd5838cd26186d67c138a5c342c5d3b66e6",
+          "label": "Eevee accessory pouch",
+          "caption": "Accessory only; booster packs not shown"
+        }
+      ]
+    },
+    "prism-sticker": {
+      "edition": "English · Tech Sticker Collection",
+      "source": "https://www.asmodee.co.uk/products/pok1010022101-pokemon-tcg-scarlet-violet-8-5-prismatic-evolutions-tech-sticker-collection-assorted-display",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 3,
+          "label": "Booster packs",
+          "detail": "Prismatic Evolutions"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Foil promo card",
+          "detail": "Artwork varies"
+        },
+        {
+          "kind": "guide",
+          "quantity": 1,
+          "label": "Sticker sheet",
+          "detail": "Included accessory"
+        }
+      ]
+    },
+    "prism-poster": {
+      "edition": "English · Poster Collection",
+      "source": "https://www.asmodee.co.uk/products/pok10100241016-pokemon-tcg-scarlet-violet-8-5-prismatic-evolutions-poster-collection",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 3,
+          "label": "Booster packs",
+          "detail": "Prismatic Evolutions"
+        },
+        {
+          "kind": "promo",
+          "quantity": 3,
+          "label": "Foil promo cards",
+          "detail": "Separately included"
+        },
+        {
+          "kind": "guide",
+          "quantity": 1,
+          "label": "Poster",
+          "detail": "Included accessory"
+        }
+      ],
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK10100241016_4_ecfc6cff-4748-47ad-9205-d0c412352dc7.jpg?v=1776006413",
+          "sha256": "eb8fb6af87b4bce577aa5cb6fad28731a1dffd73f78cbf6e58d37865edc50ccb",
+          "label": "Three foil promo cards",
+          "caption": "Cards only"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK10100241016_5_40d901a9-0628-4458-9015-894e2b807d6e.jpg?v=1776006414",
+          "sha256": "8f7e9be765f2c15173a92a5d99649f659b961e72573c03e512063f1b7d11f53a",
+          "label": "Three booster packs",
+          "caption": "Packs only"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK10100241016_6_b7133c4e-e51b-43bf-b67e-80db0b0fc03d.jpg?v=1776006414",
+          "sha256": "932ba06561976a5cdebabb2f383befe68c26818192092be454b560ee307df388",
+          "label": "Included poster",
+          "caption": "Poster only"
+        }
+      ]
+    },
+    "journey-box": {
+      "edition": "English · Booster box",
+      "source": "https://www.asmodee.co.uk/products/pok1010125101-pokemon-tcg-scarlet-violet-9-journey-together-booster-cdu",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 36,
+          "label": "Booster packs",
+          "detail": "Journey Together"
+        }
+      ],
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010125101_4_e292c0c8-15ee-4af4-8523-e891e1c9376e.jpg?v=1776006630",
+          "sha256": "76014f3d4913837331e74f5cf2a14c27af250b4e479def0e516a2a393d0186f7",
+          "label": "Booster pack artwork",
+          "caption": "Representative pack artwork; not all 36 packs"
+        }
+      ]
+    },
+    "asc-sticker": {
+      "edition": "English · Tech Sticker Collection",
+      "source": "https://www.asmodee.co.uk/products/pok1010314120-pokemon-tcg-mega-evolution-ascended-heroes-tech-sticker-collection-assorted-display",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 3,
+          "label": "Booster packs",
+          "detail": "Ascended Heroes"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Foil promo card",
+          "detail": "Artwork varies"
+        },
+        {
+          "kind": "guide",
+          "quantity": 1,
+          "label": "Sticker sheet",
+          "detail": "Included accessory"
+        }
+      ],
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010314120_4_f9b6f745-b081-4a6a-8068-1a9319c7bf72.jpg?v=1776173010",
+          "sha256": "a3d46d13dbc8ed65cf257533f204e01b6180509bc2de23d81a4a42eee8a43bd9",
+          "label": "Booster pack artwork",
+          "caption": "Packs only; promo card and sticker sheet not shown"
+        }
+      ]
+    },
+    "phantasmal-blister": {
+      "edition": "English · 3-pack blister",
+      "source": "https://www.asmodee.co.uk/products/pok1010187121-pokemon-tcg-mega-evolution-phantasmal-flames-3-pack-cdu",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 3,
+          "label": "Booster packs",
+          "detail": "Phantasmal Flames"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Foil promo card",
+          "detail": "Artwork may vary"
+        }
+      ],
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010187121_4_e54988da-f354-4ff2-95d1-5e003d594ccc.jpg?v=1776173004",
+          "sha256": "825a9832d411805afa4802c55ae2a736ee384c04700cec9d1a9f8523fbf93f0e",
+          "label": "Booster pack artwork",
+          "caption": "Packs only; promo card not shown"
+        }
+      ]
+    },
+    "phantasmal-checklane": {
+      "edition": "English · Premium checklane blister",
+      "source": "https://www.asmodee.co.uk/products/pok1010189105-pokemon-tcg-mega-evolution-phantasmal-flames-premium-checklane-cdu",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 1,
+          "label": "Booster packs",
+          "detail": "Phantasmal Flames"
+        },
+        {
+          "kind": "promo",
+          "quantity": 3,
+          "label": "Evolution-chain cards",
+          "detail": "Artwork may vary"
+        },
+        {
+          "kind": "coin",
+          "quantity": 1,
+          "label": "Pokémon coin",
+          "detail": "Included accessory"
+        }
+      ]
+    },
+    "destined-checklane": {
+      "edition": "English · Premium checklane blister",
+      "source": "https://www.asmodee.co.uk/products/pok10010648-pokemon-tcg-scarlet-violet-10-destined-rivals-premium-checklane-cdu",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 1,
+          "label": "Booster packs",
+          "detail": "Destined Rivals"
+        },
+        {
+          "kind": "promo",
+          "quantity": 3,
+          "label": "Evolution-chain cards",
+          "detail": "Artwork may vary"
+        },
+        {
+          "kind": "coin",
+          "quantity": 1,
+          "label": "Pokémon coin",
+          "detail": "Included accessory"
+        }
+      ],
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK10010648_4_3eea4b0a-a8ba-45c2-9cbc-fc1b038965c1.jpg?v=1776006367",
+          "sha256": "ffe2adba58ca3797220e4acac4346adb4ee6261a69f34429669258fff5cf8781",
+          "label": "Included coin",
+          "caption": "Coin only"
+        }
+      ]
+    },
+    "asc-bundle": {
+      "edition": "English · Booster bundle",
+      "source": "https://www.asmodee.co.uk/products/pok1010311114-pokemon-tcg-mega-evolution-ascended-heroes-booster-bundle",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 6,
+          "label": "Booster packs",
+          "detail": "Ascended Heroes"
+        }
+      ],
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010311114_3_733a7f53-ca90-411d-aa8a-88c3307645b9.jpg?v=1776445512",
+          "sha256": "1e86a83dc82d8ad991289f39850b169db34d01b99ed5718954545b072e42ae8a",
+          "label": "Booster pack artwork",
+          "caption": "Single representative pack artwork; not all six packs"
+        }
+      ]
+    },
+    "asc-feraligatr": {
+      "edition": "English · Collection box",
+      "source": "https://www.asmodee.co.uk/products/pok1010313129-pokemon-tcg-mega-evolution-ascended-heroes-mega-feraligatr-ex-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 4,
+          "label": "Booster packs",
+          "detail": "Ascended Heroes"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Foil promo card",
+          "detail": "Mega Feraligatr ex"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Oversize lenticular card",
+          "detail": "Included accessory"
+        }
+      ]
+    },
+    "asc-emboar": {
+      "edition": "English · Collection box",
+      "source": "https://www.asmodee.co.uk/products/pok1010313128-pokemon-tcg-mega-evolution-ascended-heroes-mega-emboar-ex-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 4,
+          "label": "Booster packs",
+          "detail": "Ascended Heroes"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Foil promo card",
+          "detail": "Mega Emboar ex"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Oversize lenticular card",
+          "detail": "Included accessory"
+        }
+      ]
+    },
+    "asc-meganium": {
+      "edition": "English · Collection box",
+      "source": "https://www.asmodee.co.uk/products/pok1010313127-pokemon-tcg-mega-evolution-ascended-heroes-mega-meganium-ex-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 4,
+          "label": "Booster packs",
+          "detail": "Ascended Heroes"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Foil promo card",
+          "detail": "Mega Meganium ex"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Oversize lenticular card",
+          "detail": "Included accessory"
+        }
+      ]
+    },
+    "asc-first-partners": {
+      "edition": "English · Deluxe Pin Collection",
+      "source": "https://www.asmodee.co.uk/products/pok1010301108-pokemon-tcg-mega-evolution-ascended-heroes-first-partners-deluxe-pin-collection",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 5,
+          "label": "Booster packs",
+          "detail": "Ascended Heroes"
+        },
+        {
+          "kind": "promo",
+          "quantity": 3,
+          "label": "Foil promo cards",
+          "detail": "Chikorita, Tepig and Totodile"
+        },
+        {
+          "kind": "coin",
+          "quantity": 1,
+          "label": "Deluxe enamel pin",
+          "detail": "Included accessory"
+        }
+      ]
+    },
+    "jp-black-box": {
+      "edition": "Japanese · Booster box",
+      "source": "https://www.japan2uk.com/collections/pokemon-japanese-booster-boxes/products/pokemon-black-bolt-sv11b-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 20,
+          "label": "Booster packs",
+          "detail": "7 cards per pack"
+        }
+      ],
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0961/2057/0196/files/BlackBoltPack.jpg?v=1748633009",
+          "sha256": "99cc8237cd353b525205c48583b71811452f99303d2e733895b9b1cdee4e8a8f",
+          "label": "Exact-edition single sealed booster-pack image",
+          "caption": "Single pack component only. Do not present as a complete box-contents layout or a guarantee of specific random cards."
+        }
+      ]
+    },
+    "jp-white-box": {
+      "edition": "Japanese · Booster box",
+      "source": "https://www.japan2uk.com/collections/pokemon-japanese-booster-boxes/products/pokemon-white-flare-sv11w-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 20,
+          "label": "Booster packs",
+          "detail": "7 cards per pack"
+        }
+      ],
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0961/2057/0196/files/WhiteFlarePack.jpg?v=1748633194",
+          "sha256": "04b06c8ecbc848fb927ffd0e4a1a121d0b085836b4d8d9d69542b0763f3af213",
+          "label": "Exact-edition single sealed booster-pack image",
+          "caption": "Single pack component only. Do not present as a complete box-contents layout or a guarantee of specific random cards."
+        }
+      ]
+    },
+    "jp-symphonia-box": {
+      "edition": "Japanese · Booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-mega-symphonia-m1s-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack"
+        }
+      ],
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0961/2057/0196/files/MEGASymphoniaPack_5e29b046-7feb-44de-a290-a624b772dd82.jpg?v=1753030589",
+          "sha256": "7766b28ae634250309df2607c98726d131c4cdb38a429085667e28cf5e6e299e",
+          "label": "Exact-edition single sealed booster-pack image",
+          "caption": "Single pack component only. Do not present as a complete box-contents layout or a guarantee of specific random cards."
+        }
+      ]
+    },
+    "cn-pursue-glory-slim-box": {
+      "edition": "Simplified Chinese · Slim booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-pursue-glory-together-csv10-c-simplified-chinese-slim-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 15,
+          "label": "Booster packs",
+          "detail": "5 cards per pack"
+        }
+      ],
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0961/7086/9079/files/pokemon-chasing-glory-together-csv10c-booster-packs.jpg?v=1787129824",
+          "sha256": "395e75999952a1429011c94bde9f38a8382b5a62f08ce919c89c437eeebc0c16",
+          "label": "Exact-edition single sealed booster-pack image",
+          "caption": "Single pack component only. Do not present as a complete box-contents layout or a guarantee of specific random cards."
+        }
+      ]
+    },
+    "cn-terastal-grand-box": {
+      "edition": "Simplified Chinese · Booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-terastal-grand-crystal-gathering-csv9-5-c-simplified-chinese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 10,
+          "label": "Booster packs",
+          "detail": "10 cards per pack"
+        }
+      ]
+    },
+    "ko-black-box": {
+      "edition": "Korean · Booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-black-bolt-sv11b-korean-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 20,
+          "label": "Booster packs",
+          "detail": "7 cards per pack"
+        }
+      ],
+      "components": [
+        {
+          "image": "https://pokemoncard.co.kr/s3.php?key=home%2Fdata%2Fdata1_www%2F2025%2F07%2F2025-07-10_16-51-13-13534-1752133873.png",
+          "sha256": "cbf287b6c480209121e7383e20090d8b71b721ae4f2e9e0d7672a16e12ebab5f",
+          "label": "Official single sealed booster pack render",
+          "caption": "Representative ONE of the 20 packs. Do not use as sealed-box hero or describe as a full 20-pack layout."
+        }
+      ]
+    },
+    "ko-white-box": {
+      "edition": "Korean · Booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-white-flare-sv11w-korean-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 20,
+          "label": "Booster packs",
+          "detail": "7 cards per pack"
+        }
+      ],
+      "components": [
+        {
+          "image": "https://pokemoncard.co.kr/s3.php?key=home%2Fdata%2Fdata1_www%2F2025%2F07%2F2025-07-10_16-51-40-50682-1752133900.png",
+          "sha256": "74fce38b252d81749f9d0cd8f517baf0822f4215eb68859897eaf9ded2156cc8",
+          "label": "Official single sealed booster pack render",
+          "caption": "Representative ONE of the 20 packs. Do not use as sealed-box hero or describe as a full 20-pack layout."
+        }
+      ]
+    },
+    "en-scarlet-violet-8-5-prismatic-evolutions-super-premium-collection-super-premium-collection": {
+      "edition": "Standard English super-premium collection",
+      "source": "https://www.pokemon.com/us/pokemon-tcg/product-gallery/scarlet-violet-prismatic-evolutions-super-premium-collection",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 15,
+          "label": "Booster packs",
+          "detail": "Prismatic Evolutions"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source",
+      "retailSource": "https://www.asmodee.co.uk/products/pok1010027101-pokemon-tcg-scarlet-violet-8-5-prismatic-evolutions-super-premium-collection",
+      "sources": [
+        "https://www.pokemon.com/us/pokemon-tcg/product-gallery/scarlet-violet-prismatic-evolutions-super-premium-collection",
+        "https://www.asmodee.co.uk/products/pok1010027101-pokemon-tcg-scarlet-violet-8-5-prismatic-evolutions-super-premium-collection"
+      ],
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0530/0243/6801/files/image5_64222bdc-2741-4075-932e-28eea4b3679b.png?v=1757726343",
+          "sha256": "132e64cbd94421ad783898afcc2c41b3b13a916b31f75ebe2e56e2a96f07d834",
+          "label": "Eevee deck box",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0530/0243/6801/files/image8_af5c80d9-77e9-47d9-9f07-daca6387619d.png?v=1757726354",
+          "sha256": "e21e3b6b1c692ecf8a05011201496c8ba3cf315ceee8689729076275950b87da",
+          "label": "Playmat",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0530/0243/6801/files/image9_f60fab62-680e-4317-a6da-a2da2bcb1f35.png?v=1757726357",
+          "sha256": "0aa834b18534197d05dab6810aef2296debbcaf9db4d88da475b7632759fd763",
+          "label": "Card sleeves",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        }
+      ]
+    },
+    "en-team-rocket-tin-tin": {
+      "edition": "Standard English tin",
+      "source": "https://www.pokemon.com/uk/pokemon-tcg/product-gallery/pokemon-tcg-team-rocket-tin",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 4,
+          "label": "Booster packs",
+          "detail": "Mixed Pokémon TCG expansions"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source",
+      "retailSource": "https://www.asmodee.co.uk/products/pok1010135101-pokemon-tcg-team-rocket-tin",
+      "sources": [
+        "https://www.pokemon.com/uk/pokemon-tcg/product-gallery/pokemon-tcg-team-rocket-tin",
+        "https://www.asmodee.co.uk/products/pok1010135101-pokemon-tcg-team-rocket-tin"
+      ],
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010135101_5.jpg?v=1776173086",
+          "sha256": "542e8d0d6bcf9085536425cfdf674ddb17ff9cbf1835ca0eec40c15f9356766a",
+          "label": "Representative booster-pack assortment",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        }
+      ]
+    },
+    "en-terapagos-ex-ultra-premium-collection-ultra-premium-collection": {
+      "edition": "Standard English ultra-premium collection",
+      "source": "https://www.pokemon.com/uk/pokemon-tcg/product-gallery/terapagos-ex-ultra-premium-collection",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 18,
+          "label": "Booster packs",
+          "detail": "Mixed Pokémon TCG expansions"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source",
+      "retailSource": "https://www.asmodee.co.uk/products/pok85866-pokemon-tcg-terapagos-ex-ultra-premium-collection",
+      "sources": [
+        "https://www.pokemon.com/uk/pokemon-tcg/product-gallery/terapagos-ex-ultra-premium-collection",
+        "https://www.asmodee.co.uk/products/pok85866-pokemon-tcg-terapagos-ex-ultra-premium-collection"
+      ],
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK85866_4_9fc0ef12-bcef-4a76-8c11-794a83fdd0dd.jpg?v=1776007093",
+          "sha256": "aa358b4d9283228b111d0be6bff642c7ff6697eeee3e8649bb0305a2c000e3d4",
+          "label": "Gameplay accessories and Energy cards",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        }
+      ]
+    },
+    "en-charizard-ex-super-premium-collection-super-premium-collection": {
+      "edition": "Standard English super-premium collection",
+      "source": "https://www.asmodee.co.uk/products/pok1010001101-pokemon-tcg-charizard-ex-super-premium-collection",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 10,
+          "label": "Booster packs",
+          "detail": "Mixed Pokémon TCG expansions"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source",
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0530/0243/6801/files/PokemonTCGSuperPremiumCollection-CharizardExFigure.png?v=1757718231",
+          "sha256": "c1145cc93be02142e423cdf7cf404332714f21e4720add8522239ec344e503cb",
+          "label": "Charizard display figure",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        }
+      ]
+    },
+    "en-shrouded-fable-bundle": {
+      "edition": "Standard English booster bundle",
+      "source": "https://www.asmodee.co.uk/products/pok85851-pokemon-tcg-scarlet-violet-6-5-shrouded-fable-booster-bundle",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 6,
+          "label": "Booster packs",
+          "detail": "Shrouded Fable"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-charizard-ex-special-collection-collection-box": {
+      "edition": "Standard English collection box",
+      "source": "https://www.asmodee.co.uk/products/pok10010417-pokemon-tcg-charizard-ex-special-collection",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 5,
+          "label": "Booster packs",
+          "detail": "Mixed Pokémon TCG expansions"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-scarlet-violet-8-5-prismatic-evolutions-premium-figure-collection-figure-collection": {
+      "edition": "Standard English figure collection",
+      "source": "https://www.pokemon.com/uk/pokemon-tcg/product-gallery/scarlet-violet-prismatic-evolutions-premium-figure-collection",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 11,
+          "label": "Booster packs",
+          "detail": "Prismatic Evolutions"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source",
+      "retailSource": "https://www.asmodee.co.uk/products/pok1010030101-pokemon-tcg-scarlet-violet-8-5-prismatic-evolutions-premium-figure-collection",
+      "sources": [
+        "https://www.pokemon.com/uk/pokemon-tcg/product-gallery/scarlet-violet-prismatic-evolutions-premium-figure-collection",
+        "https://www.asmodee.co.uk/products/pok1010030101-pokemon-tcg-scarlet-violet-8-5-prismatic-evolutions-premium-figure-collection"
+      ],
+      "photo": "https://cdn.shopify.com/s/files/1/0530/0243/6801/files/image2_223024e0-f860-4d56-9f4f-06cf737f0076.png?v=1764788779",
+      "photoSha256": "8906b1aeabae7688a9462206623c01850d0909eba530c2adeb21e9cdf2851717",
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0530/0243/6801/files/image3_53ab23b6-fca2-4cdf-be0e-86de19e62282.png?v=1764788798",
+          "sha256": "8863eabd83370c38d41a71f04d394a0d75237bf02c065e149ff4957b692706e5",
+          "label": "Sleeves, pin and figure",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0530/0243/6801/files/image4_f63ed99d-e2f8-468f-bd56-8e754456e1e4.png?v=1764788841",
+          "sha256": "0ccdef4e6c1bfacde4b2c1d0f987f774e93a65999934192b7aa01217de706a71",
+          "label": "Espeon and Umbreon figure",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0530/0243/6801/files/image5_ea4d775b-0def-47f9-b7d8-996c0152a919.png?v=1764788861",
+          "sha256": "1e93f7c9128d187223bed0cf40860fcdbd8a00729bfe71a41722283dc357ce7e",
+          "label": "Espeon and Umbreon pin",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        }
+      ]
+    },
+    "en-combined-powers-premium-collection-premium-collection": {
+      "edition": "Standard English premium collection",
+      "source": "https://www.pokemon.com/uk/pokemon-tcg/product-gallery/combined-powers-premium-collection",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 11,
+          "label": "Booster packs",
+          "detail": "Mixed Pokémon TCG expansions"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source",
+      "retailSource": "https://www.asmodee.co.uk/products/pok85595-pokemon-tcg-combined-powers-premium-collection",
+      "sources": [
+        "https://www.pokemon.com/uk/pokemon-tcg/product-gallery/combined-powers-premium-collection",
+        "https://www.asmodee.co.uk/products/pok85595-pokemon-tcg-combined-powers-premium-collection"
+      ]
+    },
+    "en-may-battle-decks-assortment-battle-deck": {
+      "edition": "Standard English battle deck",
+      "source": "https://www.asmodee.co.uk/products/pok10010684-pokemon-tcg-may-battle-decks-assortment",
+      "items": [
+        {
+          "kind": "deck",
+          "quantity": 1,
+          "label": "Ready-to-play deck",
+          "detail": "60 cards"
+        },
+        {
+          "kind": "coin",
+          "quantity": 1,
+          "label": "Coin",
+          "detail": ""
+        },
+        {
+          "kind": "box",
+          "quantity": 1,
+          "label": "Deck box",
+          "detail": ""
+        },
+        {
+          "kind": "mat",
+          "quantity": 1,
+          "label": "Playmat",
+          "detail": ""
+        },
+        {
+          "kind": "code",
+          "quantity": 1,
+          "label": "Code card",
+          "detail": "Pokémon TCG Live"
+        }
+      ],
+      "contentsCompleteness": "Verified published quantities; full source linked",
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK10010684_5_512648b9-4643-4173-9612-65632ab87d62.jpg?v=1776006377",
+          "sha256": "657ddf5746e6adf108dd93ec8f6ff110b606a4f545f45ec4b5a2cf652a3214bd",
+          "label": "Marnie deck and play surface",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        }
+      ]
+    },
+    "en-scarlet-violet-6-5-shrouded-fable-illustration-rare-collection-collection-box": {
+      "edition": "Standard English collection box",
+      "source": "https://www.asmodee.co.uk/products/pok87858-pokemon-tcg-scarlet-violet-6-5-shrouded-fable-illustration-rare-collection",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 4,
+          "label": "Booster packs",
+          "detail": "Shrouded Fable"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-paradox-destinies-tins-assortment-tin": {
+      "edition": "Standard English tin",
+      "source": "https://www.asmodee.co.uk/products/pok85844-pokemon-tcg-paradox-destinies-tins-assortment",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 4,
+          "label": "Booster packs",
+          "detail": "Mixed Pokémon TCG expansions"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-slashing-legends-ex-tin-assortment-tin": {
+      "edition": "Standard English tin",
+      "source": "https://www.asmodee.co.uk/products/pok10010377-pokemon-tcg-slashing-legends-ex-tin-assortment",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 4,
+          "label": "Booster packs",
+          "detail": "Mixed Pokémon TCG expansions"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-kanto-friends-mini-tin-mini-tin": {
+      "edition": "Standard English mini tin",
+      "source": "https://www.asmodee.co.uk/products/pok81385-pokemon-tcg-kanto-friends-mini-tin",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 2,
+          "label": "Booster packs",
+          "detail": "Mixed Pokémon TCG expansions"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-professor-juniper-premium-tournament-collection-premium-tournament-collection": {
+      "edition": "Standard English premium tournament collection",
+      "source": "https://www.asmodee.co.uk/products/pok81899-pokemon-tcg-professor-juniper-premium-tournament-collection",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 7,
+          "label": "Booster packs",
+          "detail": "Mixed Pokémon TCG expansions"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-sword-shield-10-astral-radiance-build-and-battle-stadium-build-battle-stadium": {
+      "edition": "Standard English build & battle stadium",
+      "source": "https://www.asmodee.co.uk/products/pok85040-pokemon-tcg-sword-shield-10-astral-radiance-build-and-battle-stadium",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 12,
+          "label": "Booster packs",
+          "detail": "Astral Radiance"
+        },
+        {
+          "kind": "box",
+          "quantity": 2,
+          "label": "Collector's box",
+          "detail": ""
+        },
+        {
+          "kind": "energy",
+          "quantity": 121,
+          "label": "Energy cards",
+          "detail": ""
+        },
+        {
+          "kind": "dice",
+          "quantity": 6,
+          "label": "Damage-counter dice",
+          "detail": ""
+        },
+        {
+          "kind": "dice",
+          "quantity": 1,
+          "label": "Coin-flip die",
+          "detail": ""
+        },
+        {
+          "kind": "box",
+          "quantity": 1,
+          "label": "Collector's box",
+          "detail": ""
+        }
+      ],
+      "contentsCompleteness": "Verified published quantities; full source linked"
+    },
+    "en-deluxe-battle-deck-ninetales-and-zapdos-deluxe-battle-deck": {
+      "edition": "Standard English deluxe battle deck",
+      "source": "https://www.asmodee.co.uk/products/pok87600-pokemon-tcg-deluxe-battle-deck-ninetales-and-zapdos-case-of-6",
+      "items": [
+        {
+          "kind": "deck",
+          "quantity": 1,
+          "label": "Ready-to-play deck",
+          "detail": "60 cards · includes3 foil cards"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source",
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0530/0243/6801/files/image2_f0dcb6b1-b0d9-49a0-8864-39ab38423898.png?v=1757724494",
+          "sha256": "58e53c3953a3d38c22d6ff937bb77a3d46687c782946f65cded2532352ff8737",
+          "label": "Ninetales deck and play surface",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0530/0243/6801/files/image3_97f2da96-d6e9-418e-aae1-f61885810bc0.png?v=1757724496",
+          "sha256": "1a195629d17e0e3d7e3331915a88ee7a30611d5e2b60adc82aba01bbbd03cf5d",
+          "label": "Deck box, counters and markers",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        }
+      ]
+    },
+    "en-scarlet-violet-1-build-and-battle-stadium-box-build-battle-stadium": {
+      "edition": "Standard English build & battle stadium",
+      "source": "https://www.chiefcards.co.uk/products/pokemon-scarlet-and-violet-build-and-battle-stadium",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 11,
+          "label": "Booster packs",
+          "detail": "Scarlet & Violet"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source",
+      "retailSource": "https://www.asmodee.co.uk/products/pok85347-pokemon-tcg-scarlet-violet-1-build-and-battle-stadium-box",
+      "sources": [
+        "https://www.chiefcards.co.uk/products/pokemon-scarlet-and-violet-build-and-battle-stadium",
+        "https://www.asmodee.co.uk/products/pok85347-pokemon-tcg-scarlet-violet-1-build-and-battle-stadium-box"
+      ]
+    },
+    "en-deluxe-battle-decks-assortment-deluxe-battle-deck": {
+      "edition": "Standard English deluxe battle deck",
+      "source": "https://www.asmodee.co.uk/products/pok87830-pokemon-tcg-deluxe-battle-decks-assortment",
+      "items": [
+        {
+          "kind": "deck",
+          "quantity": 1,
+          "label": "Ready-to-play deck",
+          "detail": "60 cards · includes3 foil cards"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source",
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0530/0243/6801/files/image6_d241da67-eef0-40ef-a244-0c777f1858a1.png?v=1757722197",
+          "sha256": "f868ad6182c17733e30297fdc2ee5bc153b99b04dd954413ecac38b60c161f0f",
+          "label": "Koraidon deck box",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0530/0243/6801/files/image8_087cb720-a004-4bc9-9e3d-a2dd8bc0de2d.png?v=1757722199",
+          "sha256": "2ea0987cc83857582c7cd1f26fbc3ec4ad1dde3bb58e9f23026463d32621e1a5",
+          "label": "Koraidon coin",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        }
+      ]
+    },
+    "en-lucario-and-ampharos-ex-battle-deck-battle-deck": {
+      "edition": "Standard English battle deck",
+      "source": "https://www.asmodee.co.uk/products/pok85228-pokemon-tcg-lucario-and-ampharos-ex-battle-deck",
+      "items": [
+        {
+          "kind": "deck",
+          "quantity": 1,
+          "label": "Ready-to-play deck",
+          "detail": "60 cards"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-deluxe-battle-decks-quaquaval-ex-meowscarada-ex-deluxe-battle-deck": {
+      "edition": "Standard English deluxe battle deck",
+      "source": "https://www.asmodee.co.uk/products/pok87258-pokemon-tcg-deluxe-battle-decks-quaquaval-ex-meowscarada-ex",
+      "items": [
+        {
+          "kind": "deck",
+          "quantity": 1,
+          "label": "Ready-to-play deck",
+          "detail": "60 cards · includes3 foil cards"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source",
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0530/0243/6801/files/pokemon-tcg-scarlet-and-violet-paldea-evolved-quaquaval-ex-deluxe-battle-deck-the-card-vault-3.png?v=1757704631",
+          "sha256": "5d915fb6fcdfaba4c8c85bed1ded2b68aa1776b16d69ac44af7aa18d387f69bf",
+          "label": "Quaquaval coin",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0530/0243/6801/files/pokemon-tcg-scarlet-and-violet-paldea-evolved-quaquaval-ex-deluxe-battle-deck-the-card-vault-4.png?v=1757704633",
+          "sha256": "20b3398f5d673078bb85ba73a2b1c5bbf7f31d927767aa95fec3b982fcca1bdf",
+          "label": "Quaquaval deck box",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        }
+      ]
+    },
+    "en-september-mini-portfolio-mini-portfolio-with-booster": {
+      "edition": "Standard English mini portfolio with booster",
+      "source": "https://www.asmodee.co.uk/products/pok85836-pokemon-tcg-september-mini-portfolio",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 1,
+          "label": "Booster packs",
+          "detail": "Mixed Pokémon TCG expansions"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-mega-kangaskhan-ex-box-collection-box": {
+      "edition": "Standard English collection box",
+      "source": "https://www.asmodee.co.uk/products/pok1010064108-pokemon-tcg-mega-kangaskhan-ex-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 4,
+          "label": "Booster packs",
+          "detail": "Mixed Pokémon TCG expansions"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Foil promo cards",
+          "detail": "Mega Kangaskhan ex"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Oversize promo card",
+          "detail": ""
+        }
+      ],
+      "contentsCompleteness": "Verified published quantities; full source linked",
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010064108_3.jpg?v=1791574438",
+          "sha256": "677a2d179fb09ffe691e971062737290efc3168da0c41abb0aa8835cbec72a5f",
+          "label": "Lenticular display card",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010064108_6.jpg?v=1791574446",
+          "sha256": "e5b3239c34c7ea4f822d57178675f7c6a98eb3f42db9e575f4fc4072d12b09f1",
+          "label": "Representative booster-pack assortment",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        }
+      ]
+    },
+    "en-chaos-rising-etb": {
+      "edition": "Standard English elite trainer box",
+      "source": "https://www.asmodee.co.uk/products/pok1010399111-pokemon-tcg-mega-evolution-chaos-rising-elite-trainer-box-1",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 9,
+          "label": "Booster packs",
+          "detail": "Chaos Rising"
+        },
+        {
+          "kind": "sleeves",
+          "quantity": 40,
+          "label": "Card sleeves",
+          "detail": ""
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Full-art foil promo card",
+          "detail": "Fennekin"
+        }
+      ],
+      "contentsCompleteness": "Verified published quantities; full source linked",
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010399111_2_a5e04bd0-64d7-471b-8014-565c7f853aec.jpg?v=1776250334",
+          "sha256": "2e5ce81d84b3ba996d7a661a70d3440362316a6607e224df4b2c477e4e3d6d65",
+          "label": "Nine booster packs and code card",
+          "caption": "Genuine component image; not a complete contents layout"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010399111_3_a460c9cf-5c24-438f-acf2-411e04636f8f.jpg?v=1776250335",
+          "sha256": "45d9bb4f339ef883b3fe2dce86b1c4154e33bdf4723d445fd4d0113cb8de8d4b",
+          "label": "Sleeves and dividers",
+          "caption": "Genuine component image; not a complete contents layout"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010399111_4_9ec731af-9a35-4a98-b51a-111d18bfe62d.jpg?v=1776250335",
+          "sha256": "1901ceb858c4dd4d5a11e919150173be00087db4ce529a30f7e8c45d02c27777",
+          "label": "Dice and coin",
+          "caption": "Genuine component image; not a complete contents layout"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010399111_5_d0d6e6a9-eff6-4b9f-92ed-54430d4fc880.jpg?v=1776250336",
+          "sha256": "e7da65167b0d0e94b28acec341fb34e10c2fee7c0ac73761722b0c5e4209e07f",
+          "label": "Collector box and guide",
+          "caption": "Genuine component image; not a complete contents layout"
+        }
+      ]
+    },
+    "en-chaos-rising-box": {
+      "edition": "Standard English booster box",
+      "source": "https://www.asmodee.co.uk/products/pok1010407119-pokemon-tcg-mega-evolution-chaos-rising-boosters-display-cdu-36",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 36,
+          "label": "Booster packs",
+          "detail": "Chaos Rising"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-chaos-rising-blister": {
+      "edition": "Standard English 3-pack blister",
+      "source": "https://www.asmodee.co.uk/products/pok1010401118-pokemon-tcg-mega-evolution-chaos-rising-3-pack-cdu-12",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 3,
+          "label": "Booster packs",
+          "detail": "Chaos Rising"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source",
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010401118_2_f17d2266-d6a3-478f-90fc-a5799a2c9f1a.jpg?v=1776094993",
+          "sha256": "26b2964d3c220ac865b3e3287ea40ca2b0b775b5f9f0134b1970acb0474fadb9",
+          "label": "Three booster packs",
+          "caption": "Genuine component image; not a complete contents layout"
+        }
+      ]
+    },
+    "en-gardevoir-ex-league-battle-deck-league-battle-deck": {
+      "edition": "Standard English league battle deck",
+      "source": "https://www.asmodee.co.uk/products/pok87753-pokemon-tcg-gardevoir-ex-league-battle-deck",
+      "items": [
+        {
+          "kind": "deck",
+          "quantity": 1,
+          "label": "Ready-to-play deck",
+          "detail": "60 cards"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source",
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0530/0243/6801/files/image2_cd447c3e-dc8f-4ec7-b8f3-c611578659f5.png?v=1757722700",
+          "sha256": "6e5b450cb6d1ce9ff98b3a6eac1f3a97bfef663b1b35929e1e2cb1d9c86c77ff",
+          "label": "Gardevoir deck foil cards",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0530/0243/6801/files/image3_1105c00a-fc4e-4fbd-b892-0773ae2da9e2.png?v=1757722702",
+          "sha256": "41307f320c52ecd497cbaf38ec3f5d1720bb00ab24fc4f250999d00f857dfeeb",
+          "label": "Gardevoir deck box",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0530/0243/6801/files/image4_37da4491-f147-4043-a2a0-08fa6ed9117b.png?v=1757722703",
+          "sha256": "6b43b2c13030f7c65c4a3dbe25077789e2201b6c5f95587509303054274bc481",
+          "label": "Dice and counters",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0530/0243/6801/files/image6_78fe4246-38b6-475a-a685-e531d393072d.png?v=1757722707",
+          "sha256": "592faecd3cd370f83be5edb9b3826500349eacc8b2048406e3fc84c30cec8f65",
+          "label": "Trainer and Pokémon cards",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0530/0243/6801/files/image7_6d098249-a801-4f8d-b39b-998896780d7d.png?v=1757722710",
+          "sha256": "9ab7c54b17b2493c40501ea18b67faa6feafa8f5ba8519b197fb34c603c1a393",
+          "label": "Energy cards",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        }
+      ]
+    },
+    "en-tapu-kok-iron-leaves-ex-battle-deck-battle-deck": {
+      "edition": "Standard English battle deck",
+      "source": "https://www.asmodee.co.uk/products/pok86876-pokemon-tcg-tapu-kok-iron-leaves-ex-battle-deck-cdu",
+      "items": [
+        {
+          "kind": "deck",
+          "quantity": 1,
+          "label": "Ready-to-play deck",
+          "detail": "60 cards"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source",
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0530/0243/6801/files/image6_e6460cc2-c182-47a9-bbfa-3f2eb34b0459.png?v=1757721066",
+          "sha256": "9872c331d10c1be6ddbc7be1c75021d9a0e02bc4b13b469204cbc7b9036a5050",
+          "label": "Tapu Koko deck box",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0530/0243/6801/files/image4_00238ed3-83db-4b1e-888a-96cd125730f8.png?v=1757721070",
+          "sha256": "2635892dd257906b53de906a236a882d8870519501b6c1ea378d53a60b340763",
+          "label": "Quick-start rules",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        }
+      ]
+    },
+    "en-collectors-chest-fall-2025-collectors-chest": {
+      "edition": "Standard English collector's chest",
+      "source": "https://www.asmodee.co.uk/products/pok1010123108-pokemon-tcg-collectors-chest-fall-2025",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 6,
+          "label": "Booster packs",
+          "detail": "Mixed Pokémon TCG expansions"
+        },
+        {
+          "kind": "promo",
+          "quantity": 3,
+          "label": "Foil promo cards",
+          "detail": "Ralts, Kirlia, and Riolu"
+        },
+        {
+          "kind": "coin",
+          "quantity": 1,
+          "label": "Coin",
+          "detail": ""
+        },
+        {
+          "kind": "guide",
+          "quantity": 4,
+          "label": "Player's guide",
+          "detail": ""
+        }
+      ],
+      "contentsCompleteness": "Verified published quantities; full source linked"
+    },
+    "en-pitch-black-etb": {
+      "edition": "Standard English elite trainer box",
+      "source": "https://www.asmodee.co.uk/products/pok1010416111-pokemon-tcg-mega-evolution-pitch-black-elite-trainer-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 9,
+          "label": "Booster packs",
+          "detail": "Pitch Black"
+        },
+        {
+          "kind": "sleeves",
+          "quantity": 65,
+          "label": "Card sleeves",
+          "detail": ""
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Full-art foil promo card",
+          "detail": "Zarude"
+        }
+      ],
+      "contentsCompleteness": "Verified published quantities; full source linked",
+      "photo": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010416111_2.jpg?v=1777559550",
+      "photoSha256": "4d1c79bce01dfe03b62627f633ae1cccf6310620d3be2d8dd332268b09c8406d"
+    },
+    "en-pitch-black-blister": {
+      "edition": "Standard English 3-pack blister",
+      "source": "https://www.asmodee.co.uk/products/pok1010419119-pokemon-tcg-mega-evolution-pitch-black-3-pack-cdu",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 3,
+          "label": "Booster packs",
+          "detail": "Pitch Black"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-pitch-black-box": {
+      "edition": "Standard English booster box",
+      "source": "https://www.asmodee.co.uk/products/pok1010425120-pokemon-tcg-mega-evolution-pitch-black-booster-display-cdu",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 36,
+          "label": "Booster packs",
+          "detail": "Pitch Black"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-melmetal-and-houndoom-ex-battle-decks-battle-deck": {
+      "edition": "Standard English battle deck",
+      "source": "https://www.asmodee.co.uk/products/pok85591-pokemon-tcg-melmetal-and-houndoom-ex-battle-decks",
+      "items": [
+        {
+          "kind": "deck",
+          "quantity": 1,
+          "label": "Ready-to-play deck",
+          "detail": "60 cards"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source",
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0530/0243/6801/files/image4_bc71d101-4f06-4e29-a23a-0fd7b8e7ae18.png?v=1757726228",
+          "sha256": "d4d88b0cf53a49cc2b245cf15bb679c2f51f78e3ed6a882b7f8113ccdeb0968b",
+          "label": "Houndoom deck box, counters and rules",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0530/0243/6801/files/image5_0be5fe96-4c34-4dad-a03d-20ae49930ed5.png?v=1757726230",
+          "sha256": "9850c35e0702fe0dcb2ed975c0866a1501170f9b653789f03c6edddd9e387014",
+          "label": "Houndoom play surface",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        }
+      ]
+    },
+    "en-perfect-order-etb": {
+      "edition": "Standard English elite trainer box",
+      "source": "https://www.asmodee.co.uk/products/pok1010372111-pokemon-tcg-mega-evolution-perfect-order-elite-trainer-box-1",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 9,
+          "label": "Booster packs",
+          "detail": "Perfect Order"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Full-art foil promo card",
+          "detail": "Tyrunt"
+        }
+      ],
+      "contentsCompleteness": "Verified published quantities; full source linked",
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010372111_2_e1678cf2-4012-4305-affb-b2b819117328.jpg?v=1776006875",
+          "sha256": "bc8ec45ed0cbace5d0a1016241e9489cb6edbfd5a89fe69efdd2379bb93012df",
+          "label": "Collector box and guide",
+          "caption": "Genuine component image; not a complete contents layout"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010372111_3_3f783832-9c0f-4628-8421-a2a997bb96f9.jpg?v=1776006875",
+          "sha256": "951bd88492b7c0c5574280d9059a6b61d7b950e66dfcc86eb27ea8e5670a98dd",
+          "label": "Dice and coin",
+          "caption": "Genuine component image; not a complete contents layout"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010372111_4_7f259beb-38c9-4c2e-9ac0-1cd285ca3240.jpg?v=1776006876",
+          "sha256": "2a1906747792a79ce1affdd1314d59a2777aa4a2994259daf527c4d31765baf7",
+          "label": "Sleeves and dividers",
+          "caption": "Genuine component image; not a complete contents layout"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010372111_5_df38e59c-a470-43c8-8901-4337f3bf8b45.jpg?v=1776006876",
+          "sha256": "04c7383b45f4b282d8b77fddd82163a4f7014e21ed2c12965c605fa116a8c5be",
+          "label": "Nine booster packs and code card",
+          "caption": "Genuine component image; not a complete contents layout"
+        }
+      ]
+    },
+    "en-miraidon-and-victini-ex-battle-decks-battle-deck": {
+      "edition": "Standard English battle deck",
+      "source": "https://www.asmodee.co.uk/products/pok86754-pokemon-tcg-miraidon-and-victini-ex-battle-decks",
+      "items": [
+        {
+          "kind": "deck",
+          "quantity": 1,
+          "label": "Ready-to-play deck",
+          "detail": "60 cards"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-team-rockets-moltres-ex-ultra-premium-collection-retail-exclusive-ultra-premium-collection": {
+      "edition": "Standard English ultra-premium collection",
+      "source": "https://www.asmodee.co.uk/products/pok1010264101-pokemon-tcg-team-rockets-moltres-ex-ultra-premium-collection-retail-exclusive",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 18,
+          "label": "Booster packs",
+          "detail": "Mixed Pokémon TCG expansions"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source",
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010264101_4_bd21952c-f0e0-43f7-beaf-f41a233de671.jpg?v=1776172972",
+          "sha256": "44706c7f83c8f63d06418be13e60e37c86ba532d5c25982d9c79b2677a88a768",
+          "label": "Deck box, dice and markers",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010264101_5_651805af-e895-4f57-be4d-8589e4871db1.jpg?v=1776172973",
+          "sha256": "1b816cd8658495df4ea56f0e5faedf0057e79286429339366bd6af61639fc1ba",
+          "label": "Playmat",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        }
+      ]
+    },
+    "en-perfect-order-box": {
+      "edition": "Standard English booster box",
+      "source": "https://www.asmodee.co.uk/products/pok1010380119-pokemon-tcg-mega-evolution-perfect-order-booster-display-cdu-36",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 36,
+          "label": "Booster packs",
+          "detail": "Perfect Order"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-trainers-toolkit-trainers-toolkit": {
+      "edition": "Standard English trainer's toolkit",
+      "source": "https://www.asmodee.co.uk/products/pok85239-pokemon-tcg-trainers-toolkit-2023",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 4,
+          "label": "Booster packs",
+          "detail": "Mixed Pokémon TCG expansions"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-ex-battle-deck-chien-pao-tinkaton-battle-deck": {
+      "edition": "Standard English battle deck",
+      "source": "https://www.asmodee.co.uk/products/pok86240-pokemon-tcg-ex-battle-deck-chien-pao-tinkaton",
+      "items": [
+        {
+          "kind": "deck",
+          "quantity": 1,
+          "label": "Ready-to-play deck",
+          "detail": "60 cards"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-chaos-rising-bundle": {
+      "edition": "Standard English booster bundle",
+      "source": "https://www.asmodee.co.uk/products/pok1010403109-pokemon-tcg-mega-evolution-chaos-rising-booster-bundle-25",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 6,
+          "label": "Booster packs",
+          "detail": "Chaos Rising"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source",
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010403109_2_feeb27df-8984-4f94-bdb2-dbdf270f68ef.jpg?v=1776094997",
+          "sha256": "d92e9ae415a2e7fb975e64eb3c6d45c49725bb05b628cebaa88990fbbdbcf713",
+          "label": "Six booster packs",
+          "caption": "Genuine component image; not a complete contents layout"
+        }
+      ]
+    },
+    "en-mega-lucario-ex-figure-collection-figure-collection": {
+      "edition": "Standard English figure collection",
+      "source": "https://www.asmodee.co.uk/products/pok1010066108-pokemon-tcg-mega-lucario-ex-figure-collection-case-of-6",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 5,
+          "label": "Booster packs",
+          "detail": "Mixed Pokémon TCG expansions"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Foil promo cards",
+          "detail": "Mega Lucario ex"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Oversize promo card",
+          "detail": ""
+        },
+        {
+          "kind": "figure",
+          "quantity": 1,
+          "label": "Display figure",
+          "detail": ""
+        },
+        {
+          "kind": "code",
+          "quantity": 1,
+          "label": "Code card",
+          "detail": "Pokémon TCG Live"
+        }
+      ],
+      "contentsCompleteness": "Verified published quantities; full source linked",
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010066108_4.jpg?v=1791574477",
+          "sha256": "bf67af27ae17892a1c3eab7dca6a76c601e17ec05b80482f3bceaddfb6081b0a",
+          "label": "Mega Lucario figure",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010066108_5.jpg?v=1791574479",
+          "sha256": "722d3984df57995e72e8246b1c1934b35f803ce65b8252e20bd233981e451aba",
+          "label": "Mega Lucario promo cards",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        }
+      ]
+    },
+    "en-mega-evolution-ascended-heroes-premium-poster-collection-assortment-poster-collection": {
+      "edition": "Standard English poster collection",
+      "source": "https://www.asmodee.co.uk/products/pok1010302120-pokemon-tcg-mega-evolution-ascended-heroes-premium-poster-collection-assortment-case-of-6",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 10,
+          "label": "Booster packs",
+          "detail": "Ascended Heroes"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source",
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010302120_4_f2724f20-96b9-4fe9-92fb-21b10e648963.jpg?v=1776006770",
+          "sha256": "621b7b485bd08f9b8679bd8dae0f95e75a35b462e9c6fd9602899e056726f61c",
+          "label": "Ten representative Ascended Heroes booster packs",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        }
+      ]
+    },
+    "en-scarlet-violet-10-5-black-bolt-white-flare-unova-mini-tin-assorted-display-mini-tin": {
+      "edition": "Standard English mini tin",
+      "source": "https://www.asmodee.co.uk/products/pok1010044101-pokemon-tcg-scarlet-violet-10-5-black-bolt-white-flare-unova-mini-tin-assorted-display",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 2,
+          "label": "Booster packs",
+          "detail": "Mixed Pokémon TCG expansions"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-chaos-rising-checklane": {
+      "edition": "Standard English premium checklane blister",
+      "source": "https://www.asmodee.co.uk/products/pok1010405109-pokemon-tcg-mega-evolution-chaos-rising-premium-checklane-cdu-12",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 1,
+          "label": "Booster packs",
+          "detail": "Chaos Rising"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-first-partner-illustration-collection-series-3-collection-box": {
+      "edition": "Standard English collection box",
+      "source": "https://www.asmodee.co.uk/products/pok1010410108-pokemon-tcg-first-partner-illustration-collection-series-3",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 2,
+          "label": "Booster packs",
+          "detail": "Mixed Pokémon TCG expansions"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-first-partner-illustration-collection-series-2-collection-box": {
+      "edition": "Standard English collection box",
+      "source": "https://www.asmodee.co.uk/products/pok1010395108-pokemon-tcg-first-partner-illustration-collection-series-2",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 2,
+          "label": "Booster packs",
+          "detail": "Mixed Pokémon TCG expansions"
+        },
+        {
+          "kind": "guide",
+          "quantity": 1,
+          "label": "Player's guide",
+          "detail": ""
+        }
+      ],
+      "contentsCompleteness": "Verified published quantities; full source linked",
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010395108_4_f242cd3f-b2f9-4b86-b680-9b7b439fa1dd.jpg?v=1775751169",
+          "sha256": "ebfd2002ce8a426397c08f2d95a60ab4d6a6fd32d3b638af6910faa338450a56",
+          "label": "Two ordinary boosters and one separate promo pack",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010395108_5_c73b5c97-b75e-49b1-9618-ee3cdcc65993.jpg?v=1775751171",
+          "sha256": "b91604182f53e39896576e42f898a89fc0b3d199e45a3d7ee75b9a3a8f50df07",
+          "label": "First partner sticker sheet",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010395108_6_0d9b360c-67ca-42b9-b709-c766d06a7a3a.jpg?v=1775751174",
+          "sha256": "a9e48f127fe678a576e3666a12382a36b71198a928d264d7ff2ce8bd27b1dd65",
+          "label": "Three-card illustration promo pack",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        }
+      ]
+    },
+    "en-team-rockets-mewtwo-ex-league-battle-decks-league-battle-deck": {
+      "edition": "Standard English league battle deck",
+      "source": "https://www.asmodee.co.uk/products/pok1010122101-pokemon-tcg-team-rockets-mewtwo-ex-league-battle-decks-case-of-6",
+      "items": [
+        {
+          "kind": "deck",
+          "quantity": 1,
+          "label": "Ready-to-play deck",
+          "detail": "60 cards"
+        },
+        {
+          "kind": "dice",
+          "quantity": 6,
+          "label": "Damage-counter dice",
+          "detail": ""
+        },
+        {
+          "kind": "dice",
+          "quantity": 1,
+          "label": "Coin-flip die",
+          "detail": ""
+        },
+        {
+          "kind": "coin",
+          "quantity": 2,
+          "label": "Condition markers",
+          "detail": ""
+        },
+        {
+          "kind": "box",
+          "quantity": 1,
+          "label": "Deck box",
+          "detail": ""
+        },
+        {
+          "kind": "guide",
+          "quantity": 1,
+          "label": "Strategy sheet",
+          "detail": ""
+        },
+        {
+          "kind": "code",
+          "quantity": 1,
+          "label": "Code card",
+          "detail": "Pokémon TCG Live"
+        }
+      ],
+      "contentsCompleteness": "Verified published quantities; full source linked",
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010122101_4_3920faee-624d-471c-ba48-7837e8aa3ba6.jpg?v=1776172966",
+          "sha256": "931a56c4af205a69d0c5160fd49b955319ad44aeca87d7b62736d68859cd8200",
+          "label": "Deck box, dice and counters",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        }
+      ]
+    },
+    "en-venusaur-blastoise-ex-premium-collection-h-i-exclusive-premium-collection": {
+      "edition": "Standard English premium collection",
+      "source": "https://www.asmodee.co.uk/products/pok1010263101-pokemon-tcg-venusaur-blastoise-ex-premium-collection-case-of-6-h-i-exclusive",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 10,
+          "label": "Booster packs",
+          "detail": "Mixed Pokémon TCG expansions"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-battle-deck-assortment-30th-celebration-battle-deck": {
+      "edition": "Standard English battle deck",
+      "source": "https://www.asmodee.co.uk/products/pok1010468101-pokemon-tcg-battle-deck-assortment-30th-celebration-6",
+      "items": [
+        {
+          "kind": "deck",
+          "quantity": 1,
+          "label": "Ready-to-play deck",
+          "detail": "60 cards"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-30th-celebration-bundle": {
+      "edition": "Standard English booster bundle",
+      "source": "https://www.pokemon.com/uk/pokemon-tcg/product-gallery/30th-celebration-booster-bundle",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 6,
+          "label": "Booster packs",
+          "detail": "30th Celebration"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source",
+      "retailSource": "https://www.asmodee.co.uk/products/pok1010451101-pokemon-tcg-booster-bundle-30th-celebration",
+      "sources": [
+        "https://www.pokemon.com/uk/pokemon-tcg/product-gallery/30th-celebration-booster-bundle",
+        "https://www.asmodee.co.uk/products/pok1010451101-pokemon-tcg-booster-bundle-30th-celebration"
+      ]
+    },
+    "en-mini-tins-assorted-display-30th-celebration-mini-tin": {
+      "edition": "Standard English mini tin",
+      "source": "https://www.asmodee.co.uk/products/pok1010465101-pokemon-tcg-mini-tins-assorted-display-30th-celebration",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 2,
+          "label": "Booster packs",
+          "detail": "30th Celebration"
+        },
+        {
+          "kind": "guide",
+          "quantity": 1,
+          "label": "Player's guide",
+          "detail": ""
+        },
+        {
+          "kind": "code",
+          "quantity": 1,
+          "label": "Code card",
+          "detail": "Pokémon TCG Live"
+        }
+      ],
+      "contentsCompleteness": "Verified published quantities; full source linked"
+    },
+    "en-30th-celebration-2-pack-blister": {
+      "edition": "Standard English 2-pack blister",
+      "source": "https://www.asmodee.co.uk/products/pok1010666102-pokemon-tcg-2-pack-blister-30th-celebration",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 2,
+          "label": "Booster packs",
+          "detail": "30th Celebration"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-ex-tin-greninja-30th-celebration-tin": {
+      "edition": "Standard English tin",
+      "source": "https://www.asmodee.co.uk/products/pok1010466114-pokemon-tcg-ex-tin-greninja-30th-celebration",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 4,
+          "label": "Booster packs",
+          "detail": "30th Celebration"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-ex-tin-sylveon-30th-celebration-tin": {
+      "edition": "Standard English tin",
+      "source": "https://www.asmodee.co.uk/products/pok1010466108-pokemon-tcg-ex-tin-sylveon-30th-celebration",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 4,
+          "label": "Booster packs",
+          "detail": "30th Celebration"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-ex-box-greninja-30th-celebration-collection-box": {
+      "edition": "Standard English collection box",
+      "source": "https://www.asmodee.co.uk/products/pok1010463114-pokemon-tcg-ex-box-greninja-30th-celebration",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 4,
+          "label": "Booster packs",
+          "detail": "30th Celebration"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-ex-box-sylveon-30th-celebration-collection-box": {
+      "edition": "Standard English collection box",
+      "source": "https://www.asmodee.co.uk/products/pok1010463108-pokemon-tcg-ex-box-sylveon-30th-celebration",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 4,
+          "label": "Booster packs",
+          "detail": "30th Celebration"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-30th-celebration-etb": {
+      "edition": "Standard English elite trainer box",
+      "source": "https://www.asmodee.co.uk/products/pok1010447101-pokemon-tcg-elite-trainer-box-30th-celebration",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 9,
+          "label": "Booster packs",
+          "detail": "30th Celebration"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Full-art foil promo card",
+          "detail": "an illustration packed with 30 Nidorina, which happens to be #0030 in the Pokédex"
+        },
+        {
+          "kind": "energy",
+          "quantity": 16,
+          "label": "Energy cards",
+          "detail": ""
+        },
+        {
+          "kind": "sleeves",
+          "quantity": 65,
+          "label": "Card sleeves",
+          "detail": ""
+        },
+        {
+          "kind": "guide",
+          "quantity": 1,
+          "label": "Player's guide",
+          "detail": ""
+        },
+        {
+          "kind": "dice",
+          "quantity": 6,
+          "label": "Damage-counter dice",
+          "detail": ""
+        },
+        {
+          "kind": "dice",
+          "quantity": 1,
+          "label": "Coin-flip die",
+          "detail": ""
+        },
+        {
+          "kind": "coin",
+          "quantity": 1,
+          "label": "Coin",
+          "detail": ""
+        },
+        {
+          "kind": "box",
+          "quantity": 1,
+          "label": "Collector's box",
+          "detail": ""
+        },
+        {
+          "kind": "code",
+          "quantity": 1,
+          "label": "Code card",
+          "detail": "Pokémon TCG Live"
+        }
+      ],
+      "contentsCompleteness": "Verified published quantities; full source linked"
+    },
+    "en-poster-collection-30th-celebration-poster-collection": {
+      "edition": "Standard English poster collection",
+      "source": "https://www.asmodee.co.uk/products/pok1010467101-pokemon-tcg-poster-collection-30th-celebration",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 3,
+          "label": "Booster packs",
+          "detail": "30th Celebration"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-binder-collection-30th-celebration-binder-collection": {
+      "edition": "Standard English binder collection",
+      "source": "https://www.asmodee.co.uk/products/pok1010450101-pokemon-tcg-binder-collection-30th-celebration",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 5,
+          "label": "Booster packs",
+          "detail": "30th Celebration"
+        },
+        {
+          "kind": "box",
+          "quantity": 1,
+          "label": "Binder",
+          "detail": ""
+        }
+      ],
+      "contentsCompleteness": "Verified published quantities; full source linked",
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010450101_4.jpg?v=1783338165",
+          "sha256": "04ab2c58103e8273c684c5e40af442b27d75324dc89aa1f0c5de0624dbf1a225",
+          "label": "Binder",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010450101_5.jpg?v=1783338168",
+          "sha256": "d8f86fc5b9082af5bb10a0a67ecea70f0a9b7feaa4551d140ed0080af734297c",
+          "label": "Binder pages",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        }
+      ]
+    },
+    "en-tech-sticker-collection-assorted-30th-celebration-tech-sticker-collection": {
+      "edition": "Standard English tech sticker collection",
+      "source": "https://www.asmodee.co.uk/products/pok1010449101-pokemon-tcg-tech-sticker-collection-assorted-30th-celebration",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 3,
+          "label": "Booster packs",
+          "detail": "30th Celebration"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Foil promo cards",
+          "detail": "Alolan Exeggutor or Lucario"
+        },
+        {
+          "kind": "guide",
+          "quantity": 1,
+          "label": "Player's guide",
+          "detail": ""
+        }
+      ],
+      "contentsCompleteness": "Verified published quantities; full source linked"
+    },
+    "en-pitch-black-checklane": {
+      "edition": "Standard English premium checklane blister",
+      "source": "https://www.asmodee.co.uk/products/pok1010421109-pokemon-tcg-mega-evolution-pitch-black-premium-checklane-cdu",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 1,
+          "label": "Booster packs",
+          "detail": "Pitch Black"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-pitch-black-bundle": {
+      "edition": "Standard English booster bundle",
+      "source": "https://www.asmodee.co.uk/products/pok1010422109-pokemon-tcg-mega-evolution-pitch-black-booster-bundle",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 6,
+          "label": "Booster packs",
+          "detail": "Pitch Black"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-mega-zygarde-ex-premium-collection-premium-collection": {
+      "edition": "Standard English premium collection",
+      "source": "https://www.asmodee.co.uk/products/pok1010359108-pokemon-tcg-mega-zygarde-ex-premium-collection",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 8,
+          "label": "Booster packs",
+          "detail": "Mixed Pokémon TCG expansions"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Foil promo cards",
+          "detail": "Mega Zygarde ex"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Oversize promo card",
+          "detail": ""
+        },
+        {
+          "kind": "sticker",
+          "quantity": 1,
+          "label": "Sticker sheet",
+          "detail": ""
+        }
+      ],
+      "contentsCompleteness": "Verified published quantities; full source linked",
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010359108_4_87f5bf5c-550a-4254-9efe-ceccb86c0789.jpg?v=1776006859",
+          "sha256": "32427808f3fe61d66b57f9eac7b4ea8de24ee7620cfe97ee60a149e6d84ecc73",
+          "label": "Mega Zygarde promo cards",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010359108_5_9bbe70d8-4065-4238-b72d-a88667070420.jpg?v=1776006860",
+          "sha256": "5d16de3af5fe69f41ff7a27f32bffba11da55dbae45c3b81c63b40848fe2348d",
+          "label": "Mega Zygarde display standees",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        }
+      ]
+    },
+    "en-perfect-order-bundle": {
+      "edition": "Standard English booster bundle",
+      "source": "https://www.asmodee.co.uk/products/pok1010377109-pokemon-tcg-mega-evolution-perfect-order-booster-bundle-25",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 6,
+          "label": "Booster packs",
+          "detail": "Perfect Order"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source",
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010377109_3_2df8e3df-c1ea-4d29-a6c4-e63bb32a2bda.jpg?v=1776006893",
+          "sha256": "aed4abfacbd63331f67841e7a37e4fbdcd028a0c06e1f280d93315831a54bc2e",
+          "label": "Six booster packs",
+          "caption": "Genuine component image; not a complete contents layout"
+        }
+      ]
+    },
+    "en-perfect-order-blister": {
+      "edition": "Standard English 3-pack blister",
+      "source": "https://www.asmodee.co.uk/products/pok1010375119-pokemon-tcg-mega-evolution-perfect-order-3-pack-cdu-12",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 3,
+          "label": "Booster packs",
+          "detail": "Perfect Order"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source",
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010375119_2_5a29a51f-e192-488e-a87d-875b6819b9e5.jpg?v=1776006888",
+          "sha256": "0c6b4981b4aaa11369ca88fac7b98c1db380927f303fe2b740c58c7f5431ddb2",
+          "label": "Three booster packs",
+          "caption": "Genuine component image; not a complete contents layout"
+        }
+      ]
+    },
+    "en-first-partner-illustration-collection-series-1-collection-box": {
+      "edition": "Standard English collection box",
+      "source": "https://www.asmodee.co.uk/products/pok1010358108-pokemon-tcg-first-partner-illustration-collection-series-1",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 2,
+          "label": "Booster packs",
+          "detail": "Mixed Pokémon TCG expansions"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Foil promo cards",
+          "detail": ""
+        },
+        {
+          "kind": "guide",
+          "quantity": 1,
+          "label": "Player's guide",
+          "detail": ""
+        }
+      ],
+      "contentsCompleteness": "Verified published quantities; full source linked",
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010358108_4_b9f88f21-146c-4750-8b3e-1454572ec853.jpg?v=1776006854",
+          "sha256": "082d31bb9b2ba9985bdc56b6c377447b397a6ff4eab7b8262eaec0c2a86b8d18",
+          "label": "Two ordinary boosters and one separate promo pack",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        },
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010358108_5_25215c5a-a3d2-468d-b38b-7ed8d2289cfa.jpg?v=1776006854",
+          "sha256": "d41217cc796c40a9f9bcec1671f19d49e6c97f0d7a25368f606b0b1a5993d0bd",
+          "label": "First partner sticker sheet",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        }
+      ]
+    },
+    "en-pokemon-day-2026-collection-collection-box": {
+      "edition": "Standard English collection box",
+      "source": "https://www.asmodee.co.uk/products/pok1010394108-pokemon-tcg-pokemon-day-2026-collection",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 3,
+          "label": "Booster packs",
+          "detail": "Mixed Pokémon TCG expansions"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Foil promo cards",
+          "detail": "Pikachu with a Pokémon Day stamp"
+        },
+        {
+          "kind": "coin",
+          "quantity": 1,
+          "label": "Coin",
+          "detail": ""
+        }
+      ],
+      "contentsCompleteness": "Verified published quantities; full source linked",
+      "components": [
+        {
+          "image": "https://cdn.shopify.com/s/files/1/0572/1076/5512/files/POK1010394108_5_81a6ccb8-5400-4382-9cac-e8442e2b5bc5.jpg?v=1776173016",
+          "sha256": "0d450b60b0bb9dee03587893aa6e4e4cd57731d2bd35856b3680f28ad9073967",
+          "label": "Pokémon Day coin",
+          "caption": "Genuine source component photo; no claim to show every box item"
+        }
+      ]
+    },
+    "en-mega-heroes-mini-tins-assorted-display-mini-tin": {
+      "edition": "Standard English mini tin",
+      "source": "https://www.asmodee.co.uk/products/pok1010031132-pokemon-tcg-mega-heroes-mini-tins-assorted-display",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 2,
+          "label": "Booster packs",
+          "detail": "Mixed Pokémon TCG expansions"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-greninja-ex-kingdra-ex-special-collection-retail-exclusive-collection-box": {
+      "edition": "Standard English collection box",
+      "source": "https://www.asmodee.co.uk/products/pok1010261101-pokemon-tcg-greninja-ex-kingdra-ex-special-collection-retail-exclusive",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 8,
+          "label": "Booster packs",
+          "detail": "Mixed Pokémon TCG expansions"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "en-black-kyurem-ex-box-h-i-exclusive-collection-box": {
+      "edition": "Standard English collection box",
+      "source": "https://www.asmodee.co.uk/products/pok1010255101-pokemon-tcg-black-kyurem-ex-box-case-of-6-h-i-exclusive",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 4,
+          "label": "Booster packs",
+          "detail": "Mixed Pokémon TCG expansions"
+        }
+      ],
+      "contentsCompleteness": "Verified pack/deck quantity; further accessories not fully enumerated in source"
+    },
+    "jp-30th-celebration-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-30th-celebration-m6a-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 20,
+          "label": "Booster packs",
+          "detail": "6 cards per pack · 30th Celebration"
+        }
+      ]
+    },
+    "jp-storm-emeralda-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-storm-emeralda-m6-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Storm Emeralda"
+        }
+      ]
+    },
+    "jp-abyss-eye-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-abyss-eye-m5-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Abyss Eye"
+        }
+      ]
+    },
+    "jp-ninja-spinner-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-ninja-spinner-m4-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Ninja Spinner"
+        }
+      ]
+    },
+    "jp-nihil-zero-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-nihil-zero-m3-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Nihil Zero"
+        }
+      ]
+    },
+    "jp-mega-dream-ex-high-class-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-mega-dream-ex-high-class-m2a-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 10,
+          "label": "Booster packs",
+          "detail": "10 cards per pack · Mega Dream ex High Class"
+        }
+      ]
+    },
+    "jp-inferno-x-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-inferno-x-m2-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Inferno X"
+        }
+      ]
+    },
+    "jp-mega-brave-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-mega-brave-m1l-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Mega Brave"
+        }
+      ]
+    },
+    "jp-white-flare-deluxe-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-white-flare-sv11w-japanese-deluxe-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 4,
+          "label": "Booster packs",
+          "detail": "35 cards per pack · White Flare Deluxe"
+        }
+      ]
+    },
+    "jp-black-bolt-deluxe-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-black-bolt-sv11b-japanese-deluxe-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 4,
+          "label": "Booster packs",
+          "detail": "35 cards per pack · Black Bolt Deluxe"
+        }
+      ]
+    },
+    "jp-glory-of-team-rocket-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-glory-of-team-rocket-sv10-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Glory of Team Rocket"
+        }
+      ]
+    },
+    "jp-heatwave-arena-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-heatwave-arena-sv9a-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Heatwave Arena"
+        }
+      ]
+    },
+    "jp-battle-partners-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-battle-partners-sv9-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Battle Partners"
+        }
+      ]
+    },
+    "jp-eeveelutions-terastal-festival-ex-high-class-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-eeveelutions-terastal-festival-ex-high-class-sv8a-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 10,
+          "label": "Booster packs",
+          "detail": "10 cards per pack · Eeveelutions Terastal Festival ex High Class"
+        }
+      ]
+    },
+    "jp-super-electric-breaker-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-super-electric-breaker-sv8-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Super Electric Breaker"
+        }
+      ]
+    },
+    "jp-paradise-dragona-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-paradise-dragona-sv7a-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Paradise Dragona"
+        }
+      ]
+    },
+    "jp-stellar-miracle-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-stellar-miracle-sv7-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Stellar Miracle"
+        }
+      ]
+    },
+    "jp-night-wanderer-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-night-wanderer-sv6a-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Night Wanderer"
+        }
+      ]
+    },
+    "jp-mask-of-change-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-mask-of-change-sv6-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Mask of Change"
+        }
+      ]
+    },
+    "jp-crimson-haze-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-crimson-haze-sv5a-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Crimson Haze"
+        }
+      ]
+    },
+    "jp-cyber-judge-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-cyber-judge-sv5m-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Cyber Judge"
+        }
+      ]
+    },
+    "jp-wild-force-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-wild-force-sv5k-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Wild Force"
+        }
+      ]
+    },
+    "jp-future-flash-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-future-flash-sv4m-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Future Flash"
+        }
+      ]
+    },
+    "jp-ancient-roar-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-ancient-roar-sv4k-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Ancient Roar"
+        }
+      ]
+    },
+    "jp-shiny-treasure-ex-high-class-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-shiny-treasure-ex-high-class-sv4a-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 10,
+          "label": "Booster packs",
+          "detail": "10 cards per pack · Shiny Treasure ex High Class"
+        }
+      ]
+    },
+    "jp-raging-surf-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-raging-surf-sv3a-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Raging Surf"
+        }
+      ]
+    },
+    "jp-ruler-of-the-black-flame-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-ruler-of-the-black-flame-sv3-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Ruler Of The Black Flame"
+        }
+      ]
+    },
+    "jp-151-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-151-sv2a-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 20,
+          "label": "Booster packs",
+          "detail": "7 cards per pack · 151"
+        }
+      ]
+    },
+    "jp-snow-hazard-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-snow-hazard-sv2p-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Snow Hazard"
+        }
+      ]
+    },
+    "jp-clay-burst-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-clay-burst-sv2d-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Clay Burst"
+        }
+      ]
+    },
+    "jp-triplet-beat-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-triplet-beat-sv1a-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Triplet Beat"
+        }
+      ]
+    },
+    "jp-violet-ex-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-violet-ex-sv1v-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Violet ex"
+        }
+      ]
+    },
+    "jp-scarlet-ex-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-scarlet-ex-sv1s-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Scarlet ex"
+        }
+      ]
+    },
+    "jp-vstar-universe-high-class-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-vstar-universe-s12a-high-class-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 10,
+          "label": "Booster packs",
+          "detail": "10 cards per pack · VSTAR Universe High Class"
+        }
+      ]
+    },
+    "jp-paradigm-trigger-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-paradigm-trigger-s12-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Paradigm Trigger"
+        }
+      ]
+    },
+    "jp-incandescent-arcana-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-incandescent-arcana-s11a-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 20,
+          "label": "Booster packs",
+          "detail": "6 cards per pack · Incandescent Arcana"
+        }
+      ]
+    },
+    "jp-lost-abyss-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-lost-abyss-s11-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Lost Abyss"
+        }
+      ]
+    },
+    "jp-space-juggler-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-space-juggler-s10p-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Space Juggler"
+        }
+      ]
+    },
+    "jp-time-gazer-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-time-gazer-s10d-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Time Gazer"
+        }
+      ]
+    },
+    "jp-go-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-go-s10b-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 20,
+          "label": "Booster packs",
+          "detail": "6 cards per pack · GO"
+        }
+      ]
+    },
+    "jp-battle-region-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-battle-region-s9a-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 20,
+          "label": "Booster packs",
+          "detail": "6 cards per pack · Battle Region"
+        }
+      ]
+    },
+    "jp-star-birth-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-star-birth-s9-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Star Birth"
+        }
+      ]
+    },
+    "jp-blue-sky-stream-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-blue-sky-stream-s7r-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Blue Sky Stream"
+        }
+      ]
+    },
+    "jp-towering-perfection-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-towering-perfection-s7d-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Towering Perfection"
+        }
+      ]
+    },
+    "jp-silver-lance-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-silver-lance-s6h-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Silver Lance"
+        }
+      ]
+    },
+    "jp-eevee-heroes-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-eevee-heroes-s6a-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Eevee Heroes"
+        }
+      ]
+    },
+    "jp-rapid-strike-master-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-rapid-strike-master-s5r-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Rapid Strike Master"
+        }
+      ]
+    },
+    "jp-matchless-fighters-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-matchless-fighters-s5a-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Matchless Fighters"
+        }
+      ]
+    },
+    "jp-shiny-star-v-high-class-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-shiny-star-v-high-class-s4a-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 10,
+          "label": "Booster packs",
+          "detail": "10 cards per pack · Shiny Star V High Class"
+        }
+      ]
+    },
+    "jp-infinity-zone-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-infinity-zone-s3-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Infinity Zone"
+        }
+      ]
+    },
+    "jp-explosive-flame-walker-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-explosive-flame-walker-s2a-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Explosive Flame Walker"
+        }
+      ]
+    },
+    "jp-rebellion-crash-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-rebellion-crash-s2-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Rebellion Crash"
+        }
+      ]
+    },
+    "jp-vmax-rising-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-vmax-rising-s1a-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · VMAX Rising"
+        }
+      ]
+    },
+    "jp-sword-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-sword-s1w-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Sword"
+        }
+      ]
+    },
+    "jp-tag-team-all-stars-gx-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-tag-team-all-stars-gx-sm12a-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 10,
+          "label": "Booster packs",
+          "detail": "11 cards per pack · Tag Team All Stars GX"
+        }
+      ]
+    },
+    "jp-alter-genesis-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-alter-genesis-sm12-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Alter Genesis"
+        }
+      ]
+    },
+    "jp-dream-league-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-dream-league-sm11b-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Dream League"
+        }
+      ]
+    },
+    "jp-remix-bout-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-remix-bout-sm11a-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Remix Bout"
+        }
+      ]
+    },
+    "jp-detective-pikachu-smp2-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-detective-pikachu-smp2-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 20,
+          "label": "Booster packs",
+          "detail": "4 cards per pack · Detective Pikachu smP2"
+        }
+      ]
+    },
+    "jp-sky-legend-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-sky-legend-sm10b-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Sky Legend"
+        }
+      ]
+    },
+    "jp-full-metal-wall-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-full-metal-wall-sm9b-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Full Metal Wall"
+        }
+      ]
+    },
+    "jp-dark-order-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-dark-order-sm8a-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Dark Order"
+        }
+      ]
+    },
+    "jp-super-burst-impact-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-super-burst-impact-sm8-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Super Burst Impact"
+        }
+      ]
+    },
+    "jp-fairy-rise-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-fairy-rise-sm7b-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Fairy Rise"
+        }
+      ]
+    },
+    "jp-thunderclap-spark-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-thunderclap-spark-sm7a-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Thunderclap Spark"
+        }
+      ]
+    },
+    "jp-forbidden-light-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-forbidden-light-sm6-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Forbidden Light"
+        }
+      ]
+    },
+    "jp-ultra-force-box": {
+      "edition": "Japanese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-ultra-force-sm5-japanese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 20,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Ultra Force +"
+        }
+      ]
+    },
+    "cn-30th-celebration-box": {
+      "edition": "Simplified Chinese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-30th-celebration-30th-c-simplified-chinese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 20,
+          "label": "Booster packs",
+          "detail": "6 cards per pack · 30th Celebration"
+        }
+      ]
+    },
+    "cn-gem-pack-vol-6-box": {
+      "edition": "Simplified Chinese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-gem-pack-vol-6-cbb6-c-simplified-chinese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 18,
+          "label": "Booster packs",
+          "detail": "4 cards per pack · Gem Pack Vol. 6"
+        }
+      ]
+    },
+    "cn-pursue-glory-together-jumbo-box": {
+      "edition": "Simplified Chinese jumbo booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-pursue-glory-together-csv10-c-simplified-chinese-jumbo-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 6,
+          "label": "Booster packs",
+          "detail": "20 cards per pack · Pursue Glory Together"
+        }
+      ]
+    },
+    "cn-stellar-crystal-slim-box": {
+      "edition": "Simplified Chinese slim booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-stellar-crystal-csv9-c-simplified-chinese-slim-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 15,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Stellar Crystal"
+        }
+      ]
+    },
+    "cn-stellar-crystal-jumbo-box": {
+      "edition": "Simplified Chinese jumbo booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-stellar-crystal-csv9-c-simplified-chinese-jumbo-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 6,
+          "label": "Booster packs",
+          "detail": "20 cards per pack · Stellar Crystal"
+        }
+      ]
+    },
+    "cn-gem-pack-vol-5-box": {
+      "edition": "Simplified Chinese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-gem-pack-vol-5-cbb5-c-simplified-chinese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 18,
+          "label": "Booster packs",
+          "detail": "4 cards per pack · Gem Pack Vol. 5"
+        }
+      ]
+    },
+    "cn-brilliant-illusions-slim-box": {
+      "edition": "Simplified Chinese slim booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-brilliant-illusions-csv8-c-simplified-chinese-slim-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 15,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Brilliant Illusions"
+        }
+      ]
+    },
+    "cn-brilliant-illusions-jumbo-box": {
+      "edition": "Simplified Chinese jumbo booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-brilliant-illusions-csv8-c-simplified-chinese-jumbo-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 6,
+          "label": "Booster packs",
+          "detail": "20 cards per pack · Brilliant Illusions"
+        }
+      ]
+    },
+    "cn-gem-pack-vol-4-box": {
+      "edition": "Simplified Chinese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-gem-pack-vol-4-cbb4-c-simplified-chinese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 18,
+          "label": "Booster packs",
+          "detail": "4 cards per pack · Gem Pack Vol. 4"
+        }
+      ]
+    },
+    "cn-blade-awakening-slim-box": {
+      "edition": "Simplified Chinese slim booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-blade-awakening-csv7-c-simplified-chinese-slim-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 15,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Blade Awakening"
+        }
+      ]
+    },
+    "cn-blade-awakening-jumbo-box": {
+      "edition": "Simplified Chinese jumbo booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-blade-awakening-csv7-c-simplified-chinese-jumbo-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 6,
+          "label": "Booster packs",
+          "detail": "20 cards per pack · Blade Awakening"
+        }
+      ]
+    },
+    "cn-paradox-veil-slim-box": {
+      "edition": "Simplified Chinese slim booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-paradox-veil-csv6-c-simplified-chinese-slim-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 15,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Paradox Veil"
+        }
+      ]
+    },
+    "cn-paradox-veil-jumbo-box": {
+      "edition": "Simplified Chinese jumbo booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-paradox-veil-csv6-c-simplified-chinese-jumbo-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 6,
+          "label": "Booster packs",
+          "detail": "20 cards per pack · Paradox Veil"
+        }
+      ]
+    },
+    "cn-collect-151-gathering-151-c-slim-box": {
+      "edition": "Simplified Chinese slim booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-collect-151-gathering-151-c-simplified-chinese-slim-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 15,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Collect 151 Gathering 151 C"
+        }
+      ]
+    },
+    "cn-collect-151-gathering-151-c-jumbo-box": {
+      "edition": "Simplified Chinese jumbo booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-collect-151-gathering-151-c-simplified-chinese-jumbo-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 6,
+          "label": "Booster packs",
+          "detail": "20 cards per pack · Collect 151 Gathering 151 C"
+        }
+      ]
+    },
+    "cn-black-crystal-blaze-slim-box": {
+      "edition": "Simplified Chinese slim booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-black-crystal-blaze-csv5-c-simplified-chinese-slim-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 15,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Black Crystal Blaze"
+        }
+      ]
+    },
+    "cn-black-crystal-blaze-jumbo-box": {
+      "edition": "Simplified Chinese jumbo booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-black-crystal-blaze-csv5-c-simplified-chinese-jumbo-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 6,
+          "label": "Booster packs",
+          "detail": "20 cards per pack · Black Crystal Blaze"
+        }
+      ]
+    },
+    "cn-collect-151-surprise-151-c-jumbo-box": {
+      "edition": "Simplified Chinese jumbo booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-collect-151-surprise-151-c-simplified-chinese-jumbo-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 6,
+          "label": "Booster packs",
+          "detail": "20 cards per pack · Collect 151 Surprise 151 C"
+        }
+      ]
+    },
+    "cn-fearless-terastal-slim-box": {
+      "edition": "Simplified Chinese slim booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-fearless-terastal-csv3-c-simplified-chinese-slim-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 24,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Fearless Terastal"
+        }
+      ]
+    },
+    "cn-collect-151-hope-151-c-jumbo-box": {
+      "edition": "Simplified Chinese jumbo booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-collect-151-hope-151-c-simplified-chinese-jumbo-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 6,
+          "label": "Booster packs",
+          "detail": "20 cards per pack · Collect 151 Hope 151 C"
+        }
+      ]
+    },
+    "cn-collect-151-journey-151-c-jumbo-box": {
+      "edition": "Simplified Chinese jumbo booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-collect-151-journey-151-c-simplified-chinese-jumbo-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 6,
+          "label": "Booster packs",
+          "detail": "20 cards per pack · Collect 151 Journey 151 C"
+        }
+      ]
+    },
+    "cn-eternal-beginnings-slim-box": {
+      "edition": "Simplified Chinese slim booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-eternal-beginnings-csv1-c-simplified-chinese-slim-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 24,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Eternal Beginnings"
+        }
+      ]
+    },
+    "cn-eternal-beginnings-jumbo-box": {
+      "edition": "Simplified Chinese jumbo booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-eternal-beginnings-csv1-c-simplified-chinese-jumbo-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 6,
+          "label": "Booster packs",
+          "detail": "20 cards per pack · Eternal Beginnings"
+        }
+      ]
+    },
+    "cn-shadow-of-the-blue-sea-giratina-slim-box": {
+      "edition": "Simplified Chinese slim booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-shadow-of-the-blue-sea-giratina-cs6b-c-simplified-chinese-slim-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 24,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Shadow Of The Blue Sea Giratina"
+        }
+      ]
+    },
+    "cn-shadow-of-the-blue-sea-lugia-slim-box": {
+      "edition": "Simplified Chinese slim booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-shadow-of-the-blue-sea-lugia-cs6a-c-simplified-chinese-slim-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 24,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Shadow Of The Blue Sea Lugia"
+        }
+      ]
+    },
+    "cn-shadow-of-the-blue-sea-lugia-jumbo-box": {
+      "edition": "Simplified Chinese jumbo booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-shadow-of-the-blue-sea-lugia-cs6a-c-simplified-chinese-jumbo-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 6,
+          "label": "Booster packs",
+          "detail": "25 cards per pack · Shadow Of The Blue Sea Lugia"
+        }
+      ]
+    },
+    "cn-shadow-of-glory-box": {
+      "edition": "Simplified Chinese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-shadow-of-glory-cs5-5-c-simplified-chinese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 20,
+          "label": "Booster packs",
+          "detail": "6 cards per pack · Shadow of Glory"
+        }
+      ]
+    },
+    "cn-brave-stars-lucario-slim-box": {
+      "edition": "Simplified Chinese slim booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-brave-stars-lucario-cs5b-c-simplified-chinese-slim-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 24,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Brave Stars Lucario"
+        }
+      ]
+    },
+    "cn-brave-stars-lucario-jumbo-box": {
+      "edition": "Simplified Chinese jumbo booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-brave-stars-lucario-cs5b-c-simplified-chinese-jumbo-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 6,
+          "label": "Booster packs",
+          "detail": "25 cards per pack · Brave Stars Lucario"
+        }
+      ]
+    },
+    "cn-brave-stars-typhlosion-jumbo-box": {
+      "edition": "Simplified Chinese jumbo booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-brave-stars-typhlosion-cs5a-c-simplified-chinese-jumbo-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 6,
+          "label": "Booster packs",
+          "detail": "25 cards per pack · Brave Stars Typhlosion"
+        }
+      ]
+    },
+    "cn-final-flame-dance-box": {
+      "edition": "Simplified Chinese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-final-flame-dance-cs4-5-c-simplified-chinese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 20,
+          "label": "Booster packs",
+          "detail": "6 cards per pack · Final Flame Dance"
+        }
+      ]
+    },
+    "cn-nine-colors-gathering-eevee-heroes-jumbo-box": {
+      "edition": "Simplified Chinese jumbo booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-nine-colors-gathering-eevee-heroes-cs4a-c-simplified-chinese-jumbo-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 6,
+          "label": "Booster packs",
+          "detail": "25 cards per pack · Nine Colors Gathering Eevee Heroes"
+        }
+      ]
+    },
+    "cn-nine-colors-gathering-mew-jumbo-box": {
+      "edition": "Simplified Chinese jumbo booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-nine-colors-gathering-mew-cs4b-c-simplified-chinese-jumbo-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 6,
+          "label": "Booster packs",
+          "detail": "25 cards per pack · Nine Colors Gathering Mew"
+        }
+      ]
+    },
+    "cn-primordial-arts-blastoise-jumbo-box": {
+      "edition": "Simplified Chinese jumbo booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-primordial-arts-blastoise-cs3b-c-simplified-chinese-jumbo-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 6,
+          "label": "Booster packs",
+          "detail": "25 cards per pack · Primordial Arts Blastoise"
+        }
+      ]
+    },
+    "cn-primordial-arts-venusaur-jumbo-box": {
+      "edition": "Simplified Chinese jumbo booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-primordial-arts-venusaur-cs3a-c-simplified-chinese-jumbo-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 6,
+          "label": "Booster packs",
+          "detail": "25 cards per pack · Primordial Arts Venusaur"
+        }
+      ]
+    },
+    "cn-brilliant-counterattack-box": {
+      "edition": "Simplified Chinese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-brilliant-counterattack-cs2-5-c-simplified-chinese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 20,
+          "label": "Booster packs",
+          "detail": "6 cards per pack · Brilliant Counterattack"
+        }
+      ]
+    },
+    "cn-vivid-portrayals-charizard-jumbo-box": {
+      "edition": "Simplified Chinese jumbo booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-vivid-portrayals-charizard-cs2a-c-simplified-chinese-jumbo-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 24,
+          "label": "Booster packs",
+          "detail": "25 cards per pack · Vivid Portrayals Charizard"
+        }
+      ]
+    },
+    "cn-extreme-attack-defence-box": {
+      "edition": "Simplified Chinese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-extreme-attack-defence-cs1-5-c-simplified-chinese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 20,
+          "label": "Booster packs",
+          "detail": "6 cards per pack · Extreme Attack & Defence"
+        }
+      ]
+    },
+    "cn-dynamax-clash-slim-box": {
+      "edition": "Simplified Chinese slim booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-dynamax-clash-cs1b-c-simplified-chinese-slim-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Dynamax Clash"
+        }
+      ]
+    },
+    "cn-dynamax-clash-jumbo-box": {
+      "edition": "Simplified Chinese jumbo booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-dynamax-clash-cs1b-c-simplified-chinese-jumbo-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 24,
+          "label": "Booster packs",
+          "detail": "25 cards per pack · Dynamax Clash"
+        }
+      ]
+    },
+    "cn-shine-together-csm2c-c-slim-box": {
+      "edition": "Simplified Chinese slim booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-shine-together-csm2c-c-simplified-chinese-slim-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Shine Together csm2c C"
+        }
+      ]
+    },
+    "cn-shine-together-csm2b-c-slim-box": {
+      "edition": "Simplified Chinese slim booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-shine-together-csm2b-c-simplified-chinese-slim-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Shine Together csm2b C"
+        }
+      ]
+    },
+    "cn-battle-elite-csm1-5-c-box": {
+      "edition": "Simplified Chinese booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-battle-elite-csm1-5-c-simplified-chinese-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "6 cards per pack · Battle Elite csm1.5 C"
+        }
+      ]
+    },
+    "cn-storming-emergence-csm1c-c-slim-box": {
+      "edition": "Simplified Chinese slim booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-storming-emergence-csm1c-c-simplified-chinese-slim-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Storming Emergence csm1c C"
+        }
+      ]
+    },
+    "cn-storming-emergence-csm1c-c-jumbo-box": {
+      "edition": "Simplified Chinese jumbo booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-storming-emergence-csm1c-c-simplified-chinese-jumbo-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 24,
+          "label": "Booster packs",
+          "detail": "25 cards per pack · Storming Emergence csm1c C"
+        }
+      ]
+    },
+    "cn-storming-emergence-csm1b-c-jumbo-box": {
+      "edition": "Simplified Chinese jumbo booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-storming-emergence-csm1b-c-simplified-chinese-jumbo-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 24,
+          "label": "Booster packs",
+          "detail": "25 cards per pack · Storming Emergence csm1b C"
+        }
+      ]
+    },
+    "ko-30th-celebration-box": {
+      "edition": "Korean booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-30th-celebration-m6a-korean-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 20,
+          "label": "Booster packs",
+          "detail": "6 cards per pack · 30th Celebration"
+        }
+      ]
+    },
+    "ko-storm-emeralda-box": {
+      "edition": "Korean booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-storm-emeralda-m6-korean-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Storm Emeralda"
+        }
+      ]
+    },
+    "ko-abyss-eye-box": {
+      "edition": "Korean booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-abyss-eye-m5-korean-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Abyss Eye"
+        }
+      ]
+    },
+    "ko-ninja-spinner-box": {
+      "edition": "Korean booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-ninja-spinner-m4-korean-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Ninja Spinner"
+        }
+      ]
+    },
+    "ko-mega-dream-ex-high-class-box": {
+      "edition": "Korean booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-mega-dream-ex-high-class-m2a-korean-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 10,
+          "label": "Booster packs",
+          "detail": "10 cards per pack · Mega Dream ex High Class"
+        }
+      ]
+    },
+    "ko-inferno-x-box": {
+      "edition": "Korean booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-inferno-x-m2-korean-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Inferno X"
+        }
+      ]
+    },
+    "ko-mega-symphonia-box": {
+      "edition": "Korean booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-mega-symphonia-m1s-korean-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Mega Symphonia"
+        }
+      ]
+    },
+    "ko-mega-brave-box": {
+      "edition": "Korean booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-mega-brave-m1l-korean-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Mega Brave"
+        }
+      ]
+    },
+    "ko-glory-of-team-rocket-box": {
+      "edition": "Korean booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-glory-of-team-rocket-sv10-korean-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Glory of Team Rocket"
+        }
+      ]
+    },
+    "ko-heatwave-arena-box": {
+      "edition": "Korean booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-heatwave-arena-sv9a-korean-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Heatwave Arena"
+        }
+      ]
+    },
+    "ko-battle-partners-box": {
+      "edition": "Korean booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-battle-partners-sv9-korean-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Battle Partners"
+        }
+      ]
+    },
+    "ko-eeveelutions-terastal-festival-ex-high-class-box": {
+      "edition": "Korean booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-eeveelutions-terastal-festival-ex-high-class-sv8a-korean-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 10,
+          "label": "Booster packs",
+          "detail": "10 cards per pack · Eeveelutions Terastal Festival ex High Class"
+        }
+      ]
+    },
+    "ko-super-electric-breaker-box": {
+      "edition": "Korean booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-super-electric-breaker-sv8-korean-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Super Electric Breaker"
+        }
+      ]
+    },
+    "ko-mask-of-change-box": {
+      "edition": "Korean booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-mask-of-change-sv6-korean-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Mask of Change"
+        }
+      ]
+    },
+    "ko-cyber-judge-box": {
+      "edition": "Korean booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-cyber-judge-sv5m-korean-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Cyber Judge"
+        }
+      ]
+    },
+    "ko-shiny-treasure-ex-box": {
+      "edition": "Korean booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-shiny-treasure-ex-sv4a-korean-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 10,
+          "label": "Booster packs",
+          "detail": "10 cards per pack · Shiny Treasure ex"
+        }
+      ]
+    },
+    "ko-151-box": {
+      "edition": "Korean booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-151-sv2a-korean-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 20,
+          "label": "Booster packs",
+          "detail": "7 cards per pack · 151"
+        }
+      ]
+    },
+    "ko-clay-burst-box": {
+      "edition": "Korean booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-clay-burst-sv2d-korean-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Clay Burst"
+        }
+      ]
+    },
+    "ko-lost-abyss-box": {
+      "edition": "Korean booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-lost-abyss-s11-korean-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Lost Abyss"
+        }
+      ]
+    },
+    "ko-go-box": {
+      "edition": "Korean booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-go-s10b-korean-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 20,
+          "label": "Booster packs",
+          "detail": "6 cards per pack · GO"
+        }
+      ]
+    },
+    "ko-star-birth-box": {
+      "edition": "Korean booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-star-birth-s9-korean-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Star Birth"
+        }
+      ]
+    },
+    "ko-vmax-climax-box": {
+      "edition": "Korean booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-vmax-climax-s8b-korean-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 10,
+          "label": "Booster packs",
+          "detail": "11 cards per pack · VMAX Climax"
+        }
+      ]
+    },
+    "ko-25th-anniversary-collection-box": {
+      "edition": "Korean booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-25th-anniversary-collection-s8a-korean-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 16,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · 25th Anniversary Collection"
+        }
+      ]
+    },
+    "ko-fusion-arts-box": {
+      "edition": "Korean booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-fusion-arts-s8-korean-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Fusion Arts"
+        }
+      ]
+    },
+    "ko-blue-sky-stream-box": {
+      "edition": "Korean booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-blue-sky-stream-s7r-korean-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Blue Sky Stream"
+        }
+      ]
+    },
+    "ko-eevee-heroes-box": {
+      "edition": "Korean booster box",
+      "source": "https://www.japan2uk.com/products/pokemon-eevee-heroes-s6a-korean-booster-box",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 30,
+          "label": "Booster packs",
+          "detail": "5 cards per pack · Eevee Heroes"
+        }
+      ]
+    },
+    "en-delta-reign-box": {
+      "edition": "English booster display",
+      "source": "https://www.pokemon.com/uk/news/pokemon-tcg-mega-evolution-delta-reign-product-showcase",
+      "verifiedAt": "2026-11-03",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 36,
+          "label": "Booster packs",
+          "detail": "Mega Evolution—Delta Reign"
+        }
+      ]
+    },
+    "en-delta-reign-bundle": {
+      "edition": "English booster bundle",
+      "source": "https://www.pokemon.com/uk/news/pokemon-tcg-mega-evolution-delta-reign-product-showcase",
+      "verifiedAt": "2026-11-03",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 6,
+          "label": "Booster packs",
+          "detail": "Mega Evolution—Delta Reign"
+        }
+      ]
+    },
+    "en-delta-reign-etb": {
+      "edition": "Standard English Elite Trainer Box",
+      "source": "https://www.pokemon.com/uk/news/pokemon-tcg-mega-evolution-delta-reign-product-showcase",
+      "verifiedAt": "2026-11-03",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 9,
+          "label": "Booster packs",
+          "detail": "Mega Evolution—Delta Reign"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Full-art foil promo",
+          "detail": "Kyogre"
+        },
+        {
+          "kind": "sleeves",
+          "quantity": 65,
+          "label": "Card sleeves",
+          "detail": "Delta Reign artwork"
+        },
+        {
+          "kind": "energy",
+          "quantity": 40,
+          "label": "Energy cards",
+          "detail": "Pokémon TCG"
+        },
+        {
+          "kind": "dice",
+          "quantity": 6,
+          "label": "Damage-counter dice",
+          "detail": "Plus one competition-legal coin-flip die"
+        },
+        {
+          "kind": "coin",
+          "quantity": 1,
+          "label": "Plastic coin",
+          "detail": "Included accessory"
+        },
+        {
+          "kind": "guide",
+          "quantity": 1,
+          "label": "Player’s guide",
+          "detail": "Delta Reign expansion"
+        },
+        {
+          "kind": "storage",
+          "quantity": 1,
+          "label": "Collector’s box",
+          "detail": "With dividers"
+        },
+        {
+          "kind": "code",
+          "quantity": 1,
+          "label": "Code card",
+          "detail": "Pokémon TCG Live"
+        }
+      ]
+    },
+    "en-delta-reign-build-battle": {
+      "edition": "English Build & Battle box",
+      "source": "https://www.pokemon.com/uk/news/pokemon-tcg-mega-evolution-delta-reign-product-showcase",
+      "verifiedAt": "2026-11-03",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 4,
+          "label": "Booster packs",
+          "detail": "Mega Evolution—Delta Reign"
+        },
+        {
+          "kind": "deck",
+          "quantity": 1,
+          "label": "40-card ready-to-play deck",
+          "detail": "Includes one of four foil promo cards; promo varies"
+        },
+        {
+          "kind": "code",
+          "quantity": 1,
+          "label": "Code card",
+          "detail": "Pokémon TCG Live"
+        }
+      ]
+    },
+    "en-delta-reign-3-pack-seel": {
+      "edition": "English 3-pack blister",
+      "source": "https://monstercardcorner.co.uk/products/pokemon-tcg-delta-reign-3-pack-blister-seel",
+      "verifiedAt": "2026-11-03",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 3,
+          "label": "Booster packs",
+          "detail": "Mega Evolution—Delta Reign"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Foil promo card",
+          "detail": "Seel"
+        }
+      ]
+    },
+    "en-delta-reign-checklane-ampharos": {
+      "edition": "English premium checklane blister",
+      "source": "https://www.asmodee.co.uk/products/pok1010444109-pokemon-tcg-mega-evolution-delta-reign-premium-checklane-cdu",
+      "verifiedAt": "2026-11-03",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 1,
+          "label": "Booster packs",
+          "detail": "Mega Evolution—Delta Reign"
+        },
+        {
+          "kind": "promo",
+          "quantity": 3,
+          "label": "Evolution-line cards",
+          "detail": "Mareep, Flaaffy and Ampharos; one foil card"
+        },
+        {
+          "kind": "coin",
+          "quantity": 1,
+          "label": "Pokémon coin",
+          "detail": "Included accessory"
+        }
+      ]
+    },
+    "en-delta-reign-checklane-delphox": {
+      "edition": "English premium checklane blister",
+      "source": "https://www.asmodee.co.uk/products/pok1010444109-pokemon-tcg-mega-evolution-delta-reign-premium-checklane-cdu",
+      "verifiedAt": "2026-11-03",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 1,
+          "label": "Booster packs",
+          "detail": "Mega Evolution—Delta Reign"
+        },
+        {
+          "kind": "promo",
+          "quantity": 3,
+          "label": "Evolution-line cards",
+          "detail": "Fennekin, Braixen and Delphox; one foil card"
+        },
+        {
+          "kind": "coin",
+          "quantity": 1,
+          "label": "Pokémon coin",
+          "detail": "Included accessory"
+        }
+      ]
+    },
+    "en-30th-celebration-upc-day": {
+      "edition": "English Ultra-Premium Collection",
+      "source": "https://www.pokemon.com/uk/news/pokemon-tcg-30th-celebration-product-showcase",
+      "verifiedAt": "2026-11-03",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 29,
+          "label": "30th Celebration booster packs",
+          "detail": "Standard five-foil-card packs plus one foil Basic Energy"
+        },
+        {
+          "kind": "packs",
+          "quantity": 1,
+          "label": "Classic Collection pack",
+          "detail": "Three etched Classic Collection cards"
+        },
+        {
+          "kind": "promo",
+          "quantity": 2,
+          "label": "Foil promo cards",
+          "detail": "Pikachu ex and Espeon ex"
+        },
+        {
+          "kind": "playmat",
+          "quantity": 1,
+          "label": "Playmat",
+          "detail": "Collection artwork"
+        },
+        {
+          "kind": "sleeves",
+          "quantity": null,
+          "label": "Card sleeves",
+          "detail": "Collection artwork"
+        },
+        {
+          "kind": "storage",
+          "quantity": 1,
+          "label": "Deck box",
+          "detail": "Included accessory"
+        },
+        {
+          "kind": "accessories",
+          "quantity": null,
+          "label": "Playing accessories",
+          "detail": "Coin and damage-counter dice"
+        }
+      ]
+    },
+    "en-30th-celebration-upc-night": {
+      "edition": "English Ultra-Premium Collection",
+      "source": "https://www.pokemon.com/uk/news/pokemon-tcg-30th-celebration-product-showcase",
+      "verifiedAt": "2026-11-03",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 29,
+          "label": "30th Celebration booster packs",
+          "detail": "Standard five-foil-card packs plus one foil Basic Energy"
+        },
+        {
+          "kind": "packs",
+          "quantity": 1,
+          "label": "Classic Collection pack",
+          "detail": "Three etched Classic Collection cards"
+        },
+        {
+          "kind": "promo",
+          "quantity": 2,
+          "label": "Foil promo cards",
+          "detail": "Pikachu ex and Umbreon ex"
+        },
+        {
+          "kind": "playmat",
+          "quantity": 1,
+          "label": "Playmat",
+          "detail": "Collection artwork"
+        },
+        {
+          "kind": "sleeves",
+          "quantity": null,
+          "label": "Card sleeves",
+          "detail": "Collection artwork"
+        },
+        {
+          "kind": "storage",
+          "quantity": 1,
+          "label": "Deck box",
+          "detail": "Included accessory"
+        },
+        {
+          "kind": "accessories",
+          "quantity": null,
+          "label": "Playing accessories",
+          "detail": "Coin and damage-counter dice"
+        }
+      ]
+    },
+    "en-30th-celebration-ditto": {
+      "edition": "English Ditto Premium Collection",
+      "source": "https://www.pokemon.com/uk/pokemon-tcg/product-gallery/30th-celebration-ditto-premium-collection",
+      "verifiedAt": "2026-11-03",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 8,
+          "label": "Booster packs",
+          "detail": "30th Celebration"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Promo card",
+          "detail": "Ditto"
+        },
+        {
+          "kind": "display",
+          "quantity": 1,
+          "label": "Acrylic card display",
+          "detail": "Display the included promo or another card"
+        },
+        {
+          "kind": "code",
+          "quantity": 1,
+          "label": "Code card",
+          "detail": "Pokémon TCG Live"
+        }
+      ]
+    },
+    "en-30th-celebration-figure-mew": {
+      "edition": "English Mew Figure Collection",
+      "source": "https://www.pokemon.com/uk/news/pokemon-tcg-30th-celebration-product-showcase",
+      "verifiedAt": "2026-11-03",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 5,
+          "label": "Booster packs",
+          "detail": "30th Celebration"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Foil promo card",
+          "detail": "Mew"
+        },
+        {
+          "kind": "oversize",
+          "quantity": 1,
+          "label": "Oversized card",
+          "detail": "Mew"
+        },
+        {
+          "kind": "figure",
+          "quantity": 1,
+          "label": "Figure",
+          "detail": "Mew"
+        },
+        {
+          "kind": "code",
+          "quantity": 1,
+          "label": "Code card",
+          "detail": "Pokémon TCG Live"
+        }
+      ]
+    },
+    "en-30th-celebration-figure-mewtwo": {
+      "edition": "English Mewtwo Figure Collection",
+      "source": "https://www.pokemon.com/uk/news/pokemon-tcg-30th-celebration-product-showcase",
+      "verifiedAt": "2026-11-03",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 5,
+          "label": "Booster packs",
+          "detail": "30th Celebration"
+        },
+        {
+          "kind": "promo",
+          "quantity": 1,
+          "label": "Foil promo card",
+          "detail": "Mewtwo"
+        },
+        {
+          "kind": "oversize",
+          "quantity": 1,
+          "label": "Oversized card",
+          "detail": "Mewtwo"
+        },
+        {
+          "kind": "figure",
+          "quantity": 1,
+          "label": "Figure",
+          "detail": "Mewtwo"
+        },
+        {
+          "kind": "code",
+          "quantity": 1,
+          "label": "Code card",
+          "detail": "Pokémon TCG Live"
+        }
+      ]
+    },
+    "cn-gem-pack-vol-7-box": {
+      "edition": "Simplified Chinese booster box",
+      "source": "https://excaliburtcg.co.uk/products/pokemon-gem-pack-vol-7-cbb7c-booster-box-s-chinese",
+      "items": [
+        {
+          "kind": "packs",
+          "quantity": 18,
+          "label": "Booster packs",
+          "detail": "4 holographic cards per pack · Gem Pack Vol. 7"
+        }
+      ],
+      "verificationNotes": "18 is consistently stated by these retailers; official announcement prices perpack and does not explicitly print box quantity."
+    }
+  }
+}

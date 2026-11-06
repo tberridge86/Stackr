@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-11-06T14:17:15.244Z",
+  "setId": "a1bde625-6996-5451-bcda-fb80fe5b428b",
+  "cohortSha256": "160fe970eecb90afa3d6e3dcd68c74e60c7c5800299fd82c213a2b04e7f42124",
+  "activation": [
+    {
+      "id": "90a3d54b-3c8c-49ee-9853-f004f3afd8e7",
+      "version_key": "en:delta-reign-unclassified-2026-11-06:160fe970eecb90af",
+      "status": "published",
+      "language_code": "en"
+    }
+  ],
+  "previousEnglishVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+  "otherLanguageVersionsPreserved": true,
+  "verifiedCounts": [
+    {
+      "printings": 141,
+      "unclassified_variants": 141,
+      "approved_printing_artworks": 141
+    }
+  ],
+  "limitations": [
+    "141 numbered English printings only; finishes explicitly unclassified with NULL finish_code",
+    "Approved printing-scoped artwork uses hash-pinned existing Site media delivery",
+    "No recognition or training permission asserted",
+    "No production holdings, stock, financial records, native app code or iOS release changed"
+  ],
+  "derivedFrom": {
+    "path": "docs/delta-reign-catalogue-release-20261106.json",
+    "sha256": "4e373f5c387bdb0e500865bb1966fb2b3e3f0abd933c4161f0aaebbd3c7703e4",
+    "scope": "Public catalogue activation, identity counts and limitations only; import execution details omitted."
+  }
+}

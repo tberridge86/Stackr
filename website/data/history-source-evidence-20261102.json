@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-11-02",
+  "scope": "Four unchanged, visually reviewed originals authored by the official Pokémon archives. Public availability does not establish a reuse licence.",
+  "originals": [
+    {
+      "eventId": "1996-red-green",
+      "url": "https://www.pokemon.co.jp/img/game/gb-rg/pho_main.jpg",
+      "sourceUrl": "https://www.pokemon.co.jp/game/other/gb-rg/",
+      "sha256": "0a14691dd90e7dc7b80544e46bc7fddce5b9e28c9624c3f0f7ab36dd6f95be74",
+      "width": 340,
+      "height": 206,
+      "mime": "image/jpeg",
+      "bytes": 52391
+    },
+    {
+      "eventId": "1996-first-tcg",
+      "url": "https://files.corporate.pokemon.co.jp/v=1772371926/files/topics/138_ext_2_en_0.png",
+      "sourceUrl": "https://corporate.pokemon.co.jp/en/aboutus/history/",
+      "sha256": "acd590e2618321e2f2a3ab9f6aad6a0038699512e7b85722b8cc663fe38cc4d7",
+      "width": 536,
+      "height": 320,
+      "mime": "image/png",
+      "bytes": 72131
+    },
+    {
+      "eventId": "1998-first-movie",
+      "url": "https://files.corporate.pokemon.co.jp/v=1772372119/files/topics/142_ext_2_en_0.png",
+      "sourceUrl": "https://corporate.pokemon.co.jp/en/aboutus/history/",
+      "sha256": "ecd2919a115e8bf6953623d3bac239b4b003fcdf5c5775f77c50adf727a26d8f",
+      "width": 536,
+      "height": 320,
+      "mime": "image/png",
+      "bytes": 52446
+    },
+    {
+      "eventId": "1999-gold-silver",
+      "url": "https://www.pokemon.co.jp/img/game/gbc-gs/pho_main.jpg",
+      "sourceUrl": "https://www.pokemon.co.jp/game/other/gbc-gs/",
+      "sha256": "fcc03b50b3ce4d06606380c30e37cd3e16e83ba0d590c16eee9cf9aa6f7da53f",
+      "width": 340,
+      "height": 250,
+      "mime": "image/jpeg",
+      "bytes": 48855
+    }
+  ]
+}

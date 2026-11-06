@@ -1,0 +1,3213 @@
+[
+  {
+    "marketPence": 13999,
+    "currency": "GBP",
+    "title": "Pokemon Black Bolt sv11B Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-black-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-black-bolt",
+      "type": "Booster box",
+      "packs": 20,
+      "unit": "1 retail box",
+      "edition": "standard",
+      "cardsPerPack": 7
+    },
+    "observedAt": "2026-11-02T21:54:23.320Z",
+    "asOf": "2026-11-02T21:54:23.320Z"
+  },
+  {
+    "marketPence": 14499,
+    "currency": "GBP",
+    "title": "Pokemon White Flare sv11W Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-white-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-white-flare",
+      "type": "Booster box",
+      "packs": 20,
+      "unit": "1 retail box",
+      "edition": "standard",
+      "cardsPerPack": 7
+    },
+    "observedAt": "2026-11-02T21:54:23.310Z",
+    "asOf": "2026-11-02T21:54:23.310Z"
+  },
+  {
+    "marketPence": 5499,
+    "currency": "GBP",
+    "title": "Pokemon Mega Symphonia m1S Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-symphonia-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-mega-symphonia",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail box",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:54:23.571Z",
+    "asOf": "2026-11-02T21:54:23.571Z"
+  },
+  {
+    "marketPence": 2499,
+    "currency": "GBP",
+    "title": "Pokemon Pursue Glory Together csv10 C Simplified Chinese Slim Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-pursue-glory-slim-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-pursue-glory-together",
+      "type": "Slim booster box",
+      "packs": 15,
+      "unit": "1 retail box",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:54:23.546Z",
+    "asOf": "2026-11-02T21:54:23.546Z"
+  },
+  {
+    "marketPence": 4999,
+    "currency": "GBP",
+    "title": "Pokemon Terastal Grand Crystal Gathering csv9.5 C Simplified Chinese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-terastal-grand-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-terastal-grand-crystal-gathering",
+      "type": "Booster box",
+      "packs": 10,
+      "unit": "1 retail box",
+      "edition": "standard",
+      "cardsPerPack": 10
+    },
+    "observedAt": "2026-11-02T21:54:23.810Z",
+    "asOf": "2026-11-02T21:54:23.810Z"
+  },
+  {
+    "marketPence": 6299,
+    "currency": "GBP",
+    "title": "Pokemon Black Bolt sv11B Korean Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "ko-black-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-black-bolt",
+      "type": "Booster box",
+      "packs": 20,
+      "unit": "1 retail box",
+      "edition": "standard",
+      "cardsPerPack": 7
+    },
+    "observedAt": "2026-11-02T21:54:23.800Z",
+    "asOf": "2026-11-02T21:54:23.800Z"
+  },
+  {
+    "marketPence": 6299,
+    "currency": "GBP",
+    "title": "Pokemon White Flare sv11W Korean Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "ko-white-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-white-flare",
+      "type": "Booster box",
+      "packs": 20,
+      "unit": "1 retail box",
+      "edition": "standard",
+      "cardsPerPack": 7
+    },
+    "observedAt": "2026-11-02T21:54:24.060Z",
+    "asOf": "2026-11-02T21:54:24.060Z"
+  },
+  {
+    "marketPence": 7699,
+    "currency": "GBP",
+    "title": "Pokemon Storm Emeralda m6 Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-storm-emeralda-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-storm-emeralda",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:16.256Z",
+    "asOf": "2026-11-02T21:56:16.256Z"
+  },
+  {
+    "marketPence": 17999,
+    "currency": "GBP",
+    "title": "Pokemon 30th Celebration m6a Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-30th-celebration-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-30th-celebration",
+      "type": "Booster box",
+      "packs": 20,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 6
+    },
+    "observedAt": "2026-11-02T21:56:16.292Z",
+    "asOf": "2026-11-02T21:56:16.292Z"
+  },
+  {
+    "marketPence": 6499,
+    "currency": "GBP",
+    "title": "Pokemon Ninja Spinner m4 Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-ninja-spinner-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-ninja-spinner",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:16.302Z",
+    "asOf": "2026-11-02T21:56:16.302Z"
+  },
+  {
+    "marketPence": 6499,
+    "currency": "GBP",
+    "title": "Pokemon Abyss Eye m5 Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-abyss-eye-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-abyss-eye",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:16.317Z",
+    "asOf": "2026-11-02T21:56:16.317Z"
+  },
+  {
+    "marketPence": 5999,
+    "currency": "GBP",
+    "title": "Pokemon Nihil Zero m3 Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-nihil-zero-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-nihil-zero",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:16.415Z",
+    "asOf": "2026-11-02T21:56:16.415Z"
+  },
+  {
+    "marketPence": 10999,
+    "currency": "GBP",
+    "title": "Pokemon Inferno X m2 Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-inferno-x-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-inferno-x",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:16.498Z",
+    "asOf": "2026-11-02T21:56:16.498Z"
+  },
+  {
+    "marketPence": 5999,
+    "currency": "GBP",
+    "title": "Pokemon Mega Brave m1L Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-mega-brave-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-mega-brave",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:16.508Z",
+    "asOf": "2026-11-02T21:56:16.508Z"
+  },
+  {
+    "marketPence": 8999,
+    "currency": "GBP",
+    "title": "Pokemon Mega Dream ex High Class m2a Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-mega-dream-ex-high-class-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-mega-dream-ex-high-class",
+      "type": "Booster box",
+      "packs": 10,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 10
+    },
+    "observedAt": "2026-11-02T21:56:16.518Z",
+    "asOf": "2026-11-02T21:56:16.518Z"
+  },
+  {
+    "marketPence": 12499,
+    "currency": "GBP",
+    "title": "Pokemon Heatwave Arena sv9a Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-heatwave-arena-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-heatwave-arena",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:16.784Z",
+    "asOf": "2026-11-02T21:56:16.784Z"
+  },
+  {
+    "marketPence": 7499,
+    "currency": "GBP",
+    "title": "Pokemon Battle Partners sv9 Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-battle-partners-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-battle-partners",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:16.930Z",
+    "asOf": "2026-11-02T21:56:16.930Z"
+  },
+  {
+    "marketPence": 13999,
+    "currency": "GBP",
+    "title": "Pokemon Eeveelutions Terastal Festival ex High Class sv8a Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-eeveelutions-terastal-festival-ex-high-class-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-eeveelutions-terastal-festival-ex-high-class",
+      "type": "Booster box",
+      "packs": 10,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 10
+    },
+    "observedAt": "2026-11-02T21:56:16.944Z",
+    "asOf": "2026-11-02T21:56:16.944Z"
+  },
+  {
+    "marketPence": 9999,
+    "currency": "GBP",
+    "title": "Pokemon Paradise Dragona sv7a Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-paradise-dragona-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-paradise-dragona",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:16.955Z",
+    "asOf": "2026-11-02T21:56:16.955Z"
+  },
+  {
+    "marketPence": 17999,
+    "currency": "GBP",
+    "title": "Pokemon Super Electric Breaker sv8 Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-super-electric-breaker-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-super-electric-breaker",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:17.010Z",
+    "asOf": "2026-11-02T21:56:17.010Z"
+  },
+  {
+    "marketPence": 7999,
+    "currency": "GBP",
+    "title": "Pokemon Stellar Miracle sv7 Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-stellar-miracle-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-stellar-miracle",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:17.096Z",
+    "asOf": "2026-11-02T21:56:17.096Z"
+  },
+  {
+    "marketPence": 7999,
+    "currency": "GBP",
+    "title": "Pokemon Night Wanderer sv6a Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-night-wanderer-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-night-wanderer",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:17.108Z",
+    "asOf": "2026-11-02T21:56:17.108Z"
+  },
+  {
+    "marketPence": 8499,
+    "currency": "GBP",
+    "title": "Pokemon Mask of Change sv6 Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-mask-of-change-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-mask-of-change",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:17.122Z",
+    "asOf": "2026-11-02T21:56:17.122Z"
+  },
+  {
+    "marketPence": 8499,
+    "currency": "GBP",
+    "title": "Pokemon Crimson Haze sv5a Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-crimson-haze-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-crimson-haze",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:17.174Z",
+    "asOf": "2026-11-02T21:56:17.174Z"
+  },
+  {
+    "marketPence": 7499,
+    "currency": "GBP",
+    "title": "Pokemon Cyber Judge sv5M Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-cyber-judge-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-cyber-judge",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:17.254Z",
+    "asOf": "2026-11-02T21:56:17.254Z"
+  },
+  {
+    "marketPence": 8499,
+    "currency": "GBP",
+    "title": "Pokemon Wild Force sv5K Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-wild-force-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-wild-force",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:17.272Z",
+    "asOf": "2026-11-02T21:56:17.272Z"
+  },
+  {
+    "marketPence": 7499,
+    "currency": "GBP",
+    "title": "Pokemon Future Flash sv4M Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-future-flash-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-future-flash",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:17.399Z",
+    "asOf": "2026-11-02T21:56:17.399Z"
+  },
+  {
+    "marketPence": 10499,
+    "currency": "GBP",
+    "title": "Pokemon Raging Surf sv3a Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-raging-surf-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-raging-surf",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:17.421Z",
+    "asOf": "2026-11-02T21:56:17.421Z"
+  },
+  {
+    "marketPence": 12499,
+    "currency": "GBP",
+    "title": "Pokemon Shiny Treasure ex High Class sv4a Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-shiny-treasure-ex-high-class-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-shiny-treasure-ex-high-class",
+      "type": "Booster box",
+      "packs": 10,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 10
+    },
+    "observedAt": "2026-11-02T21:56:17.428Z",
+    "asOf": "2026-11-02T21:56:17.428Z"
+  },
+  {
+    "marketPence": 7499,
+    "currency": "GBP",
+    "title": "Pokemon Ancient Roar sv4K Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-ancient-roar-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-ancient-roar",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:17.464Z",
+    "asOf": "2026-11-02T21:56:17.464Z"
+  },
+  {
+    "marketPence": 7999,
+    "currency": "GBP",
+    "title": "Pokemon Snow Hazard sv2P Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-snow-hazard-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-snow-hazard",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:17.603Z",
+    "asOf": "2026-11-02T21:56:17.603Z"
+  },
+  {
+    "marketPence": 29999,
+    "currency": "GBP",
+    "title": "Pokemon 151 sv2a Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-151-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-151",
+      "type": "Booster box",
+      "packs": 20,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 7
+    },
+    "observedAt": "2026-11-02T21:56:17.682Z",
+    "asOf": "2026-11-02T21:56:17.682Z"
+  },
+  {
+    "marketPence": 11999,
+    "currency": "GBP",
+    "title": "Pokemon Ruler Of The Black Flame sv3 Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-ruler-of-the-black-flame-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-ruler-of-the-black-flame",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:17.724Z",
+    "asOf": "2026-11-02T21:56:17.724Z"
+  },
+  {
+    "marketPence": 7999,
+    "currency": "GBP",
+    "title": "Pokemon Clay Burst sv2D Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-clay-burst-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-clay-burst",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:17.733Z",
+    "asOf": "2026-11-02T21:56:17.733Z"
+  },
+  {
+    "marketPence": 10999,
+    "currency": "GBP",
+    "title": "Pokemon Triplet Beat sv1a Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-triplet-beat-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-triplet-beat",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:17.774Z",
+    "asOf": "2026-11-02T21:56:17.774Z"
+  },
+  {
+    "marketPence": 7799,
+    "currency": "GBP",
+    "title": "Pokemon Violet ex sv1V Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-violet-ex-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-violet-ex",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:17.883Z",
+    "asOf": "2026-11-02T21:56:17.883Z"
+  },
+  {
+    "marketPence": 8999,
+    "currency": "GBP",
+    "title": "Pokemon Scarlet ex sv1S Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-scarlet-ex-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-scarlet-ex",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:17.900Z",
+    "asOf": "2026-11-02T21:56:17.900Z"
+  },
+  {
+    "marketPence": 14999,
+    "currency": "GBP",
+    "title": "Pokemon Paradigm Trigger s12 Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-paradigm-trigger-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-paradigm-trigger",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:17.923Z",
+    "asOf": "2026-11-02T21:56:17.923Z"
+  },
+  {
+    "marketPence": 39999,
+    "currency": "GBP",
+    "title": "Pokemon Lost Abyss s11 Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-lost-abyss-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-lost-abyss",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:18.060Z",
+    "asOf": "2026-11-02T21:56:18.060Z"
+  },
+  {
+    "marketPence": 8999,
+    "currency": "GBP",
+    "title": "Pokemon Incandescent Arcana s11a Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-incandescent-arcana-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-incandescent-arcana",
+      "type": "Booster box",
+      "packs": 20,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 6
+    },
+    "observedAt": "2026-11-02T21:56:18.161Z",
+    "asOf": "2026-11-02T21:56:18.161Z"
+  },
+  {
+    "marketPence": 11499,
+    "currency": "GBP",
+    "title": "Pokemon Time Gazer s10D Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-time-gazer-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-time-gazer",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:18.166Z",
+    "asOf": "2026-11-02T21:56:18.166Z"
+  },
+  {
+    "marketPence": 9499,
+    "currency": "GBP",
+    "title": "Pokemon Space Juggler s10P Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-space-juggler-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-space-juggler",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:18.184Z",
+    "asOf": "2026-11-02T21:56:18.184Z"
+  },
+  {
+    "marketPence": 15999,
+    "currency": "GBP",
+    "title": "Pokemon GO s10b Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-go-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-go",
+      "type": "Booster box",
+      "packs": 20,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 6
+    },
+    "observedAt": "2026-11-02T21:56:18.228Z",
+    "asOf": "2026-11-02T21:56:18.228Z"
+  },
+  {
+    "marketPence": 9999,
+    "currency": "GBP",
+    "title": "Pokemon Battle Region s9a Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-battle-region-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-battle-region",
+      "type": "Booster box",
+      "packs": 20,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 6
+    },
+    "observedAt": "2026-11-02T21:56:18.342Z",
+    "asOf": "2026-11-02T21:56:18.342Z"
+  },
+  {
+    "marketPence": 13999,
+    "currency": "GBP",
+    "title": "Pokemon Towering Perfection s7D Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-towering-perfection-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-towering-perfection",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:18.392Z",
+    "asOf": "2026-11-02T21:56:18.392Z"
+  },
+  {
+    "marketPence": 14499,
+    "currency": "GBP",
+    "title": "Pokemon Star Birth s9 Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-star-birth-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-star-birth",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:18.465Z",
+    "asOf": "2026-11-02T21:56:18.465Z"
+  },
+  {
+    "marketPence": 119999,
+    "currency": "GBP",
+    "title": "Pokemon Blue Sky Stream s7R Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-blue-sky-stream-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-blue-sky-stream",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:18.473Z",
+    "asOf": "2026-11-02T21:56:18.473Z"
+  },
+  {
+    "marketPence": 11999,
+    "currency": "GBP",
+    "title": "Pokemon Silver Lance s6H Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-silver-lance-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-silver-lance",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:18.529Z",
+    "asOf": "2026-11-02T21:56:18.529Z"
+  },
+  {
+    "marketPence": 62999,
+    "currency": "GBP",
+    "title": "Pokemon Eevee Heroes s6a Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-eevee-heroes-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-eevee-heroes",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:18.541Z",
+    "asOf": "2026-11-02T21:56:18.541Z"
+  },
+  {
+    "marketPence": 19999,
+    "currency": "GBP",
+    "title": "Pokemon Rapid Strike Master s5R Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-rapid-strike-master-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-rapid-strike-master",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:18.733Z",
+    "asOf": "2026-11-02T21:56:18.733Z"
+  },
+  {
+    "marketPence": 22999,
+    "currency": "GBP",
+    "title": "Pokemon Matchless Fighters s5a Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-matchless-fighters-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-matchless-fighters",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:18.737Z",
+    "asOf": "2026-11-02T21:56:18.737Z"
+  },
+  {
+    "marketPence": 24999,
+    "currency": "GBP",
+    "title": "Pokemon Infinity Zone s3 Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-infinity-zone-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-infinity-zone",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:18.742Z",
+    "asOf": "2026-11-02T21:56:18.742Z"
+  },
+  {
+    "marketPence": 12999,
+    "currency": "GBP",
+    "title": "Pokemon Shiny Star V High Class s4a Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-shiny-star-v-high-class-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-shiny-star-v-high-class",
+      "type": "Booster box",
+      "packs": 10,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 10
+    },
+    "observedAt": "2026-11-02T21:56:18.789Z",
+    "asOf": "2026-11-02T21:56:18.789Z"
+  },
+  {
+    "marketPence": 26999,
+    "currency": "GBP",
+    "title": "Pokemon Rebellion Crash s2 Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-rebellion-crash-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-rebellion-crash",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:18.881Z",
+    "asOf": "2026-11-02T21:56:18.881Z"
+  },
+  {
+    "marketPence": 24999,
+    "currency": "GBP",
+    "title": "Pokemon Sword s1W Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-sword-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-sword",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:18.926Z",
+    "asOf": "2026-11-02T21:56:18.926Z"
+  },
+  {
+    "marketPence": 39999,
+    "currency": "GBP",
+    "title": "Pokemon VMAX Rising s1a Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-vmax-rising-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-vmax-rising",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:18.978Z",
+    "asOf": "2026-11-02T21:56:18.978Z"
+  },
+  {
+    "marketPence": 19999,
+    "currency": "GBP",
+    "title": "Pokemon Explosive Flame Walker s2a Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-explosive-flame-walker-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-explosive-flame-walker",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:18.992Z",
+    "asOf": "2026-11-02T21:56:18.992Z"
+  },
+  {
+    "marketPence": 74999,
+    "currency": "GBP",
+    "title": "Pokemon Tag Team All Stars GX sm12a Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-tag-team-all-stars-gx-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-tag-team-all-stars-gx",
+      "type": "Booster box",
+      "packs": 10,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 11
+    },
+    "observedAt": "2026-11-02T21:56:19.078Z",
+    "asOf": "2026-11-02T21:56:19.078Z"
+  },
+  {
+    "marketPence": 42999,
+    "currency": "GBP",
+    "title": "Pokemon Alter Genesis sm12 Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-alter-genesis-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-alter-genesis",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:19.099Z",
+    "asOf": "2026-11-02T21:56:19.099Z"
+  },
+  {
+    "marketPence": 69999,
+    "currency": "GBP",
+    "title": "Pokemon Remix Bout sm11a Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-remix-bout-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-remix-bout",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:19.135Z",
+    "asOf": "2026-11-02T21:56:19.135Z"
+  },
+  {
+    "marketPence": 64999,
+    "currency": "GBP",
+    "title": "Pokemon Dream League sm11b Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-dream-league-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-dream-league",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:19.143Z",
+    "asOf": "2026-11-02T21:56:19.143Z"
+  },
+  {
+    "marketPence": 24999,
+    "currency": "GBP",
+    "title": "Pokemon Dark Order sm8a Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-dark-order-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-dark-order",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:19.302Z",
+    "asOf": "2026-11-02T21:56:19.302Z"
+  },
+  {
+    "marketPence": 52999,
+    "currency": "GBP",
+    "title": "Pokemon Sky Legend sm10b Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-sky-legend-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-sky-legend",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:19.343Z",
+    "asOf": "2026-11-02T21:56:19.343Z"
+  },
+  {
+    "marketPence": 49999,
+    "currency": "GBP",
+    "title": "Pokemon Detective Pikachu smP2 Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-detective-pikachu-smp2-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-detective-pikachu-smp2",
+      "type": "Booster box",
+      "packs": 20,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 4
+    },
+    "observedAt": "2026-11-02T21:56:19.363Z",
+    "asOf": "2026-11-02T21:56:19.363Z"
+  },
+  {
+    "marketPence": 44999,
+    "currency": "GBP",
+    "title": "Pokemon Full Metal Wall sm9b Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-full-metal-wall-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-full-metal-wall",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:19.393Z",
+    "asOf": "2026-11-02T21:56:19.393Z"
+  },
+  {
+    "marketPence": 59999,
+    "currency": "GBP",
+    "title": "Pokemon Super Burst Impact sm8 Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-super-burst-impact-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-super-burst-impact",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:19.466Z",
+    "asOf": "2026-11-02T21:56:19.466Z"
+  },
+  {
+    "marketPence": 54999,
+    "currency": "GBP",
+    "title": "Pokemon Fairy Rise sm7b Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-fairy-rise-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-fairy-rise",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:19.498Z",
+    "asOf": "2026-11-02T21:56:19.498Z"
+  },
+  {
+    "marketPence": 42999,
+    "currency": "GBP",
+    "title": "Pokemon Thunderclap Spark sm7a Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-thunderclap-spark-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-thunderclap-spark",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:19.529Z",
+    "asOf": "2026-11-02T21:56:19.529Z"
+  },
+  {
+    "marketPence": 49999,
+    "currency": "GBP",
+    "title": "Pokemon Forbidden Light sm6 Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-forbidden-light-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-forbidden-light",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:19.679Z",
+    "asOf": "2026-11-02T21:56:19.679Z"
+  },
+  {
+    "marketPence": 2499,
+    "currency": "GBP",
+    "title": "Pokemon Gem Pack Vol. 6 CBB6 C Simplified Chinese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-gem-pack-vol-6-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-gem-pack-vol-6",
+      "type": "Booster box",
+      "packs": 18,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 4
+    },
+    "observedAt": "2026-11-02T21:56:19.748Z",
+    "asOf": "2026-11-02T21:56:19.748Z"
+  },
+  {
+    "marketPence": 7999,
+    "currency": "GBP",
+    "title": "Pokemon 30th Celebration 30th C Simplified Chinese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-30th-celebration-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-30th-celebration",
+      "type": "Booster box",
+      "packs": 20,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 6
+    },
+    "observedAt": "2026-11-02T21:56:19.754Z",
+    "asOf": "2026-11-02T21:56:19.754Z"
+  },
+  {
+    "marketPence": 36999,
+    "currency": "GBP",
+    "title": "Pokemon Ultra Force sm5+ Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-ultra-force-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-ultra-force",
+      "type": "Booster box",
+      "packs": 20,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:19.765Z",
+    "asOf": "2026-11-02T21:56:19.765Z"
+  },
+  {
+    "marketPence": 4299,
+    "currency": "GBP",
+    "title": "Pokemon Pursue Glory Together csv10 C Simplified Chinese Jumbo Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-pursue-glory-together-jumbo-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-pursue-glory-together",
+      "type": "Jumbo booster box",
+      "packs": 6,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 20
+    },
+    "observedAt": "2026-11-02T21:56:19.878Z",
+    "asOf": "2026-11-02T21:56:19.878Z"
+  },
+  {
+    "marketPence": 2499,
+    "currency": "GBP",
+    "title": "Pokemon Stellar Crystal csv9 C Simplified Chinese Slim Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-stellar-crystal-slim-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-stellar-crystal",
+      "type": "Slim booster box",
+      "packs": 15,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:19.902Z",
+    "asOf": "2026-11-02T21:56:19.902Z"
+  },
+  {
+    "marketPence": 4499,
+    "currency": "GBP",
+    "title": "Pokemon Stellar Crystal csv9 C Simplified Chinese Jumbo Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-stellar-crystal-jumbo-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-stellar-crystal",
+      "type": "Jumbo booster box",
+      "packs": 6,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 20
+    },
+    "observedAt": "2026-11-02T21:56:19.912Z",
+    "asOf": "2026-11-02T21:56:19.912Z"
+  },
+  {
+    "marketPence": 3999,
+    "currency": "GBP",
+    "title": "Pokemon Gem Pack Vol. 5 CBB5 C Simplified Chinese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-gem-pack-vol-5-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-gem-pack-vol-5",
+      "type": "Booster box",
+      "packs": 18,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 4
+    },
+    "observedAt": "2026-11-02T21:56:20.007Z",
+    "asOf": "2026-11-02T21:56:20.007Z"
+  },
+  {
+    "marketPence": 2399,
+    "currency": "GBP",
+    "title": "Pokemon Brilliant Illusions csv8 C Simplified Chinese Slim Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-brilliant-illusions-slim-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-brilliant-illusions",
+      "type": "Slim booster box",
+      "packs": 15,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:20.038Z",
+    "asOf": "2026-11-02T21:56:20.038Z"
+  },
+  {
+    "marketPence": 2999,
+    "currency": "GBP",
+    "title": "Pokemon Brilliant Illusions csv8 C Simplified Chinese Jumbo Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-brilliant-illusions-jumbo-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-brilliant-illusions",
+      "type": "Jumbo booster box",
+      "packs": 6,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 20
+    },
+    "observedAt": "2026-11-02T21:56:20.134Z",
+    "asOf": "2026-11-02T21:56:20.134Z"
+  },
+  {
+    "marketPence": 2699,
+    "currency": "GBP",
+    "title": "Pokemon Gem Pack Vol. 4 CBB4 C Simplified Chinese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-gem-pack-vol-4-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-gem-pack-vol-4",
+      "type": "Booster box",
+      "packs": 18,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 4
+    },
+    "observedAt": "2026-11-02T21:56:20.141Z",
+    "asOf": "2026-11-02T21:56:20.141Z"
+  },
+  {
+    "marketPence": 2399,
+    "currency": "GBP",
+    "title": "Pokemon Blade Awakening csv7 C Simplified Chinese Slim Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-blade-awakening-slim-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-blade-awakening",
+      "type": "Slim booster box",
+      "packs": 15,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:20.227Z",
+    "asOf": "2026-11-02T21:56:20.227Z"
+  },
+  {
+    "marketPence": 3299,
+    "currency": "GBP",
+    "title": "Pokemon Blade Awakening csv7 C Simplified Chinese Jumbo Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-blade-awakening-jumbo-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-blade-awakening",
+      "type": "Jumbo booster box",
+      "packs": 6,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 20
+    },
+    "observedAt": "2026-11-02T21:56:20.302Z",
+    "asOf": "2026-11-02T21:56:20.302Z"
+  },
+  {
+    "marketPence": 2199,
+    "currency": "GBP",
+    "title": "Pokemon Paradox Veil csv6 C Simplified Chinese Slim Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-paradox-veil-slim-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-paradox-veil",
+      "type": "Slim booster box",
+      "packs": 15,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:20.324Z",
+    "asOf": "2026-11-02T21:56:20.324Z"
+  },
+  {
+    "marketPence": 3299,
+    "currency": "GBP",
+    "title": "Pokemon Paradox Veil csv6 C Simplified Chinese Jumbo Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-paradox-veil-jumbo-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-paradox-veil",
+      "type": "Jumbo booster box",
+      "packs": 6,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 20
+    },
+    "observedAt": "2026-11-02T21:56:20.448Z",
+    "asOf": "2026-11-02T21:56:20.448Z"
+  },
+  {
+    "marketPence": 5999,
+    "currency": "GBP",
+    "title": "Pokemon Collect 151 Gathering 151 C Simplified Chinese Slim Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-collect-151-gathering-151-c-slim-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-collect-151-gathering-151-c",
+      "type": "Slim booster box",
+      "packs": 15,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:20.478Z",
+    "asOf": "2026-11-02T21:56:20.478Z"
+  },
+  {
+    "marketPence": 8999,
+    "currency": "GBP",
+    "title": "Pokemon Collect 151 Gathering 151 C Simplified Chinese Jumbo Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-collect-151-gathering-151-c-jumbo-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-collect-151-gathering-151-c",
+      "type": "Jumbo booster box",
+      "packs": 6,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 20
+    },
+    "observedAt": "2026-11-02T21:56:21.070Z",
+    "asOf": "2026-11-02T21:56:21.070Z"
+  },
+  {
+    "marketPence": 2999,
+    "currency": "GBP",
+    "title": "Pokemon Black Crystal Blaze csv5 C Simplified Chinese Slim Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-black-crystal-blaze-slim-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-black-crystal-blaze",
+      "type": "Slim booster box",
+      "packs": 15,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:21.087Z",
+    "asOf": "2026-11-02T21:56:21.087Z"
+  },
+  {
+    "marketPence": 3799,
+    "currency": "GBP",
+    "title": "Pokemon Black Crystal Blaze csv5 C Simplified Chinese Jumbo Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-black-crystal-blaze-jumbo-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-black-crystal-blaze",
+      "type": "Jumbo booster box",
+      "packs": 6,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 20
+    },
+    "observedAt": "2026-11-02T21:56:21.092Z",
+    "asOf": "2026-11-02T21:56:21.092Z"
+  },
+  {
+    "marketPence": 17999,
+    "currency": "GBP",
+    "title": "Pokemon Collect 151 Surprise 151 C Simplified Chinese Jumbo Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-collect-151-surprise-151-c-jumbo-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-collect-151-surprise-151-c",
+      "type": "Jumbo booster box",
+      "packs": 6,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 20
+    },
+    "observedAt": "2026-11-02T21:56:21.096Z",
+    "asOf": "2026-11-02T21:56:21.096Z"
+  },
+  {
+    "marketPence": 9999,
+    "currency": "GBP",
+    "title": "Pokemon Collect 151 Hope 151 C Simplified Chinese Jumbo Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-collect-151-hope-151-c-jumbo-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-collect-151-hope-151-c",
+      "type": "Jumbo booster box",
+      "packs": 6,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 20
+    },
+    "observedAt": "2026-11-02T21:56:21.228Z",
+    "asOf": "2026-11-02T21:56:21.228Z"
+  },
+  {
+    "marketPence": 8999,
+    "currency": "GBP",
+    "title": "Pokemon Collect 151 Journey 151 C Simplified Chinese Jumbo Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-collect-151-journey-151-c-jumbo-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-collect-151-journey-151-c",
+      "type": "Jumbo booster box",
+      "packs": 6,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 20
+    },
+    "observedAt": "2026-11-02T21:56:21.237Z",
+    "asOf": "2026-11-02T21:56:21.237Z"
+  },
+  {
+    "marketPence": 6499,
+    "currency": "GBP",
+    "title": "Pokemon Eternal Beginnings csv1 C Simplified Chinese Slim Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-eternal-beginnings-slim-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-eternal-beginnings",
+      "type": "Slim booster box",
+      "packs": 24,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:21.329Z",
+    "asOf": "2026-11-02T21:56:21.329Z"
+  },
+  {
+    "marketPence": 10499,
+    "currency": "GBP",
+    "title": "Pokemon Fearless Terastal csv3 C Simplified Chinese Slim Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-fearless-terastal-slim-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-fearless-terastal",
+      "type": "Slim booster box",
+      "packs": 24,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:21.335Z",
+    "asOf": "2026-11-02T21:56:21.335Z"
+  },
+  {
+    "marketPence": 8499,
+    "currency": "GBP",
+    "title": "Pokemon Eternal Beginnings csv1 C Simplified Chinese Jumbo Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-eternal-beginnings-jumbo-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-eternal-beginnings",
+      "type": "Jumbo booster box",
+      "packs": 6,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 20
+    },
+    "observedAt": "2026-11-02T21:56:21.393Z",
+    "asOf": "2026-11-02T21:56:21.393Z"
+  },
+  {
+    "marketPence": 7999,
+    "currency": "GBP",
+    "title": "Pokemon Shadow Of The Blue Sea Giratina cs6b C Simplified Chinese Slim Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-shadow-of-the-blue-sea-giratina-slim-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-shadow-of-the-blue-sea-giratina",
+      "type": "Slim booster box",
+      "packs": 24,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:21.404Z",
+    "asOf": "2026-11-02T21:56:21.404Z"
+  },
+  {
+    "marketPence": 7299,
+    "currency": "GBP",
+    "title": "Pokemon Shadow of Glory cs5.5 C Simplified Chinese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-shadow-of-glory-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-shadow-of-glory",
+      "type": "Booster box",
+      "packs": 20,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 6
+    },
+    "observedAt": "2026-11-02T21:56:21.547Z",
+    "asOf": "2026-11-02T21:56:21.547Z"
+  },
+  {
+    "marketPence": 9999,
+    "currency": "GBP",
+    "title": "Pokemon Shadow Of The Blue Sea Lugia cs6a C Simplified Chinese Slim Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-shadow-of-the-blue-sea-lugia-slim-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-shadow-of-the-blue-sea-lugia",
+      "type": "Slim booster box",
+      "packs": 24,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:21.600Z",
+    "asOf": "2026-11-02T21:56:21.600Z"
+  },
+  {
+    "marketPence": 10999,
+    "currency": "GBP",
+    "title": "Pokemon Shadow Of The Blue Sea Lugia cs6a C Simplified Chinese Jumbo Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-shadow-of-the-blue-sea-lugia-jumbo-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-shadow-of-the-blue-sea-lugia",
+      "type": "Jumbo booster box",
+      "packs": 6,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 25
+    },
+    "observedAt": "2026-11-02T21:56:21.613Z",
+    "asOf": "2026-11-02T21:56:21.613Z"
+  },
+  {
+    "marketPence": 7499,
+    "currency": "GBP",
+    "title": "Pokemon Brave Stars Lucario cs5b C Simplified Chinese Slim Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-brave-stars-lucario-slim-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-brave-stars-lucario",
+      "type": "Slim booster box",
+      "packs": 24,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:21.678Z",
+    "asOf": "2026-11-02T21:56:21.678Z"
+  },
+  {
+    "marketPence": 5799,
+    "currency": "GBP",
+    "title": "Pokemon Brave Stars Lucario cs5b C Simplified Chinese Jumbo Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-brave-stars-lucario-jumbo-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-brave-stars-lucario",
+      "type": "Jumbo booster box",
+      "packs": 6,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 25
+    },
+    "observedAt": "2026-11-02T21:56:21.700Z",
+    "asOf": "2026-11-02T21:56:21.700Z"
+  },
+  {
+    "marketPence": 8999,
+    "currency": "GBP",
+    "title": "Pokemon Nine Colors Gathering Mew cs4b C Simplified Chinese Jumbo Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-nine-colors-gathering-mew-jumbo-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-nine-colors-gathering-mew",
+      "type": "Jumbo booster box",
+      "packs": 6,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 25
+    },
+    "observedAt": "2026-11-02T21:56:21.857Z",
+    "asOf": "2026-11-02T21:56:21.857Z"
+  },
+  {
+    "marketPence": 7299,
+    "currency": "GBP",
+    "title": "Pokemon Brave Stars Typhlosion cs5a C Simplified Chinese Jumbo Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-brave-stars-typhlosion-jumbo-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-brave-stars-typhlosion",
+      "type": "Jumbo booster box",
+      "packs": 6,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 25
+    },
+    "observedAt": "2026-11-02T21:56:21.876Z",
+    "asOf": "2026-11-02T21:56:21.876Z"
+  },
+  {
+    "marketPence": 3499,
+    "currency": "GBP",
+    "title": "Pokemon Final Flame Dance cs4.5 C Simplified Chinese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-final-flame-dance-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-final-flame-dance",
+      "type": "Booster box",
+      "packs": 20,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 6
+    },
+    "observedAt": "2026-11-02T21:56:21.891Z",
+    "asOf": "2026-11-02T21:56:21.891Z"
+  },
+  {
+    "marketPence": 15999,
+    "currency": "GBP",
+    "title": "Pokemon Nine Colors Gathering Eevee Heroes cs4a C Simplified Chinese Jumbo Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-nine-colors-gathering-eevee-heroes-jumbo-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-nine-colors-gathering-eevee-heroes",
+      "type": "Jumbo booster box",
+      "packs": 6,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 25
+    },
+    "observedAt": "2026-11-02T21:56:21.899Z",
+    "asOf": "2026-11-02T21:56:21.899Z"
+  },
+  {
+    "marketPence": 3799,
+    "currency": "GBP",
+    "title": "Pokemon Brilliant Counterattack cs2.5 C Simplified Chinese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-brilliant-counterattack-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-brilliant-counterattack",
+      "type": "Booster box",
+      "packs": 20,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 6
+    },
+    "observedAt": "2026-11-02T21:56:22.062Z",
+    "asOf": "2026-11-02T21:56:22.062Z"
+  },
+  {
+    "marketPence": 21999,
+    "currency": "GBP",
+    "title": "Pokemon Vivid Portrayals Charizard cs2a C Simplified Chinese Jumbo Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-vivid-portrayals-charizard-jumbo-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-vivid-portrayals-charizard",
+      "type": "Jumbo booster box",
+      "packs": 24,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 25
+    },
+    "observedAt": "2026-11-02T21:56:22.068Z",
+    "asOf": "2026-11-02T21:56:22.068Z"
+  },
+  {
+    "marketPence": 5499,
+    "currency": "GBP",
+    "title": "Pokemon Primordial Arts Blastoise cs3b C Simplified Chinese Jumbo Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-primordial-arts-blastoise-jumbo-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-primordial-arts-blastoise",
+      "type": "Jumbo booster box",
+      "packs": 6,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 25
+    },
+    "observedAt": "2026-11-02T21:56:22.104Z",
+    "asOf": "2026-11-02T21:56:22.104Z"
+  },
+  {
+    "marketPence": 5499,
+    "currency": "GBP",
+    "title": "Pokemon Primordial Arts Venusaur cs3a C Simplified Chinese Jumbo Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-primordial-arts-venusaur-jumbo-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-primordial-arts-venusaur",
+      "type": "Jumbo booster box",
+      "packs": 6,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 25
+    },
+    "observedAt": "2026-11-02T21:56:22.125Z",
+    "asOf": "2026-11-02T21:56:22.125Z"
+  },
+  {
+    "marketPence": 4999,
+    "currency": "GBP",
+    "title": "Pokemon Extreme Attack & Defence cs1.5 C Simplified Chinese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-extreme-attack-defence-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-extreme-attack-defence",
+      "type": "Booster box",
+      "packs": 20,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 6
+    },
+    "observedAt": "2026-11-02T21:56:22.216Z",
+    "asOf": "2026-11-02T21:56:22.216Z"
+  },
+  {
+    "marketPence": 14999,
+    "currency": "GBP",
+    "title": "Pokemon Dynamax Clash cs1b C Simplified Chinese Jumbo Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-dynamax-clash-jumbo-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-dynamax-clash",
+      "type": "Jumbo booster box",
+      "packs": 24,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 25
+    },
+    "observedAt": "2026-11-02T21:56:22.259Z",
+    "asOf": "2026-11-02T21:56:22.259Z"
+  },
+  {
+    "marketPence": 31999,
+    "currency": "GBP",
+    "title": "Pokemon Shine Together csm2c C Simplified Chinese Slim Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-shine-together-csm2c-c-slim-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-shine-together-csm2c-c",
+      "type": "Slim booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:22.273Z",
+    "asOf": "2026-11-02T21:56:22.273Z"
+  },
+  {
+    "marketPence": 5699,
+    "currency": "GBP",
+    "title": "Pokemon Dynamax Clash cs1b C Simplified Chinese Slim Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-dynamax-clash-slim-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-dynamax-clash",
+      "type": "Slim booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:22.328Z",
+    "asOf": "2026-11-02T21:56:22.328Z"
+  },
+  {
+    "marketPence": 41999,
+    "currency": "GBP",
+    "title": "Pokemon Shine Together csm2b C Simplified Chinese Slim Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-shine-together-csm2b-c-slim-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-shine-together-csm2b-c",
+      "type": "Slim booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:22.359Z",
+    "asOf": "2026-11-02T21:56:22.359Z"
+  },
+  {
+    "marketPence": 8999,
+    "currency": "GBP",
+    "title": "Pokemon Battle Elite csm1.5 C Simplified Chinese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-battle-elite-csm1-5-c-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-battle-elite-csm1-5-c",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 6
+    },
+    "observedAt": "2026-11-02T21:56:22.404Z",
+    "asOf": "2026-11-02T21:56:22.404Z"
+  },
+  {
+    "marketPence": 27999,
+    "currency": "GBP",
+    "title": "Pokemon Storming Emergence csm1c C Simplified Chinese Slim Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-storming-emergence-csm1c-c-slim-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-storming-emergence-csm1c-c",
+      "type": "Slim booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:22.433Z",
+    "asOf": "2026-11-02T21:56:22.433Z"
+  },
+  {
+    "marketPence": 79999,
+    "currency": "GBP",
+    "title": "Pokemon Storming Emergence csm1c C Simplified Chinese Jumbo Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-storming-emergence-csm1c-c-jumbo-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-storming-emergence-csm1c-c",
+      "type": "Jumbo booster box",
+      "packs": 24,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 25
+    },
+    "observedAt": "2026-11-02T21:56:22.566Z",
+    "asOf": "2026-11-02T21:56:22.566Z"
+  },
+  {
+    "marketPence": 4999,
+    "currency": "GBP",
+    "title": "Pokemon Storm Emeralda m6 Korean Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "ko-storm-emeralda-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-storm-emeralda",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:22.606Z",
+    "asOf": "2026-11-02T21:56:22.606Z"
+  },
+  {
+    "marketPence": 8999,
+    "currency": "GBP",
+    "title": "Pokemon 30th Celebration m6a Korean Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "ko-30th-celebration-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-30th-celebration",
+      "type": "Booster box",
+      "packs": 20,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 6
+    },
+    "observedAt": "2026-11-02T21:56:22.618Z",
+    "asOf": "2026-11-02T21:56:22.618Z"
+  },
+  {
+    "marketPence": 99999,
+    "currency": "GBP",
+    "title": "Pokemon Storming Emergence csm1b C Simplified Chinese Jumbo Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "cn-storming-emergence-csm1b-c-jumbo-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-storming-emergence-csm1b-c",
+      "type": "Jumbo booster box",
+      "packs": 24,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 25
+    },
+    "observedAt": "2026-11-02T21:56:22.625Z",
+    "asOf": "2026-11-02T21:56:22.625Z"
+  },
+  {
+    "marketPence": 4999,
+    "currency": "GBP",
+    "title": "Pokemon Inferno X m2 Korean Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "ko-inferno-x-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-inferno-x",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:22.789Z",
+    "asOf": "2026-11-02T21:56:22.789Z"
+  },
+  {
+    "marketPence": 7499,
+    "currency": "GBP",
+    "title": "Pokemon Mega Dream ex High Class m2a Korean Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "ko-mega-dream-ex-high-class-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-mega-dream-ex-high-class",
+      "type": "Booster box",
+      "packs": 10,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 10
+    },
+    "observedAt": "2026-11-02T21:56:22.798Z",
+    "asOf": "2026-11-02T21:56:22.798Z"
+  },
+  {
+    "marketPence": 4299,
+    "currency": "GBP",
+    "title": "Pokemon Abyss Eye m5 Korean Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "ko-abyss-eye-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-abyss-eye",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:22.845Z",
+    "asOf": "2026-11-02T21:56:22.845Z"
+  },
+  {
+    "marketPence": 5299,
+    "currency": "GBP",
+    "title": "Pokemon Glory of Team Rocket sv10 Korean Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "ko-glory-of-team-rocket-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-glory-of-team-rocket",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:23.083Z",
+    "asOf": "2026-11-02T21:56:23.083Z"
+  },
+  {
+    "marketPence": 5699,
+    "currency": "GBP",
+    "title": "Pokemon Super Electric Breaker sv8 Korean Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "ko-super-electric-breaker-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-super-electric-breaker",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:23.242Z",
+    "asOf": "2026-11-02T21:56:23.242Z"
+  },
+  {
+    "marketPence": 12499,
+    "currency": "GBP",
+    "title": "Pokemon Lost Abyss s11 Korean Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "ko-lost-abyss-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-lost-abyss",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:30.552Z",
+    "asOf": "2026-11-02T21:56:30.552Z"
+  },
+  {
+    "marketPence": 10999,
+    "currency": "GBP",
+    "title": "Pokemon Blue Sky Stream s7R Korean Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "ko-blue-sky-stream-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-blue-sky-stream",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T21:56:37.870Z",
+    "asOf": "2026-11-02T21:56:37.870Z"
+  },
+  {
+    "marketPence": 15999,
+    "currency": "GBP",
+    "title": "Pokemon White Flare sv11W Japanese Deluxe Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-white-flare-deluxe-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-white-flare-deluxe",
+      "type": "Booster box",
+      "packs": 4,
+      "unit": "1 retail unit",
+      "edition": "Deluxe",
+      "cardsPerPack": 35
+    },
+    "observedAt": "2026-11-02T21:56:16.689Z",
+    "asOf": "2026-11-02T21:56:16.689Z"
+  },
+  {
+    "marketPence": 16999,
+    "currency": "GBP",
+    "title": "Pokemon Black Bolt sv11B Japanese Deluxe Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-black-bolt-deluxe-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-black-bolt-deluxe",
+      "type": "Booster box",
+      "packs": 4,
+      "unit": "1 retail unit",
+      "edition": "Deluxe",
+      "cardsPerPack": 35
+    },
+    "observedAt": "2026-11-02T21:56:16.764Z",
+    "asOf": "2026-11-02T21:56:16.764Z"
+  },
+  {
+    "marketPence": 19999,
+    "currency": "GBP",
+    "title": "Pokemon VSTAR Universe s12a High Class Japanese Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "jp-vstar-universe-high-class-box",
+    "sourceId": "japan2uk",
+    "identity": {
+      "language": "Japanese",
+      "setKey": "jp-vstar-universe-high-class",
+      "type": "Booster box",
+      "packs": 10,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 10
+    },
+    "observedAt": "2026-11-02T21:56:17.998Z",
+    "asOf": "2026-11-02T21:56:17.998Z"
+  },
+  {
+    "marketPence": 6999,
+    "currency": "GBP",
+    "title": "Pokémon TCG: Scarlet & Violet-Black Bolt Booster Bundle (6 Packs, English)",
+    "providerUpdatedAt": null,
+    "productId": "black-bundle",
+    "sourceId": "crackthepack",
+    "identity": {
+      "language": "English",
+      "setKey": "black-bolt",
+      "type": "Booster bundle",
+      "packs": 6,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": null
+    },
+    "observedAt": "2026-11-02T21:54:24.703Z",
+    "asOf": "2026-11-02T21:54:24.703Z"
+  },
+  {
+    "marketPence": 6499,
+    "currency": "GBP",
+    "title": "Pokémon TCG: Scarlet & Violet—White Flare Booster Bundle (6 Packs, English)",
+    "providerUpdatedAt": null,
+    "productId": "white-bundle",
+    "sourceId": "crackthepack",
+    "identity": {
+      "language": "English",
+      "setKey": "white-flare",
+      "type": "Booster bundle",
+      "packs": 6,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": null
+    },
+    "observedAt": "2026-11-02T21:54:24.765Z",
+    "asOf": "2026-11-02T21:54:24.765Z"
+  },
+  {
+    "marketPence": 11999,
+    "currency": "GBP",
+    "title": "Pokémon TCG: Mega Evolution-Phantasmal Flames Elite Trainer Box (English)",
+    "providerUpdatedAt": null,
+    "productId": "phantasmal-etb",
+    "sourceId": "crackthepack",
+    "identity": {
+      "language": "English",
+      "setKey": "phantasmal-flames",
+      "type": "Elite Trainer Box",
+      "packs": 9,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": null
+    },
+    "observedAt": "2026-11-02T21:54:25.086Z",
+    "asOf": "2026-11-02T21:54:25.086Z"
+  },
+  {
+    "marketPence": 34999,
+    "currency": "GBP",
+    "title": "Pokémon TCG: Mega Evolution-Phantasmal Flames Booster Box (36 Packs, English)",
+    "providerUpdatedAt": null,
+    "productId": "phantasmal-box",
+    "sourceId": "crackthepack",
+    "identity": {
+      "language": "English",
+      "setKey": "phantasmal-flames",
+      "type": "Booster box",
+      "packs": 36,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": null
+    },
+    "observedAt": "2026-11-02T21:54:25.271Z",
+    "asOf": "2026-11-02T21:54:25.271Z"
+  },
+  {
+    "marketPence": 24999,
+    "currency": "GBP",
+    "title": "Pokémon TCG: Mega Charizard X ex Ultra Premium Collection (English)",
+    "providerUpdatedAt": null,
+    "productId": "charizard-upc",
+    "sourceId": "crackthepack",
+    "identity": {
+      "language": "English",
+      "setKey": "collections",
+      "type": "Ultra-Premium Collection",
+      "packs": 18,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": null
+    },
+    "observedAt": "2026-11-02T21:54:25.541Z",
+    "asOf": "2026-11-02T21:54:25.541Z"
+  },
+  {
+    "marketPence": 3995,
+    "currency": "GBP",
+    "title": "ME Phantasmal Flames 3 Pack Blister Weavile",
+    "providerUpdatedAt": null,
+    "productId": "phantasmal-blister",
+    "sourceId": "magicmadhouse",
+    "identity": {
+      "language": "English",
+      "setKey": "phantasmal-flames",
+      "type": "3-pack blister",
+      "packs": 3,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": null
+    },
+    "observedAt": "2026-11-02T21:54:29.639Z",
+    "asOf": "2026-11-02T21:54:29.639Z"
+  },
+  {
+    "marketPence": 9999,
+    "currency": "GBP",
+    "title": "Pokémon TCG: Scarlet & Violet-Black Bolt Elite Trainer Box (English)",
+    "providerUpdatedAt": null,
+    "productId": "black-etb",
+    "sourceId": "crackthepack",
+    "identity": {
+      "language": "English",
+      "setKey": "black-bolt",
+      "type": "Elite Trainer Box",
+      "packs": 9,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": null
+    },
+    "observedAt": "2026-11-02T21:54:24.686Z",
+    "asOf": "2026-11-02T21:54:24.686Z"
+  },
+  {
+    "marketPence": 9999,
+    "currency": "GBP",
+    "title": "Pokémon TCG: Scarlet & Violet-White Flare Elite Trainer Box (English)",
+    "providerUpdatedAt": null,
+    "productId": "white-etb",
+    "sourceId": "crackthepack",
+    "identity": {
+      "language": "English",
+      "setKey": "white-flare",
+      "type": "Elite Trainer Box",
+      "packs": 9,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": null
+    },
+    "observedAt": "2026-11-02T21:54:24.877Z",
+    "asOf": "2026-11-02T21:54:24.877Z"
+  },
+  {
+    "marketPence": 17999,
+    "currency": "GBP",
+    "title": "Pokémon TCG: Scarlet & Violet-Prismatic Evolutions Elite Trainer Box (English)",
+    "providerUpdatedAt": null,
+    "productId": "prism-etb",
+    "sourceId": "crackthepack",
+    "identity": {
+      "language": "English",
+      "setKey": "prismatic-evolutions",
+      "type": "Elite Trainer Box",
+      "packs": 9,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": null
+    },
+    "observedAt": "2026-11-02T21:54:24.901Z",
+    "asOf": "2026-11-02T21:54:24.901Z"
+  },
+  {
+    "marketPence": 23999,
+    "currency": "GBP",
+    "title": "Pokémon TCG: Scarlet & Violet-Journey Together Booster Box (36 Packs, English)",
+    "providerUpdatedAt": null,
+    "productId": "journey-box",
+    "sourceId": "crackthepack",
+    "identity": {
+      "language": "English",
+      "setKey": "journey-together",
+      "type": "Booster box",
+      "packs": 36,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": null
+    },
+    "observedAt": "2026-11-02T21:54:25.256Z",
+    "asOf": "2026-11-02T21:54:25.256Z"
+  },
+  {
+    "marketPence": 8495,
+    "currency": "GBP",
+    "title": "SV Prismatic Evolutions Accessory Pouch Special Collection",
+    "providerUpdatedAt": null,
+    "productId": "prism-pouch",
+    "sourceId": "magicmadhouse",
+    "identity": {
+      "language": "English",
+      "setKey": "prismatic-evolutions",
+      "type": "Special collection",
+      "packs": 5,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": null
+    },
+    "observedAt": "2026-11-02T21:54:30.031Z",
+    "asOf": "2026-11-02T21:54:30.031Z"
+  },
+  {
+    "marketPence": 1645,
+    "currency": "GBP",
+    "title": "ME Phantasmal Flames Premium Checklane Blister Hydrapple",
+    "providerUpdatedAt": null,
+    "productId": "phantasmal-checklane",
+    "sourceId": "magicmadhouse",
+    "identity": {
+      "language": "English",
+      "setKey": "phantasmal-flames",
+      "type": "Premium checklane blister",
+      "packs": 1,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": null
+    },
+    "observedAt": "2026-11-02T21:54:31.367Z",
+    "asOf": "2026-11-02T21:54:31.367Z"
+  },
+  {
+    "marketPence": 5999,
+    "currency": "GBP",
+    "title": "Pokemon Terastal Gathering Booster Box (Simplified Chinese)",
+    "providerUpdatedAt": null,
+    "productId": "cn-terastal-grand-box",
+    "sourceId": "eternacards",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-terastal-grand-crystal-gathering",
+      "type": "Booster box",
+      "packs": 10,
+      "unit": "1 retail box",
+      "edition": "standard",
+      "cardsPerPack": 10
+    },
+    "observedAt": "2026-11-02T21:56:09.448Z",
+    "asOf": "2026-11-02T21:56:09.448Z"
+  },
+  {
+    "marketPence": 6200,
+    "currency": "GBP",
+    "title": "Korean White Flare sv11W Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "ko-white-box",
+    "sourceId": "hammerheadtcg",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-white-flare",
+      "type": "Booster box",
+      "packs": 20,
+      "unit": "1 retail box",
+      "edition": "standard",
+      "cardsPerPack": 7
+    },
+    "observedAt": "2026-11-02T21:56:10.458Z",
+    "asOf": "2026-11-02T21:56:10.458Z"
+  },
+  {
+    "marketPence": 5995,
+    "currency": "GBP",
+    "title": "Pokémon Terastal Grand Gathering Simplified Chinese Booster Box (csv9.5 C)",
+    "providerUpdatedAt": null,
+    "productId": "cn-terastal-grand-box",
+    "sourceId": "bestboosterboxes",
+    "identity": {
+      "language": "Simplified Chinese",
+      "setKey": "cn-terastal-grand-crystal-gathering",
+      "type": "Booster box",
+      "packs": 10,
+      "unit": "1 retail box",
+      "edition": "standard",
+      "cardsPerPack": 10
+    },
+    "observedAt": "2026-11-02T21:56:10.469Z",
+    "asOf": "2026-11-02T21:56:10.469Z"
+  },
+  {
+    "marketPence": 6200,
+    "currency": "GBP",
+    "title": "Korean Black Bolt sv11B Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "ko-black-box",
+    "sourceId": "hammerheadtcg",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-black-bolt",
+      "type": "Booster box",
+      "packs": 20,
+      "unit": "1 retail box",
+      "edition": "standard",
+      "cardsPerPack": 7
+    },
+    "observedAt": "2026-11-02T21:56:10.478Z",
+    "asOf": "2026-11-02T21:56:10.478Z"
+  },
+  {
+    "marketPence": 3995,
+    "currency": "GBP",
+    "title": "Booster Box Black Bolt | Pokémon | Korean - Standard price",
+    "providerUpdatedAt": null,
+    "productId": "ko-black-box",
+    "sourceId": "pullhouse",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-black-bolt",
+      "type": "Booster box",
+      "packs": 20,
+      "unit": "1 retail box",
+      "edition": "standard",
+      "cardsPerPack": 7
+    },
+    "observedAt": "2026-11-02T21:56:14.174Z",
+    "asOf": "2026-11-02T21:56:14.174Z"
+  },
+  {
+    "marketPence": 3995,
+    "currency": "GBP",
+    "title": "Booster Box White Flare | Pokémon | Korean - Standard price",
+    "providerUpdatedAt": null,
+    "productId": "ko-white-box",
+    "sourceId": "pullhouse",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-white-flare",
+      "type": "Booster box",
+      "packs": 20,
+      "unit": "1 retail box",
+      "edition": "standard",
+      "cardsPerPack": 7
+    },
+    "observedAt": "2026-11-02T21:56:14.281Z",
+    "asOf": "2026-11-02T21:56:14.281Z"
+  },
+  {
+    "marketPence": 33999,
+    "currency": "GBP",
+    "title": "Pokémon TCG: Scarlet & Violet-Prismatic Evolutions Super-Premium Collection (English)",
+    "providerUpdatedAt": null,
+    "productId": "en-scarlet-violet-8-5-prismatic-evolutions-super-premium-collection-super-premium-collection",
+    "sourceId": "crackthepack",
+    "identity": {
+      "language": "English",
+      "setKey": "prismatic-evolutions",
+      "type": "Super-Premium Collection",
+      "packs": 15,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": null
+    },
+    "observedAt": "2026-11-02T21:58:26.888Z",
+    "asOf": "2026-11-02T21:58:26.888Z"
+  },
+  {
+    "marketPence": 7499,
+    "currency": "GBP",
+    "title": "Pokémon TCG: Scarlet & Violet-Prismatic Evolutions Accessory Pouch Special Collection (English)",
+    "providerUpdatedAt": null,
+    "productId": "prism-pouch",
+    "sourceId": "crackthepack",
+    "identity": {
+      "language": "English",
+      "setKey": "prismatic-evolutions",
+      "type": "Special collection",
+      "packs": 5,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": null
+    },
+    "observedAt": "2026-11-02T21:58:27.186Z",
+    "asOf": "2026-11-02T21:58:27.186Z"
+  },
+  {
+    "marketPence": 4400,
+    "currency": "GBP",
+    "title": "Korean Abyss Eye Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "ko-abyss-eye-box",
+    "sourceId": "hammerheadtcg",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-abyss-eye",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T22:02:04.835Z",
+    "asOf": "2026-11-02T22:02:04.835Z"
+  },
+  {
+    "marketPence": 4800,
+    "currency": "GBP",
+    "title": "Korean Storm Emeralda Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "ko-storm-emeralda-box",
+    "sourceId": "hammerheadtcg",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-storm-emeralda",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T22:02:04.853Z",
+    "asOf": "2026-11-02T22:02:04.853Z"
+  },
+  {
+    "marketPence": 4300,
+    "currency": "GBP",
+    "title": "Korean Ninja Spinner Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "ko-ninja-spinner-box",
+    "sourceId": "hammerheadtcg",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-ninja-spinner",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T22:02:04.860Z",
+    "asOf": "2026-11-02T22:02:04.860Z"
+  },
+  {
+    "marketPence": 5000,
+    "currency": "GBP",
+    "title": "Korean Mega Inferno X Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "ko-inferno-x-box",
+    "sourceId": "hammerheadtcg",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-inferno-x",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T22:02:05.023Z",
+    "asOf": "2026-11-02T22:02:05.023Z"
+  },
+  {
+    "marketPence": 4400,
+    "currency": "GBP",
+    "title": "Korean Mega Symphonia Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "ko-mega-symphonia-box",
+    "sourceId": "hammerheadtcg",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-mega-symphonia",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T22:02:05.054Z",
+    "asOf": "2026-11-02T22:02:05.054Z"
+  },
+  {
+    "marketPence": 7400,
+    "currency": "GBP",
+    "title": "Korean Mega Dream Ex Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "ko-mega-dream-ex-high-class-box",
+    "sourceId": "hammerheadtcg",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-mega-dream-ex-high-class",
+      "type": "Booster box",
+      "packs": 10,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 10
+    },
+    "observedAt": "2026-11-02T22:02:05.075Z",
+    "asOf": "2026-11-02T22:02:05.075Z"
+  },
+  {
+    "marketPence": 4300,
+    "currency": "GBP",
+    "title": "Korean Mega Brave Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "ko-mega-brave-box",
+    "sourceId": "hammerheadtcg",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-mega-brave",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T22:02:05.084Z",
+    "asOf": "2026-11-02T22:02:05.084Z"
+  },
+  {
+    "marketPence": 5300,
+    "currency": "GBP",
+    "title": "Korean Glory of Team Rocket sv10 Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "ko-glory-of-team-rocket-box",
+    "sourceId": "hammerheadtcg",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-glory-of-team-rocket",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T22:02:05.219Z",
+    "asOf": "2026-11-02T22:02:05.219Z"
+  },
+  {
+    "marketPence": 4500,
+    "currency": "GBP",
+    "title": "Korean Heatwave Arena sv9a Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "ko-heatwave-arena-box",
+    "sourceId": "hammerheadtcg",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-heatwave-arena",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T22:02:05.242Z",
+    "asOf": "2026-11-02T22:02:05.242Z"
+  },
+  {
+    "marketPence": 4600,
+    "currency": "GBP",
+    "title": "Korean Battle Partners sv9 Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "ko-battle-partners-box",
+    "sourceId": "hammerheadtcg",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-battle-partners",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T22:02:05.252Z",
+    "asOf": "2026-11-02T22:02:05.252Z"
+  },
+  {
+    "marketPence": 7000,
+    "currency": "GBP",
+    "title": "Korean Terastal Festival sv8a Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "ko-eeveelutions-terastal-festival-ex-high-class-box",
+    "sourceId": "hammerheadtcg",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-eeveelutions-terastal-festival-ex-high-class",
+      "type": "Booster box",
+      "packs": 10,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 10
+    },
+    "observedAt": "2026-11-02T22:02:05.441Z",
+    "asOf": "2026-11-02T22:02:05.441Z"
+  },
+  {
+    "marketPence": 4900,
+    "currency": "GBP",
+    "title": "Korean Super Electric breaker sv8 Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "ko-super-electric-breaker-box",
+    "sourceId": "hammerheadtcg",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-super-electric-breaker",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T22:02:05.449Z",
+    "asOf": "2026-11-02T22:02:05.449Z"
+  },
+  {
+    "marketPence": 5200,
+    "currency": "GBP",
+    "title": "Korean Mask of Change sv6 Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "ko-mask-of-change-box",
+    "sourceId": "hammerheadtcg",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-mask-of-change",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T22:02:05.607Z",
+    "asOf": "2026-11-02T22:02:05.607Z"
+  },
+  {
+    "marketPence": 4400,
+    "currency": "GBP",
+    "title": "Korean Cyber Judge sv5M Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "ko-cyber-judge-box",
+    "sourceId": "hammerheadtcg",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-cyber-judge",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T22:02:05.760Z",
+    "asOf": "2026-11-02T22:02:05.760Z"
+  },
+  {
+    "marketPence": 7200,
+    "currency": "GBP",
+    "title": "Korean Shiny Treasure sv4a Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "ko-shiny-treasure-ex-box",
+    "sourceId": "hammerheadtcg",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-shiny-treasure-ex",
+      "type": "Booster box",
+      "packs": 10,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 10
+    },
+    "observedAt": "2026-11-02T22:02:05.916Z",
+    "asOf": "2026-11-02T22:02:05.916Z"
+  },
+  {
+    "marketPence": 18000,
+    "currency": "GBP",
+    "title": "Korean 151 sv2a Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "ko-151-box",
+    "sourceId": "hammerheadtcg",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-151",
+      "type": "Booster box",
+      "packs": 20,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 7
+    },
+    "observedAt": "2026-11-02T22:02:06.135Z",
+    "asOf": "2026-11-02T22:02:06.135Z"
+  },
+  {
+    "marketPence": 10000,
+    "currency": "GBP",
+    "title": "Korean Blue Sky Stream s7R Booster Box",
+    "providerUpdatedAt": null,
+    "productId": "ko-blue-sky-stream-box",
+    "sourceId": "hammerheadtcg",
+    "identity": {
+      "language": "Korean",
+      "setKey": "ko-blue-sky-stream",
+      "type": "Booster box",
+      "packs": 30,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 5
+    },
+    "observedAt": "2026-11-02T22:02:06.213Z",
+    "asOf": "2026-11-02T22:02:06.213Z"
+  },
+  {
+    "marketPence": 9500,
+    "currency": "GBP",
+    "title": "Pokémon Scarlet & Violet Prismatic Evolutions: Booster Bundle",
+    "providerUpdatedAt": null,
+    "productId": "prism-bundle",
+    "sourceId": "leoslair",
+    "identity": {
+      "language": "English",
+      "setKey": "prismatic-evolutions",
+      "type": "Booster bundle",
+      "packs": 6,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": null
+    },
+    "observedAt": "2026-11-02T22:06:15.395Z",
+    "asOf": "2026-11-02T22:06:15.395Z"
+  },
+  {
+    "marketPence": 4000,
+    "currency": "GBP",
+    "title": "Pokémon Scarlet & Violet Prismatic Evolutions: Poster Collection",
+    "providerUpdatedAt": null,
+    "productId": "prism-poster",
+    "sourceId": "leoslair",
+    "identity": {
+      "language": "English",
+      "setKey": "prismatic-evolutions",
+      "type": "Poster Collection",
+      "packs": 3,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": null
+    },
+    "observedAt": "2026-11-02T22:06:15.607Z",
+    "asOf": "2026-11-02T22:06:15.607Z"
+  },
+  {
+    "marketPence": 5499,
+    "currency": "GBP",
+    "title": "Pokemon Shrouded Fable Booster Bundle (6 Packs)",
+    "providerUpdatedAt": null,
+    "productId": "en-shrouded-fable-bundle",
+    "sourceId": "eternacards",
+    "identity": {
+      "language": "English",
+      "setKey": "shrouded-fable",
+      "type": "Booster bundle",
+      "packs": 6,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": 10
+    },
+    "observedAt": "2026-11-02T22:06:17.693Z",
+    "asOf": "2026-11-02T22:06:17.693Z"
+  },
+  {
+    "marketPence": 5000,
+    "currency": "GBP",
+    "title": "Buy Pokémon Prismatic Evolutions Booster Bundle 2026",
+    "providerUpdatedAt": null,
+    "productId": "prism-bundle",
+    "sourceId": "tcgshopuk",
+    "identity": {
+      "language": "English",
+      "setKey": "prismatic-evolutions",
+      "type": "Booster bundle",
+      "packs": 6,
+      "unit": "1 retail unit",
+      "edition": "standard",
+      "cardsPerPack": null
+    },
+    "observedAt": "2026-11-02T22:08:09.183Z",
+    "asOf": "2026-11-02T22:08:09.183Z"
+  }
+]

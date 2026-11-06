@@ -1,0 +1,26 @@
+{
+  "name": "stackr-card-shop",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch dev.mjs",
+    "build": "node build-site.mjs && node build-worker.mjs",
+    "build:preview": "node build-site.mjs",
+    "build:worker": "npm run build",
+    "test:pricing": "node --test worker/pricing.test.mjs worker/pricing-client.test.mjs worker/pricing-storage.test.mjs worker/pricing-concurrency.test.mjs",
+    "test:worker": "node --test worker/site.test.mjs worker/site-foundations.test.mjs",
+    "test:shop": "node --test worker/shop-state.test.mjs worker/media.test.mjs",
+    "test:interactions": "node --test worker/interactions.test.mjs",
+    "test:browse": "node --test worker/browse-defaults.test.mjs worker/browse-context.test.mjs",
+    "test:catalogue": "node --test worker/catalogue.test.mjs",
+    "test:history": "node --test worker/history.test.mjs",
+    "test:images": "node --test worker/product-frames.test.mjs",
+    "restore:media": "node scripts/restore-media.mjs --restore",
+    "verify:media": "node scripts/restore-media.mjs --check",
+    "test:export": "node --test scripts/restore-media.test.mjs",
+    "prebuild": "node scripts/restore-media.mjs --check"
+  },
+  "engines": {
+    "node": "24.x"
+  }
+}

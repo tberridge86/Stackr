@@ -1,0 +1,84 @@
+{
+  "name": "StackR",
+  "revision": "2026-11-01",
+  "sources": {
+    "colour": "D:/Stackr-1/lib/theme.ts",
+    "type": "D:/Stackr-1/lib/typography.ts",
+    "logos": "assets/rev2/01-brand/logos",
+    "icons": "assets/rev2/04-listing-categories/clean"
+  },
+  "colours": {
+    "brand": "#6938F5",
+    "ink": "#07145F",
+    "secondary": "#36306F",
+    "muted": "#625B75",
+    "background": "#F6F5F8",
+    "surface": "#FFFFFF",
+    "selected": "#EEE7FF",
+    "border": "#E3E1E8",
+    "success": "#087F73"
+  },
+  "fonts": {
+    "family": "Inter",
+    "weights": [
+      400,
+      500,
+      600,
+      700
+    ]
+  },
+  "spacing": [
+    4,
+    8,
+    12,
+    16,
+    24,
+    32
+  ],
+  "radii": {
+    "control": 8,
+    "panel": 12
+  },
+  "shadow": {
+    "colour": "#1B2A4B",
+    "opacity": 0.08,
+    "x": 0,
+    "y": 6,
+    "blur": 14
+  },
+  "motion": {
+    "introMs": 500,
+    "maximumLoaderMs": 1800,
+    "productLiftPx": 2,
+    "productTiltDeg": 2,
+    "reducedMotion": true
+  },
+  "pricing": {
+    "discountBps": 1500,
+    "reference": "Lowest exact in-stock UK retailer asking price observed",
+    "maximumAgeHours": 24,
+    "refreshMinutes": 15
+  },
+  "languages": [
+    {
+      "code": "en",
+      "label": "English",
+      "region": "GB"
+    },
+    {
+      "code": "ja",
+      "label": "Japanese",
+      "region": "JP"
+    },
+    {
+      "code": "zh-CN",
+      "label": "Simplified Chinese",
+      "region": "CN"
+    },
+    {
+      "code": "ko-KR",
+      "label": "Korean",
+      "region": "KR"
+    }
+  ]
+}

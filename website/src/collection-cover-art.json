@@ -1,0 +1,208 @@
+{
+  "schemaVersion": 1,
+  "base": {
+    "file": "binder-purple-leather-angled-v1.webp",
+    "sha256": "410b17d51a4cb795f4b2cf176050ae49b8285a951a6f6f1413dac3bc9e4b41b9",
+    "origin": "Generated blank product-style binder; no physical product or stock claim.",
+    "style": "Purple leather, slight three-quarter angle, zipper, 90% realistic / 10% softly cartoonised brief.",
+    "promptDocument": "docs/binder-cover-artwork-20261105.md",
+    "rendering": "CSS mirrors the plain binder base for the requested opposite angle; character and logo lettering remain readable and unmirrored.",
+    "originalFile": "originals/collector-covers/binder-purple-leather-angled-v1.png",
+    "originalSha256": "8ef05da6b9e23c6b131be0c2057d1e62f586c31bffce70359b54b45b1591c917",
+    "deliveryEncoding": "Lossless WebP (exact); every decoded RGBA byte verified identical to the retained original PNG."
+  },
+  "characters": {
+    "mewtwo": {
+      "file": "binder-character-mewtwo-app.webp",
+      "sha256": "e820b21d53f8e3a346c4dbe8d9bb5e48f00ae6981272c6338fa417f9fb4977e7",
+      "sourceRepository": "tberridge86/Stackr",
+      "sourceCommit": "665523719b1d637ec4c06fbcbfd209e565a4a01f",
+      "sourcePath": "assets/rev2/05-binder-covers/clean-cutouts/mewtwo.png",
+      "sourceGitBlob": "d5ceb69342824562d5a5fde99e7fc2878fa0709d",
+      "width": 658,
+      "height": 744,
+      "presentation": "Source-bound SVG character viewport and contour; original bitmap bytes unchanged; CSS/SVG thread effect.",
+      "originalFile": "originals/collector-covers/binder-character-mewtwo-app.png",
+      "originalSha256": "705212a2d23721ebcd1bc7b8e99fefa179b358047352c98c1696f342af642edb",
+      "deliveryEncoding": "Lossless WebP (exact); every decoded RGBA byte verified identical to the retained original PNG."
+    },
+    "mew": {
+      "file": "binder-character-mew-app.webp",
+      "sha256": "5fe5e0d6f1ab2d12a20d1d4e3e0c2c31b3ba48c64da637c95ec0f5db63d83629",
+      "sourceRepository": "tberridge86/Stackr",
+      "sourceCommit": "665523719b1d637ec4c06fbcbfd209e565a4a01f",
+      "sourcePath": "assets/rev2/05-binder-covers/clean-cutouts/mew.png",
+      "sourceGitBlob": "ef63cbc9011541610dabd3095fdec4da0ea1f1c4",
+      "width": 648,
+      "height": 726,
+      "presentation": "Source-bound SVG character viewport and contour; original bitmap unchanged; decorative stitched pattern.",
+      "originalFile": "originals/collector-covers/binder-character-mew-app.png",
+      "originalSha256": "96e0086a84a856c21ebbe9f0781661d3486777342dbb85bf5536239ce05cb8ed",
+      "deliveryEncoding": "Lossless WebP (exact); every decoded RGBA byte verified identical to the retained original PNG."
+    },
+    "pikachu": {
+      "file": "binder-character-pikachu-app.webp",
+      "sha256": "5306b1798b53bea9071b05d5529251222cb920019251be864e97ea092ae6937b",
+      "sourceRepository": "tberridge86/Stackr",
+      "sourceCommit": "665523719b1d637ec4c06fbcbfd209e565a4a01f",
+      "sourcePath": "assets/rev2/05-binder-covers/clean-cutouts/pikachu.png",
+      "sourceGitBlob": "d925bfb06c0df411044c43f355d9a6dc37eaacc5",
+      "width": 650,
+      "height": 714,
+      "presentation": "Source-bound SVG character viewport and contour; original bitmap unchanged; decorative stitched pattern.",
+      "originalFile": "originals/collector-covers/binder-character-pikachu-app.png",
+      "originalSha256": "b1bb2e2d9a1c81fad3761b12fcf2f822dc2d5f3f565ed5c2d9adb6ac3551e911",
+      "deliveryEncoding": "Lossless WebP (exact); every decoded RGBA byte verified identical to the retained original PNG."
+    }
+  },
+  "selection": {
+    "kind": "First verified exact-language editorial collector pick; not a live monetary ranking.",
+    "mewtwoNames": [
+      "Mewtwo ex",
+      "Team Rocket's Mewtwo ex",
+      "\u30df\u30e5\u30a6\u30c4\u30fcVSTAR",
+      "\u30ed\u30b1\u30c3\u30c8\u56e3\u306e\u30df\u30e5\u30a6\u30c4\u30fcex",
+      "\ubba4\uce20 VSTAR",
+      "\ub85c\ucf13\ub2e8\uc758 \ubba4\uce20 ex"
+    ],
+    "owner30thTheme": {
+      "siteSetKeys": [
+        "celebration-30th",
+        "jp-30th-celebration",
+        "ko-30th-celebration",
+        "cn-30th-celebration"
+      ],
+      "characters": [
+        "mew",
+        "pikachu"
+      ],
+      "direction": "Owner-selected embroidered Mew-and-Pikachu pattern filling the cover; set logo on the zipper pull; reverse binder angle."
+    }
+  },
+  "completeCovers": {
+    "celebration30th": {
+      "file": "binder-30th-mew-pikachu-grid-v2.webp",
+      "sha256": "a3e70327989ff40be7a71d76bb680d020b66c3c057344194ce8fc8bae9e14747",
+      "width": 720,
+      "height": 788,
+      "originalFile": "originals/collector-covers/binder-30th-mew-pikachu-stackr-v1.png",
+      "originalSha256": "b00053c020c2a80561a892788575b818424b23df77ea1c8c95cde04294fccd84",
+      "libraryFileId": "libfile_89ac2306b7308191b62bcbfc932d8253",
+      "libraryVersion": 1,
+      "presentation": "Owner-selected complete purple Mew and Pikachu binder with raised Mew tail, 30th zipper badge and small Stackr logo at bottom left. No mirroring, cropping or additional overlays.",
+      "deliveryEncoding": "Contained 720px maximum-width website rendition; Lanczos resize, WebP quality 92, alpha preserved; full original retained. No crop, mirroring, recolouring or invented artwork.",
+      "originalWidth": 1199,
+      "originalHeight": 1312,
+      "byteLength": 216240
+    },
+    "pitchBlack": {
+      "originalFile": "originals/collector-covers/binder-pitch-black-darkrai-v1.png",
+      "originalSha256": "06884a22ad96b4d74f9b8d94f0bd19fc6bc98f0b1faf4f15651d8d92c07418be",
+      "libraryFileId": "libfile_42cd267fd2f8819192e54a709830725f",
+      "libraryVersion": "1",
+      "siteSetKeys": [
+        "pitch-black"
+      ],
+      "presentation": "Owner-provided complete binder artwork; preserve entire image, orientation, embroidery, zipper badge and bottom-left Stackr mark.",
+      "file": "binder-pitch-black-darkrai-grid-v1.webp",
+      "sha256": "8142f92dce27d575eebbbe76af8517b5cb9263a34e691456e59412142b6ee132",
+      "width": 720,
+      "height": 788,
+      "originalWidth": 1199,
+      "originalHeight": 1312,
+      "byteLength": 188426,
+      "deliveryEncoding": "Contained 720px maximum-width website rendition; Lanczos resize, WebP quality 92, alpha preserved; full original retained. No crop, mirroring, recolouring or invented artwork."
+    },
+    "deltaReign": {
+      "originalFile": "originals/collector-covers/binder-delta-reign-rayquaza-v1.png",
+      "originalSha256": "84eff6badef228292dc7c7abeba30321967ed888a2445ede7fa95fabc1e12370",
+      "libraryFileId": "libfile_058f44ae5ab08191927d7431ae280b9c",
+      "libraryVersion": null,
+      "siteSetKeys": [
+        "delta-reign"
+      ],
+      "presentation": "Owner-provided complete binder artwork; preserve entire image, orientation, embroidery, zipper badge and bottom-left Stackr mark.",
+      "file": "binder-delta-reign-rayquaza-grid-v1.webp",
+      "sha256": "48ecd78a78f339a7c50cf1a7038ceb8b448bc6d115c482a0902c62c80a6b64e3",
+      "width": 720,
+      "height": 788,
+      "originalWidth": 1199,
+      "originalHeight": 1312,
+      "byteLength": 267636,
+      "deliveryEncoding": "Contained 720px maximum-width website rendition; Lanczos resize, WebP quality 92, alpha preserved; full original retained. No crop, mirroring, recolouring or invented artwork.",
+      "canonicalReadiness": "Cover ready; English Delta Reign set missing from full canonical enumeration on 2026-11-05. No guessed set or printing IDs."
+    },
+    "chaosRising": {
+      "originalFile": "originals/collector-covers/binder-chaos-rising-froakie-trio-v1.png",
+      "originalSha256": "b191fe4ac665716e2f169aabd3698ecb846c26fb811d39e786e5d95f41669a86",
+      "libraryFileId": "libfile_d5e7af9e2128819182196b9eb8b8b2c9",
+      "libraryVersion": null,
+      "siteSetKeys": [
+        "chaos-rising"
+      ],
+      "presentation": "Owner-selected finished mid-purple binder with embroidered Froakie, Frogadier and Greninja, corrected Chaos Rising-only zipper badge and bottom-left Stackr mark. Preserve complete artwork, angle and lettering.",
+      "file": "binder-chaos-rising-froakie-trio-grid-v1.webp",
+      "sha256": "3669d79d88b557ce78e6165cc05263880be5589e2345dfa804401c7f00371e7f",
+      "width": 720,
+      "height": 788,
+      "originalWidth": 1199,
+      "originalHeight": 1312,
+      "byteLength": 220912,
+      "deliveryEncoding": "Contained 720px maximum-width website rendition; Lanczos resize, WebP quality 92, alpha preserved; full original retained. No crop, mirroring, recolouring or invented artwork."
+    },
+    "journeyTogether": {
+      "file": "binder-journey-together-clefairy-bellibolt-grid-v1.webp",
+      "sha256": "3ecf08d9dc4d35ed4d8a3c43e56b5c049ef0f4b7671732df260fb961adf249c4",
+      "width": 720,
+      "height": 788,
+      "byteLength": 132974,
+      "originalFile": "originals/collector-covers/binder-journey-together-clefairy-bellibolt-v1.png",
+      "originalSha256": "94ef96df278294e877a213c7628adf1618bc93530b76928f6f3beb1e62017c3e",
+      "originalWidth": 1199,
+      "originalHeight": 1312,
+      "libraryFileId": "libfile_909bad38c6dc8191997591f312bc21cf",
+      "libraryVersion": null,
+      "siteSetKeys": [
+        "journey-together"
+      ],
+      "presentation": "Latest owner-provided complete binder with corrected set badge, character embroidery and bottom-left Stackr mark. Preserve full artwork and original angle.",
+      "deliveryEncoding": "Contained 720px maximum-width website rendition; Lanczos resize, WebP quality 92, alpha preserved; full original retained. No crop, mirroring, recolouring or invented artwork."
+    },
+    "phantasmalFlames": {
+      "file": "binder-phantasmal-flames-charizard-x-grid-v1.webp",
+      "sha256": "1cdbf8301bc5ebf8dc6db48cec0cd3c32209c8f7f70dc31763294bbedf599977",
+      "width": 720,
+      "height": 788,
+      "byteLength": 191896,
+      "originalFile": "originals/collector-covers/binder-phantasmal-flames-charizard-x-v1.png",
+      "originalSha256": "59dd6680f96cc3f8d6af67693912808481ce58e2eed1223ef74a3ee85ce6eef9",
+      "originalWidth": 1199,
+      "originalHeight": 1312,
+      "libraryFileId": "libfile_6382f930cccc81919a87fec54c09451a",
+      "libraryVersion": null,
+      "siteSetKeys": [
+        "phantasmal-flames"
+      ],
+      "presentation": "Latest owner-provided complete binder with corrected set badge, character embroidery and bottom-left Stackr mark. Preserve full artwork and original angle.",
+      "deliveryEncoding": "Contained 720px maximum-width website rendition; Lanczos resize, WebP quality 92, alpha preserved; full original retained. No crop, mirroring, recolouring or invented artwork."
+    },
+    "ascendedHeroes": {
+      "file": "binder-ascended-heroes-dragonite-grid-v1.webp",
+      "sha256": "ecdd8f31152d74d01e400e282a17f370086246238bc70d0b35928f639c0bbd30",
+      "width": 720,
+      "height": 788,
+      "byteLength": 241198,
+      "originalFile": "originals/collector-covers/binder-ascended-heroes-dragonite-v1.png",
+      "originalSha256": "482b20b2f276ab66c076e76923a0da40133f23366a59cfaf48dbefcb46c63ccf",
+      "originalWidth": 1199,
+      "originalHeight": 1312,
+      "libraryFileId": "libfile_231cd06a74088191a19ee723e80b5881",
+      "libraryVersion": null,
+      "siteSetKeys": [
+        "ascended-heroes"
+      ],
+      "presentation": "Owner-provided finished lavender Mega Dragonite binder with exact supplied zipper badge and small Stackr mark; retain complete original orientation and embroidery.",
+      "deliveryEncoding": "Contained 720px maximum-width website rendition; Lanczos resize, WebP quality92 with alpha; full original retained. No crop, mirroring, recolouring or creative editing."
+    }
+  }
+}

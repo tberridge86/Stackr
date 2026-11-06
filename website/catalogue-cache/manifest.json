@@ -1,0 +1,149 @@
+{
+  "schema": 1,
+  "source": "https://api.stackrtcg.com/v1",
+  "catalogues": [
+    {
+      "setId": "258cb8e5-c769-540d-9e3c-40d4ed4dafdb",
+      "language": "en",
+      "name": "30th Celebration",
+      "total": 161,
+      "sourceRows": 161,
+      "pageSizes": [
+        50,
+        50,
+        50,
+        11
+      ],
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "capturedAt": "2026-11-06T13:33:03.696Z",
+      "file": "258cb8e5-c769-540d-9e3c-40d4ed4dafdb-en.json.gz",
+      "compressedBytes": 42392,
+      "uncompressedBytes": 248161,
+      "sha256": "e98b95326aa853759a4b23efca7e2209727e5b5c9aa6edfe5b7c0226936a354a"
+    },
+    {
+      "setId": "d6d58c17-5923-496e-94ef-5819f34ae10c",
+      "language": "en",
+      "name": "Pitch Black",
+      "total": 120,
+      "sourceRows": 174,
+      "pageSizes": [
+        44,
+        44,
+        45,
+        41
+      ],
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "capturedAt": "2026-11-06T13:33:15.663Z",
+      "file": "d6d58c17-5923-496e-94ef-5819f34ae10c-en.json.gz",
+      "compressedBytes": 35386,
+      "uncompressedBytes": 273239,
+      "sha256": "39522d7b9db8d1d16a1eb0fe1be5520320561ab4e243ac9fbed427a723455591"
+    },
+    {
+      "setId": "816ff627-a585-4953-99c4-a15c9b0b80e5",
+      "language": "en",
+      "name": "Chaos Rising",
+      "total": 122,
+      "sourceRows": 184,
+      "pageSizes": [
+        47,
+        44,
+        47,
+        45,
+        1
+      ],
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "capturedAt": "2026-11-06T13:33:21.003Z",
+      "file": "816ff627-a585-4953-99c4-a15c9b0b80e5-en.json.gz",
+      "compressedBytes": 35985,
+      "uncompressedBytes": 282061,
+      "sha256": "9c4e0e677cb0633870a7fda2883b84ec66a531aaee39f299d9b67d003172c5c7"
+    },
+    {
+      "setId": "4f3046f3-9ab7-4068-a7df-dbe2b08c263c",
+      "language": "en",
+      "name": "Journey Together",
+      "total": 190,
+      "sourceRows": 329,
+      "pageSizes": [
+        49,
+        46,
+        49,
+        45,
+        45,
+        49,
+        46
+      ],
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "capturedAt": "2026-11-06T13:33:26.647Z",
+      "file": "4f3046f3-9ab7-4068-a7df-dbe2b08c263c-en.json.gz",
+      "compressedBytes": 57126,
+      "uncompressedBytes": 481860,
+      "sha256": "1fdca0796aba1e3692659d2f444ac4f8cf4eda78bcc3deefc9e677c47e41d3a5"
+    },
+    {
+      "setId": "977bf107-e10c-4d93-a7a4-3d7b775c5003",
+      "language": "en",
+      "name": "Phantasmal Flames",
+      "total": 130,
+      "sourceRows": 194,
+      "pageSizes": [
+        43,
+        47,
+        43,
+        44,
+        17
+      ],
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "capturedAt": "2026-11-06T13:33:34.131Z",
+      "file": "977bf107-e10c-4d93-a7a4-3d7b775c5003-en.json.gz",
+      "compressedBytes": 38439,
+      "uncompressedBytes": 304988,
+      "sha256": "8057e23a27258ad6dbea9edfa8107f3839cc1b0b7fbde866cf859f45d21e214e"
+    },
+    {
+      "setId": "ddc668c0-316e-4dab-8c51-625167508fd6",
+      "language": "en",
+      "name": "Ascended Heroes",
+      "total": 295,
+      "sourceRows": 463,
+      "pageSizes": [
+        49,
+        48,
+        49,
+        46,
+        47,
+        47,
+        48,
+        49,
+        47,
+        33
+      ],
+      "catalogueVersionId": "d6bdab54-ec11-4b54-85a9-311d6ce3b2c8",
+      "capturedAt": "2026-11-06T13:33:39.369Z",
+      "file": "ddc668c0-316e-4dab-8c51-625167508fd6-en.json.gz",
+      "compressedBytes": 86421,
+      "uncompressedBytes": 680391,
+      "sha256": "944a6761aadac721660770fcf172c22b827ab38a3c2f5a24a607647977da0490"
+    },
+    {
+      "setId": "a1bde625-6996-5451-bcda-fb80fe5b428b",
+      "language": "en",
+      "name": "Delta Reign",
+      "total": 141,
+      "sourceRows": 141,
+      "pageSizes": [
+        50,
+        50,
+        41
+      ],
+      "catalogueVersionId": "90a3d54b-3c8c-49ee-9853-f004f3afd8e7",
+      "capturedAt": "2026-11-06T14:17:00.558Z",
+      "file": "a1bde625-6996-5451-bcda-fb80fe5b428b-en.json.gz",
+      "compressedBytes": 13340,
+      "uncompressedBytes": 129821,
+      "sha256": "f1fcd86ca5d6d217cf51cc8a2805aa067f9e66910821c636118ead8adee34cef"
+    }
+  ]
+}

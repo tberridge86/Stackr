@@ -1,0 +1,3 @@
+/* Keep the originating shop entry when the story was opened from it. */
+document.querySelectorAll('[data-return-shop]').forEach(link=>link.addEventListener('click',event=>{let referrer;try{referrer=new URL(document.referrer);}catch{return;}if(referrer.origin===location.origin&&['/','/index.html'].includes(referrer.pathname)&&window.history.length>1){event.preventDefault();window.history.back();}}));
+document.querySelector('.about-skip')?.addEventListener('click',event=>{const copy=document.querySelector('#about-copy');if(copy){event.preventDefault();copy.scrollIntoView({behavior:'auto',block:'start'});copy.focus({preventScroll:true});}});

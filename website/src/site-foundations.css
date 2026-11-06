@@ -1,0 +1,20 @@
+/* Practical browser, reading and keyboard states shared across every page. */
+:root { --read-link: #653b87; }
+:where(a, button, input, select, summary):focus-visible { outline: 3px solid #6033cf; outline-offset: 4px; }
+main:focus { outline: none; }
+.contact-email { display: inline-flex; align-items: center; min-height: 44px; max-width: 100%; overflow-wrap: anywhere; text-decoration: underline; text-underline-offset: .2em; }
+.explore-release { color: #665673; font-size: 12px; line-height: 1.5; }
+:where(.footer-column, .footer-business, .info-content, .about-copy, .about-footer, .history-footer, .history-event) a:visited { color: var(--read-link); }
+:where(.footer-column, .info-content, .about-copy, .about-footer, .history-footer, .history-event) a:hover { text-decoration: underline; text-underline-offset: .2em; }
+:where(.info-content, .quick-copy, .cart-item, .explore-set-copy, .catalogue-set-copy) { min-width: 0; overflow-wrap: break-word; }
+:where(input, select, textarea):disabled { cursor: not-allowed; opacity: .65; }
+:where(input, textarea)[aria-invalid="true"] { border-color: #a22140; background-color: #fff5f7; }
+:where(input, textarea)[aria-invalid="true"]:focus-visible { outline-color: #a22140; }
+.header-search:focus-within, .explore-search:focus-within { outline: 2px solid #6033cf; outline-offset: 3px; }
+@media (pointer: coarse) {
+  :where(.header-search button, .icon-button, .footer-column a, .footer-column button, .footer-about, .stepper button, .cart-info .remove, .info-dialog [data-close]) { min-width: 44px; min-height: 44px; }
+  .cart-line { gap: 12px; flex-wrap: wrap; }
+  .stepper { flex-shrink: 0; }
+  :where(.header-search input, .explore-search input, .info-dialog input, .info-dialog select) { font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) { html, *, *::before, *::after { scroll-behavior: auto !important; } }

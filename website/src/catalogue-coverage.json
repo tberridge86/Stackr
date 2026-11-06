@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-11-01T19:34:26.216Z",
+  "currentDate": "2026-11-01",
+  "originalProductsPreserved": 32,
+  "additions": 208,
+  "totalProducts": 240,
+  "newByLanguage": {
+    "English": 69,
+    "Japanese": 67,
+    "Simplified Chinese": 46,
+    "Korean": 26
+  },
+  "newByCategory": {
+    "Collections": 28,
+    "Tins": 9,
+    "UPCs": 2,
+    "Bundles": 5,
+    "Decks": 12,
+    "ETBs": 4,
+    "Boxes": 142,
+    "Blisters": 6
+  },
+  "totalByLanguage": {
+    "English": 94,
+    "Japanese": 70,
+    "Simplified Chinese": 48,
+    "Korean": 28
+  },
+  "shopInventoryStatus": "Unconfirmed for every new identity. Public supplier availability is independent of StackR stock.",
+  "shopPriceStatus": "No fabricated market values or asking prices. Parent pricing service must supply sourced comparable values.",
+  "imageStatus": "Only unchanged manufacturer or isolated supplier packshots shown. Fourteen original scene-photo silhouettes replaced or withdrawn; 10 of those products still await clean exact-unit artwork. Missing originals remain explicit. No upscaling, watermark removal or invented packaging.",
+  "sourceCoverage": [
+    {
+      "name": "Asmodee UK Pokémon catalogue",
+      "pages": [
+        "https://www.asmodee.co.uk/collections/all-pokemon-games/products.json?limit=250&page=1",
+        "https://www.asmodee.co.uk/collections/all-pokemon-games/products.json?limit=250&page=2"
+      ],
+      "feedRows": 286,
+      "tradingCardGameRows": 157,
+      "added": 69,
+      "excluded": 217,
+      "availability": "Current trade catalogue, with publication dates reconciled through product pages. Public variants.available does not establish consumer stock.",
+      "limits": "Existing retail identities retained; explicit future releases, missing dates, absent or unresolved counts, toys/accessories and conflicting titles/descriptions excluded."
+    },
+    {
+      "name": "Japan2UK Japanese booster-box catalogue",
+      "page": "https://www.japan2uk.com/collections/pokemon-japanese-booster-boxes/products.json?limit=250",
+      "feedRows": 244,
+      "added": 67,
+      "availability": "Exact full sealed retail booster boxes observed offered in stock on source feed.",
+      "limits": "Excludes no-shrink, damaged/opened/case/loose and unavailable items. Original Japanese identities retained. No clean artwork inferred from supplier candidate images."
+    },
+    {
+      "name": "Japan2UK Simplified Chinese booster-box catalogue",
+      "page": "https://www.japan2uk.com/collections/pokemon-simplified-chinese-booster-boxes/products.json?limit=250",
+      "feedRows": 83,
+      "added": 46,
+      "availability": "Exact full sealed retail booster boxes observed offered in stock on source feed.",
+      "limits": "Simplified Chinese only; Traditional Chinese product is a separate language/edition. Excludes unavailable, nonstandard condition and duplicate retail identities."
+    },
+    {
+      "name": "Japan2UK Korean booster-box catalogue",
+      "page": "https://www.japan2uk.com/collections/pokemon-korean-booster-boxes/products.json?limit=250",
+      "feedRows": 62,
+      "added": 26,
+      "availability": "Exact full sealed retail booster boxes observed offered in stock on source feed.",
+      "limits": "Exact Korean printings only; no Japanese or English substitutes for imagery/cards."
+    }
+  ],
+  "completeness": "A broad, bounded current supplier catalogue expansion. This is not a claim to include every Pokémon product globally; a continuously maintained supplier inventory feed is required for that.",
+  "validation": {
+    "uniqueAdditionIds": true,
+    "preservedOriginalIds": true,
+    "everyAdditionHasContentsAndEvidence": true,
+    "noInventedPriceOrStock": true,
+    "exactRetailPackCounts": true,
+    "noFutureEnglishReleases": true,
+    "unverifiedImagesHidden": true
+  },
+  "integratedProducts": 240,
+  "verifiedCleanProductPhotos": 206,
+  "verifiedHDProductPhotos": 98,
+  "genuineContentsLayouts": 8,
+  "productsWithComponentPhotos": 46,
+  "unverifiedPhotos": 34,
+  "stock": "Owner stock is not inferred from supplier listings.",
+  "verified4KMasters": 3,
+  "transparentChineseDisplayPhotos": 12,
+  "primary4KPhotos": 0,
+  "studioPackshotReplacements": 44
+}

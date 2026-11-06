@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "file": "johto-gold-silver-map.png",
+  "width": 3760,
+  "height": 2160,
+  "bytes": 399368,
+  "sha256": "498838868195392cca10229722c6cb4f98893c549536af45c866fd69d3ba4e41",
+  "sourcePage": "https://vgmaps.com/Atlas/GB-GBC/index.htm#PokemonGSC",
+  "sourceUrl": "https://vgmaps.com/Atlas/GB-GBC/Pokemon-Gold&SilverVersions-Johto.png",
+  "credit": "Gold/Silver Johto map: Hexa Typhlosion / VGMaps",
+  "original": {
+    "width": 7520,
+    "height": 4320,
+    "bytes": 513587,
+    "sha256": "01c1387d7bc712b7106c81c79ea273ea2ccb3798ef35f6308815c121ddca7f7f"
+  },
+  "processing": "Proportional 50% nearest-neighbour rendition of the complete original. No cartography, colours or artwork repainted.",
+  "rights": "Game artwork belongs to Nintendo / Creatures Inc. / GAME FREAK Inc. Public availability does not establish a reuse licence."
+}

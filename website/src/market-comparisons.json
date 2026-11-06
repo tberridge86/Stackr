@@ -1,0 +1,244 @@
+{
+  "retrievedAt": "2026-11-01T12:58:42.957Z",
+  "basis": "UK advertised asking-price snapshots. Not RRP, completed sales or guaranteed current stock. Example StackR prices use 90% of matched references.",
+  "products": {
+    "black-bundle": {
+      "name": "Black Bolt Booster Bundle",
+      "price": 69.99,
+      "url": "https://dexcompare.app/uk/p/black-bolt-booster-bundle",
+      "source": "DexCompare UK",
+      "checkedAt": "2026-11-01T12:58:42.957Z",
+      "currency": "GBP",
+      "language": "English",
+      "basis": "Lowest advertised in-stock retailer price reported by DexCompare; includes VAT, excludes shipping.",
+      "note": "Comparison site reported prices checked about 13 hours before retrieval. The underlying retailer has not been rechecked for this row. This is a recorded listing comparison, not a verified sold value.",
+      "packs": 6
+    },
+    "asc-etb": {
+      "name": "Ascended Heroes Elite Trainer Box",
+      "price": 130,
+      "url": "https://dexcompare.app/uk/p/ascended-heroes-elite-trainer-box",
+      "source": "DexCompare UK",
+      "checkedAt": "2026-11-01T12:58:42.957Z",
+      "currency": "GBP",
+      "language": "English",
+      "basis": "Lowest advertised in-stock retailer price reported by DexCompare; includes VAT, excludes shipping.",
+      "note": "Comparison site reported prices checked about 13 hours before retrieval. The underlying retailer has not been rechecked for this row. This is a recorded listing comparison, not a verified sold value.",
+      "packs": 9
+    },
+    "phantasmal-box": {
+      "name": "Phantasmal Flames Booster Box",
+      "price": 311.06,
+      "url": "https://dexcompare.app/uk/p/phantasmal-flames-booster-box",
+      "source": "DexCompare UK",
+      "checkedAt": "2026-11-01T12:58:42.957Z",
+      "currency": "GBP",
+      "language": "English",
+      "basis": "Lowest advertised in-stock retailer price reported by DexCompare; includes VAT, excludes shipping.",
+      "note": "Comparison site reported prices checked about 13 hours before retrieval. The underlying retailer has not been rechecked for this row. This is a recorded listing comparison, not a verified sold value.",
+      "packs": 36
+    },
+    "black-etb": {
+      "name": "Black Bolt Elite Trainer Box",
+      "price": 99.99,
+      "url": "https://dexcompare.app/uk/p/black-bolt-elite-trainer-box",
+      "source": "DexCompare UK",
+      "checkedAt": "2026-11-01T12:58:42.957Z",
+      "currency": "GBP",
+      "language": "English",
+      "basis": "Lowest advertised in-stock retailer price reported by DexCompare; includes VAT, excludes shipping.",
+      "note": "Comparison site reported prices checked about 13 hours before retrieval. The underlying retailer has not been rechecked for this row. This is a recorded listing comparison, not a verified sold value.",
+      "packs": 9
+    },
+    "white-etb": {
+      "name": "White Flare Elite Trainer Box",
+      "price": 89.95,
+      "url": "https://dexcompare.app/uk/p/white-flare-elite-trainer-box",
+      "source": "DexCompare UK",
+      "checkedAt": "2026-11-01T12:58:42.957Z",
+      "currency": "GBP",
+      "language": "English",
+      "basis": "Lowest advertised in-stock retailer price reported by DexCompare; includes VAT, excludes shipping.",
+      "note": "Comparison site reported prices checked about 13 hours before retrieval. The underlying retailer has not been rechecked for this row. This is a recorded listing comparison, not a verified sold value.",
+      "packs": 9
+    },
+    "white-bundle": {
+      "name": "White Flare Booster Bundle",
+      "price": 64.99,
+      "url": "https://dexcompare.app/uk/p/white-flare-booster-bundle",
+      "source": "DexCompare UK",
+      "checkedAt": "2026-11-01T12:58:42.957Z",
+      "currency": "GBP",
+      "language": "English",
+      "basis": "Lowest advertised in-stock retailer price reported by DexCompare; includes VAT, excludes shipping.",
+      "note": "Comparison site reported prices checked about 13 hours before retrieval. The underlying retailer has not been rechecked for this row. This is a recorded listing comparison, not a verified sold value.",
+      "packs": 6
+    },
+    "prism-etb": {
+      "name": "Prismatic Evolutions Elite Trainer Box",
+      "price": 129.95,
+      "url": "https://dexcompare.app/uk/p/prismatic-evolutions-elite-trainer-box",
+      "source": "DexCompare UK",
+      "checkedAt": "2026-11-01T12:58:42.957Z",
+      "currency": "GBP",
+      "language": "English",
+      "basis": "Lowest advertised in-stock retailer price reported by DexCompare; includes VAT, excludes shipping.",
+      "note": "Comparison site reported prices checked about 13 hours before retrieval. The underlying retailer has not been rechecked for this row. This is a recorded listing comparison, not a verified sold value.",
+      "packs": 9
+    },
+    "prism-bundle": {
+      "name": "Prismatic Evolutions Booster Bundle",
+      "price": 50,
+      "url": "https://dexcompare.app/uk/p/prismatic-evolutions-booster-bundle",
+      "source": "DexCompare UK",
+      "checkedAt": "2026-11-01T12:58:42.957Z",
+      "currency": "GBP",
+      "language": "English",
+      "basis": "Lowest advertised in-stock retailer price reported by DexCompare; includes VAT, excludes shipping.",
+      "note": "Comparison site reported prices checked about 13 hours before retrieval. The underlying retailer has not been rechecked for this row. This is a recorded listing comparison, not a verified sold value.",
+      "packs": 6
+    },
+    "prism-pouch": {
+      "name": "Prismatic Evolutions - Accessory Pouch Special Collection",
+      "price": 59.95,
+      "url": "https://dexcompare.app/uk/p/prismatic-evolutions-accessory-pouch-special-collection",
+      "source": "DexCompare UK",
+      "checkedAt": "2026-11-01T12:58:42.957Z",
+      "currency": "GBP",
+      "language": "English",
+      "basis": "Lowest advertised in-stock retailer price reported by DexCompare; includes VAT, excludes shipping.",
+      "note": "Comparison site reported prices checked about 13 hours before retrieval. The underlying retailer has not been rechecked for this row. This is a recorded listing comparison, not a verified sold value.",
+      "packs": 5
+    },
+    "prism-poster": {
+      "name": "Prismatic Evolutions Poster Collection",
+      "price": 25.76,
+      "url": "https://dexcompare.app/uk/p/prismatic-evolutions-poster-collection",
+      "source": "DexCompare UK",
+      "checkedAt": "2026-11-01T12:58:42.957Z",
+      "currency": "GBP",
+      "language": "English",
+      "basis": "Lowest advertised in-stock retailer price reported by DexCompare; includes VAT, excludes shipping.",
+      "note": "Comparison site reported prices checked about 13 hours before retrieval. The underlying retailer has not been rechecked for this row. This is a recorded listing comparison, not a verified sold value.",
+      "packs": 3
+    },
+    "journey-etb": {
+      "name": "Journey Together Elite Trainer Box",
+      "price": 55.33,
+      "url": "https://dexcompare.app/uk/p/journey-together-elite-trainer-box",
+      "source": "DexCompare UK",
+      "checkedAt": "2026-11-01T12:58:42.957Z",
+      "currency": "GBP",
+      "language": "English",
+      "basis": "Lowest advertised in-stock retailer price reported by DexCompare; includes VAT, excludes shipping.",
+      "note": "Comparison site reported prices checked about 13 hours before retrieval. The underlying retailer has not been rechecked for this row. This is a recorded listing comparison, not a verified sold value.",
+      "packs": 9
+    },
+    "journey-box": {
+      "name": "Journey Together Booster Box",
+      "price": 219.95,
+      "url": "https://dexcompare.app/uk/p/journey-together-booster-box",
+      "source": "DexCompare UK",
+      "checkedAt": "2026-11-01T12:58:42.957Z",
+      "currency": "GBP",
+      "language": "English",
+      "basis": "Lowest advertised in-stock retailer price reported by DexCompare; includes VAT, excludes shipping.",
+      "note": "Comparison site reported prices checked about 13 hours before retrieval. The underlying retailer has not been rechecked for this row. This is a recorded listing comparison, not a verified sold value.",
+      "packs": 36
+    },
+    "phantasmal-etb": {
+      "name": "Phantasmal Flames Elite Trainer Box",
+      "price": 69.95,
+      "url": "https://dexcompare.app/uk/p/phantasmal-flames-elite-trainer-box",
+      "source": "DexCompare UK",
+      "checkedAt": "2026-11-01T12:58:42.957Z",
+      "currency": "GBP",
+      "language": "English",
+      "basis": "Lowest advertised in-stock retailer price reported by DexCompare; includes VAT, excludes shipping.",
+      "note": "Comparison site reported prices checked about 13 hours before retrieval. The underlying retailer has not been rechecked for this row. This is a recorded listing comparison, not a verified sold value.",
+      "packs": 9
+    },
+    "jp-black-box": {
+      "price": 139.99,
+      "currency": "GBP",
+      "language": "Japanese",
+      "packs": 20,
+      "url": "https://www.japan2uk.com/collections/pokemon-japanese-booster-boxes/products/pokemon-black-bolt-sv11b-japanese-booster-box",
+      "source": "Japan2UK",
+      "checkedAt": "2026-11-01T12:58:42.957Z",
+      "basis": "Direct UK retailer advertised price for one standard Japanese booster box; delivery excluded.",
+      "note": "Retailer page showed In Stock Now when retrieved. This does not confirm StackR stock or a supplier allocation."
+    },
+    "jp-white-box": {
+      "price": 144.99,
+      "currency": "GBP",
+      "language": "Japanese",
+      "packs": 20,
+      "url": "https://www.japan2uk.com/collections/pokemon-japanese-booster-boxes/products/pokemon-white-flare-sv11w-japanese-booster-box",
+      "source": "Japan2UK",
+      "checkedAt": "2026-11-01T12:58:42.957Z",
+      "basis": "Direct UK retailer advertised price for one standard Japanese booster box; delivery excluded.",
+      "note": "Retailer page showed In Stock Now when retrieved. This does not confirm StackR stock or a supplier allocation."
+    },
+    "jp-symphonia-box": {
+      "price": 54.99,
+      "currency": "GBP",
+      "language": "Japanese",
+      "packs": 30,
+      "url": "https://www.japan2uk.com/products/pokemon-mega-symphonia-m1s-japanese-booster-box",
+      "source": "Japan2UK",
+      "checkedAt": "2026-11-01T12:58:42.957Z",
+      "basis": "Direct UK retailer advertised price for one standard Japanese booster box; delivery excluded.",
+      "note": "Retailer page showed In Stock Now when retrieved. This does not confirm StackR stock or a supplier allocation."
+    },
+    "asc-bundle": {
+      "status": "unverified",
+      "url": "https://dexcompare.app/uk/p/ascended-heroes-booster-bundle",
+      "note": "No tracked UK store had stock in the retrieved comparison. No numeric market comparison is published."
+    },
+    "destined-blister": {
+      "status": "unverified",
+      "note": "No matching UK asking price verified for this exact product and edition."
+    },
+    "charizard-upc": {
+      "status": "unverified",
+      "note": "No matching UK asking price verified for this exact product and edition."
+    },
+    "prism-sticker": {
+      "status": "unverified",
+      "note": "No matching UK asking price verified for this exact product and edition."
+    },
+    "asc-sticker": {
+      "status": "unverified",
+      "note": "No matching UK asking price verified for this exact product and edition."
+    },
+    "phantasmal-blister": {
+      "status": "unverified",
+      "note": "No matching UK asking price verified for this exact product and edition."
+    },
+    "phantasmal-checklane": {
+      "status": "unverified",
+      "note": "No matching UK asking price verified for this exact product and edition."
+    },
+    "destined-checklane": {
+      "status": "unverified",
+      "note": "No matching UK asking price verified for this exact product and edition."
+    },
+    "asc-feraligatr": {
+      "status": "unverified",
+      "note": "No matching UK asking price verified for this exact product and edition."
+    },
+    "asc-emboar": {
+      "status": "unverified",
+      "note": "No matching UK asking price verified for this exact product and edition."
+    },
+    "asc-meganium": {
+      "status": "unverified",
+      "note": "No matching UK asking price verified for this exact product and edition."
+    },
+    "asc-first-partners": {
+      "status": "unverified",
+      "note": "No matching UK asking price verified for this exact product and edition."
+    }
+  }
+}

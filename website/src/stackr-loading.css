@@ -1,0 +1,529 @@
+/* App card → sleeve → rigid toploader timeline, pinned in stackr-loading-motion.json.
+   50ms web samples retain every native phase boundary; no JavaScript animation loop. */
+.stackr-loading-visual{display:block;width:180px;height:120px;pointer-events:none}
+.stackr-loading-scene{display:block;position:relative;width:360px;height:240px;transform:scale(.5);transform-origin:0 0;opacity:1}
+.stackr-loading-layer{display:block;position:absolute;left:0;top:0}
+.stackr-loading-layer>img{display:block;width:100%;height:100%;object-fit:contain}
+.stackr-loading-card{width:54px;height:76px;margin-left:-27px;margin-top:-38px;transform:translate(180px,151px)}
+.stackr-loading-card>img.stackr-loading-letter{position:absolute;width:44px;height:44px;left:5px;top:16px}
+.stackr-loading-sleeve{width:62px;height:84px;margin-left:-31px;margin-top:-42px;transform:translate(180px,151px)}
+.stackr-loading-loader{width:74px;height:98px;margin-left:-37px;margin-top:-49px;transform:translate(180px,151px)}
+.stackr-loading-sheen{width:12px;height:76px;top:113px;transform:translateX(207px);opacity:0}
+.initial-collection-loader{display:none}
+#collection-main[data-view=loading] .initial-collection-loader{display:flex;justify-content:center;margin:20px 0 0}
+#binder-cards{position:relative}
+.card-loading-art{grid-column:1/-1;display:flex;justify-content:center;align-items:center;min-height:160px}
+#collection-status:empty{display:none}
+@media(prefers-reduced-motion:no-preference){
+ .stackr-loading-scene{animation:stackr-loading-scene 4s linear infinite}
+ .stackr-loading-card{animation:stackr-loading-card 4s linear infinite}
+ .stackr-loading-sleeve{animation:stackr-loading-sleeve 4s linear infinite}
+ .stackr-loading-loader{animation:stackr-loading-loader 4s linear infinite}
+ .stackr-loading-sheen{animation:stackr-loading-sheen 4s linear infinite}
+}
+.loading-paused .stackr-loading-scene,.loading-paused .stackr-loading-layer{animation-play-state:paused}
+@keyframes stackr-loading-card{
+ 0.0000%{transform:translate(64.000px,162.000px) rotate(0.000deg);}
+ 1.2500%{transform:translate(64.000px,162.171px) rotate(-0.285deg);}
+ 2.5000%{transform:translate(64.000px,162.598px) rotate(-0.997deg);}
+ 3.7500%{transform:translate(64.000px,163.182px) rotate(-1.969deg);}
+ 4.0000%{transform:translate(64.000px,163.308px) rotate(-2.180deg);}
+ 5.0000%{transform:translate(64.000px,163.818px) rotate(-3.031deg);}
+ 6.2500%{transform:translate(64.000px,164.402px) rotate(-4.003deg);}
+ 7.5000%{transform:translate(64.000px,164.829px) rotate(-4.715deg);}
+ 8.7500%{transform:translate(64.000px,165.000px) rotate(-5.000deg);}
+ 10.0000%{transform:translate(68.424px,151.852px) rotate(-4.807deg);}
+ 11.2500%{transform:translate(78.501px,121.899px) rotate(-4.308deg);}
+ 12.5000%{transform:translate(89.932px,87.926px) rotate(-3.595deg);}
+ 13.7500%{transform:translate(98.299px,63.057px) rotate(-2.760deg);}
+ 14.5000%{transform:translate(100.000px,58.000px) rotate(-2.240deg);}
+ 15.0000%{transform:translate(102.422px,58.242px) rotate(-1.897deg);}
+ 16.2500%{transform:translate(122.609px,60.261px) rotate(-1.098deg);}
+ 17.5000%{transform:translate(151.797px,63.180px) rotate(-0.456deg);}
+ 18.7500%{transform:translate(174.984px,65.498px) rotate(-0.075deg);}
+ 19.5000%{transform:translate(180.000px,66.000px) rotate(0.000deg);}
+ 20.0000%{transform:translate(180.000px,66.000px) rotate(0.000deg);}
+ 21.2500%{transform:translate(180.000px,66.000px) rotate(0.000deg);}
+ 22.5000%{transform:translate(180.000px,77.305px) rotate(0.000deg);}
+ 23.7500%{transform:translate(180.000px,103.059px) rotate(0.000deg);}
+ 25.0000%{transform:translate(180.000px,132.270px) rotate(0.000deg);}
+ 26.2500%{transform:translate(180.000px,153.652px) rotate(0.000deg);}
+ 27.0000%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 27.5000%{transform:translate(180.000px,159.058px) rotate(0.000deg);}
+ 28.2500%{transform:translate(180.000px,161.000px) rotate(0.000deg);}
+ 28.7500%{transform:translate(180.000px,160.617px) rotate(0.000deg);}
+ 30.0000%{transform:translate(180.000px,158.383px) rotate(0.000deg);}
+ 30.5000%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 31.2500%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 32.5000%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 33.7500%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 35.0000%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 36.0000%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 36.2500%{transform:translate(180.276px,157.226px) rotate(-0.043deg);}
+ 37.5000%{transform:translate(185.463px,142.704px) rotate(-0.876deg);}
+ 38.7500%{transform:translate(195.436px,114.780px) rotate(-2.463deg);}
+ 40.0000%{transform:translate(206.788px,82.994px) rotate(-4.223deg);}
+ 41.2500%{transform:translate(216.112px,56.887px) rotate(-5.576deg);}
+ 42.2500%{transform:translate(219.724px,46.774px) rotate(-6.000deg);}
+ 42.5000%{transform:translate(220.000px,46.000px) rotate(-5.949deg);}
+ 43.7500%{transform:translate(230.625px,46.781px) rotate(-4.803deg);}
+ 45.0000%{transform:translate(254.000px,48.500px) rotate(-2.787deg);}
+ 46.2500%{transform:translate(277.375px,50.219px) rotate(-0.864deg);}
+ 47.5000%{transform:translate(288.000px,51.000px) rotate(0.000deg);}
+ 48.7500%{transform:translate(288.000px,51.000px) rotate(0.000deg);}
+ 49.2500%{transform:translate(288.000px,51.000px) rotate(0.000deg);}
+ 50.0000%{transform:translate(288.000px,54.202px) rotate(0.000deg);}
+ 51.2500%{transform:translate(288.000px,69.757px) rotate(0.000deg);}
+ 52.5000%{transform:translate(288.000px,93.282px) rotate(0.000deg);}
+ 53.7500%{transform:translate(288.000px,118.736px) rotate(0.000deg);}
+ 55.0000%{transform:translate(288.000px,139.786px) rotate(0.000deg);}
+ 56.2500%{transform:translate(288.000px,150.380px) rotate(0.000deg);}
+ 56.5000%{transform:translate(288.000px,151.000px) rotate(0.000deg);}
+ 57.5000%{transform:translate(288.000px,154.031px) rotate(0.000deg);}
+ 58.2500%{transform:translate(288.000px,156.000px) rotate(0.000deg);}
+ 58.7500%{transform:translate(288.000px,154.803px) rotate(0.000deg);}
+ 60.0000%{transform:translate(288.000px,150.000px) rotate(0.000deg);}
+ 61.2500%{transform:translate(288.000px,150.583px) rotate(0.000deg);}
+ 62.2500%{transform:translate(288.000px,151.000px) rotate(0.000deg);}
+ 62.5000%{transform:translate(288.000px,151.000px) rotate(0.000deg);}
+ 63.0000%{transform:translate(288.000px,151.000px) rotate(0.000deg);}
+ 63.7500%{transform:translate(285.514px,151.000px) rotate(0.000deg);}
+ 65.0000%{transform:translate(273.494px,151.000px) rotate(0.000deg);}
+ 66.2500%{transform:translate(254.349px,151.000px) rotate(0.000deg);}
+ 67.5000%{transform:translate(231.698px,151.000px) rotate(0.000deg);}
+ 68.7500%{transform:translate(209.480px,151.000px) rotate(0.000deg);}
+ 70.0000%{transform:translate(191.348px,151.000px) rotate(0.000deg);}
+ 71.2500%{transform:translate(181.109px,151.000px) rotate(0.000deg);}
+ 71.7500%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 72.5000%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 73.7500%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 75.0000%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 75.2500%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 76.2500%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 77.5000%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 78.7500%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 79.5000%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 80.0000%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 81.2500%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 82.5000%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 83.7500%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 85.0000%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 86.2500%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 87.2500%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 87.5000%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 88.7500%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 90.0000%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 91.2500%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 92.5000%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 93.7500%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 95.0000%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 96.0000%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 96.2500%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 97.5000%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 98.7500%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 100.0000%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+}
+@keyframes stackr-loading-sleeve{
+ 0.0000%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 1.2500%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 2.5000%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 3.7500%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 4.0000%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 5.0000%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 6.2500%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 7.5000%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 8.7500%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 10.0000%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 11.2500%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 12.5000%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 13.7500%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 14.5000%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 15.0000%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 16.2500%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 17.5000%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 18.7500%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 19.5000%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 20.0000%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 21.2500%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 22.5000%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 23.7500%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 25.0000%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 26.2500%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 27.0000%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 27.5000%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 28.2500%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 28.7500%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 30.0000%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 30.5000%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 31.2500%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 32.5000%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 33.7500%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 35.0000%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 36.0000%{transform:translate(180.000px,158.000px) rotate(0.000deg);}
+ 36.2500%{transform:translate(180.276px,157.226px) rotate(-0.043deg);}
+ 37.5000%{transform:translate(185.463px,142.704px) rotate(-0.876deg);}
+ 38.7500%{transform:translate(195.436px,114.780px) rotate(-2.463deg);}
+ 40.0000%{transform:translate(206.788px,82.994px) rotate(-4.223deg);}
+ 41.2500%{transform:translate(216.112px,56.887px) rotate(-5.576deg);}
+ 42.2500%{transform:translate(219.724px,46.774px) rotate(-6.000deg);}
+ 42.5000%{transform:translate(220.000px,46.000px) rotate(-5.949deg);}
+ 43.7500%{transform:translate(230.625px,46.781px) rotate(-4.803deg);}
+ 45.0000%{transform:translate(254.000px,48.500px) rotate(-2.787deg);}
+ 46.2500%{transform:translate(277.375px,50.219px) rotate(-0.864deg);}
+ 47.5000%{transform:translate(288.000px,51.000px) rotate(0.000deg);}
+ 48.7500%{transform:translate(288.000px,51.000px) rotate(0.000deg);}
+ 49.2500%{transform:translate(288.000px,51.000px) rotate(0.000deg);}
+ 50.0000%{transform:translate(288.000px,54.202px) rotate(0.000deg);}
+ 51.2500%{transform:translate(288.000px,69.757px) rotate(0.000deg);}
+ 52.5000%{transform:translate(288.000px,93.282px) rotate(0.000deg);}
+ 53.7500%{transform:translate(288.000px,118.736px) rotate(0.000deg);}
+ 55.0000%{transform:translate(288.000px,139.786px) rotate(0.000deg);}
+ 56.2500%{transform:translate(288.000px,150.380px) rotate(0.000deg);}
+ 56.5000%{transform:translate(288.000px,151.000px) rotate(0.000deg);}
+ 57.5000%{transform:translate(288.000px,154.031px) rotate(0.000deg);}
+ 58.2500%{transform:translate(288.000px,156.000px) rotate(0.000deg);}
+ 58.7500%{transform:translate(288.000px,154.803px) rotate(0.000deg);}
+ 60.0000%{transform:translate(288.000px,150.000px) rotate(0.000deg);}
+ 61.2500%{transform:translate(288.000px,150.583px) rotate(0.000deg);}
+ 62.2500%{transform:translate(288.000px,151.000px) rotate(0.000deg);}
+ 62.5000%{transform:translate(288.000px,151.000px) rotate(0.000deg);}
+ 63.0000%{transform:translate(288.000px,151.000px) rotate(0.000deg);}
+ 63.7500%{transform:translate(285.514px,151.000px) rotate(0.000deg);}
+ 65.0000%{transform:translate(273.494px,151.000px) rotate(0.000deg);}
+ 66.2500%{transform:translate(254.349px,151.000px) rotate(0.000deg);}
+ 67.5000%{transform:translate(231.698px,151.000px) rotate(0.000deg);}
+ 68.7500%{transform:translate(209.480px,151.000px) rotate(0.000deg);}
+ 70.0000%{transform:translate(191.348px,151.000px) rotate(0.000deg);}
+ 71.2500%{transform:translate(181.109px,151.000px) rotate(0.000deg);}
+ 71.7500%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 72.5000%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 73.7500%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 75.0000%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 75.2500%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 76.2500%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 77.5000%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 78.7500%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 79.5000%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 80.0000%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 81.2500%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 82.5000%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 83.7500%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 85.0000%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 86.2500%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 87.2500%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 87.5000%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 88.7500%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 90.0000%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 91.2500%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 92.5000%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 93.7500%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 95.0000%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 96.0000%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 96.2500%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 97.5000%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 98.7500%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+ 100.0000%{transform:translate(180.000px,151.000px) rotate(0.000deg);}
+}
+@keyframes stackr-loading-loader{
+ 0.0000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 1.2500%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 2.5000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 3.7500%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 4.0000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 5.0000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 6.2500%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 7.5000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 8.7500%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 10.0000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 11.2500%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 12.5000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 13.7500%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 14.5000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 15.0000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 16.2500%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 17.5000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 18.7500%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 19.5000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 20.0000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 21.2500%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 22.5000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 23.7500%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 25.0000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 26.2500%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 27.0000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 27.5000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 28.2500%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 28.7500%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 30.0000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 30.5000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 31.2500%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 32.5000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 33.7500%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 35.0000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 36.0000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 36.2500%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 37.5000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 38.7500%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 40.0000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 41.2500%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 42.2500%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 42.5000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 43.7500%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 45.0000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 46.2500%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 47.5000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 48.7500%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 49.2500%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 50.0000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 51.2500%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 52.5000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 53.7500%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 55.0000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 56.2500%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 56.5000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 57.5000%{transform:translate(288.000px,154.031px) rotate(0.000deg);opacity:1.0000;}
+ 58.2500%{transform:translate(288.000px,156.000px) rotate(0.000deg);opacity:1.0000;}
+ 58.7500%{transform:translate(288.000px,154.803px) rotate(0.000deg);opacity:1.0000;}
+ 60.0000%{transform:translate(288.000px,150.000px) rotate(0.000deg);opacity:1.0000;}
+ 61.2500%{transform:translate(288.000px,150.583px) rotate(0.000deg);opacity:1.0000;}
+ 62.2500%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 62.5000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 63.0000%{transform:translate(288.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 63.7500%{transform:translate(285.514px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 65.0000%{transform:translate(273.494px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 66.2500%{transform:translate(254.349px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 67.5000%{transform:translate(231.698px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 68.7500%{transform:translate(209.480px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 70.0000%{transform:translate(191.348px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 71.2500%{transform:translate(181.109px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 71.7500%{transform:translate(180.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 72.5000%{transform:translate(180.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 73.7500%{transform:translate(180.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 75.0000%{transform:translate(180.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 75.2500%{transform:translate(180.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 76.2500%{transform:translate(180.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 77.5000%{transform:translate(180.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 78.7500%{transform:translate(180.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 79.5000%{transform:translate(180.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 80.0000%{transform:translate(180.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 81.2500%{transform:translate(180.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 82.5000%{transform:translate(180.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 83.7500%{transform:translate(180.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 85.0000%{transform:translate(180.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 86.2500%{transform:translate(180.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 87.2500%{transform:translate(180.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 87.5000%{transform:translate(180.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 88.7500%{transform:translate(180.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 90.0000%{transform:translate(180.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 91.2500%{transform:translate(180.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 92.5000%{transform:translate(180.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 93.7500%{transform:translate(180.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 95.0000%{transform:translate(180.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 96.0000%{transform:translate(180.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 96.2500%{transform:translate(180.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 97.5000%{transform:translate(180.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 98.7500%{transform:translate(180.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+ 100.0000%{transform:translate(180.000px,151.000px) rotate(0.000deg);opacity:1.0000;}
+}
+@keyframes stackr-loading-sheen{
+ 0.0000%{transform:translateX(153.000px);opacity:0.0000;}
+ 1.2500%{transform:translateX(153.000px);opacity:0.0000;}
+ 2.5000%{transform:translateX(153.000px);opacity:0.0000;}
+ 3.7500%{transform:translateX(153.000px);opacity:0.0000;}
+ 4.0000%{transform:translateX(153.000px);opacity:0.0000;}
+ 5.0000%{transform:translateX(153.000px);opacity:0.0000;}
+ 6.2500%{transform:translateX(153.000px);opacity:0.0000;}
+ 7.5000%{transform:translateX(153.000px);opacity:0.0000;}
+ 8.7500%{transform:translateX(153.000px);opacity:0.0000;}
+ 10.0000%{transform:translateX(153.000px);opacity:0.0000;}
+ 11.2500%{transform:translateX(153.000px);opacity:0.0000;}
+ 12.5000%{transform:translateX(153.000px);opacity:0.0000;}
+ 13.7500%{transform:translateX(153.000px);opacity:0.0000;}
+ 14.5000%{transform:translateX(153.000px);opacity:0.0000;}
+ 15.0000%{transform:translateX(153.000px);opacity:0.0000;}
+ 16.2500%{transform:translateX(153.000px);opacity:0.0000;}
+ 17.5000%{transform:translateX(153.000px);opacity:0.0000;}
+ 18.7500%{transform:translateX(153.000px);opacity:0.0000;}
+ 19.5000%{transform:translateX(153.000px);opacity:0.0000;}
+ 20.0000%{transform:translateX(153.000px);opacity:0.0000;}
+ 21.2500%{transform:translateX(153.000px);opacity:0.0000;}
+ 22.5000%{transform:translateX(153.000px);opacity:0.0000;}
+ 23.7500%{transform:translateX(153.000px);opacity:0.0000;}
+ 25.0000%{transform:translateX(153.000px);opacity:0.0000;}
+ 26.2500%{transform:translateX(153.000px);opacity:0.0000;}
+ 27.0000%{transform:translateX(153.000px);opacity:0.0000;}
+ 27.5000%{transform:translateX(153.000px);opacity:0.0000;}
+ 28.2500%{transform:translateX(153.000px);opacity:0.0000;}
+ 28.7500%{transform:translateX(153.000px);opacity:0.0000;}
+ 30.0000%{transform:translateX(153.000px);opacity:0.0000;}
+ 30.5000%{transform:translateX(153.000px);opacity:0.0000;}
+ 31.2500%{transform:translateX(153.000px);opacity:0.0000;}
+ 32.5000%{transform:translateX(153.000px);opacity:0.0000;}
+ 33.7500%{transform:translateX(153.000px);opacity:0.0000;}
+ 35.0000%{transform:translateX(153.000px);opacity:0.0000;}
+ 36.0000%{transform:translateX(153.000px);opacity:0.0000;}
+ 36.2500%{transform:translateX(153.000px);opacity:0.0000;}
+ 37.5000%{transform:translateX(153.000px);opacity:0.0000;}
+ 38.7500%{transform:translateX(153.000px);opacity:0.0000;}
+ 40.0000%{transform:translateX(153.000px);opacity:0.0000;}
+ 41.2500%{transform:translateX(153.000px);opacity:0.0000;}
+ 42.2500%{transform:translateX(153.000px);opacity:0.0000;}
+ 42.5000%{transform:translateX(153.000px);opacity:0.0000;}
+ 43.7500%{transform:translateX(153.000px);opacity:0.0000;}
+ 45.0000%{transform:translateX(153.000px);opacity:0.0000;}
+ 46.2500%{transform:translateX(153.000px);opacity:0.0000;}
+ 47.5000%{transform:translateX(153.000px);opacity:0.0000;}
+ 48.7500%{transform:translateX(153.000px);opacity:0.0000;}
+ 49.2500%{transform:translateX(153.000px);opacity:0.0000;}
+ 50.0000%{transform:translateX(153.000px);opacity:0.0000;}
+ 51.2500%{transform:translateX(153.000px);opacity:0.0000;}
+ 52.5000%{transform:translateX(153.000px);opacity:0.0000;}
+ 53.7500%{transform:translateX(153.000px);opacity:0.0000;}
+ 55.0000%{transform:translateX(153.000px);opacity:0.0000;}
+ 56.2500%{transform:translateX(153.000px);opacity:0.0000;}
+ 56.5000%{transform:translateX(153.000px);opacity:0.0000;}
+ 57.5000%{transform:translateX(153.000px);opacity:0.0000;}
+ 58.2500%{transform:translateX(153.000px);opacity:0.0000;}
+ 58.7500%{transform:translateX(153.000px);opacity:0.0000;}
+ 60.0000%{transform:translateX(153.000px);opacity:0.0000;}
+ 61.2500%{transform:translateX(153.000px);opacity:0.0000;}
+ 62.2500%{transform:translateX(153.000px);opacity:0.0000;}
+ 62.5000%{transform:translateX(153.000px);opacity:0.0000;}
+ 63.0000%{transform:translateX(153.000px);opacity:0.0000;}
+ 63.7500%{transform:translateX(153.000px);opacity:0.0000;}
+ 65.0000%{transform:translateX(153.000px);opacity:0.0000;}
+ 66.2500%{transform:translateX(153.000px);opacity:0.0000;}
+ 67.5000%{transform:translateX(153.000px);opacity:0.0000;}
+ 68.7500%{transform:translateX(153.000px);opacity:0.0000;}
+ 70.0000%{transform:translateX(153.000px);opacity:0.0000;}
+ 71.2500%{transform:translateX(153.000px);opacity:0.0000;}
+ 71.7500%{transform:translateX(153.000px);opacity:0.0000;}
+ 72.5000%{transform:translateX(154.546px);opacity:0.0718;}
+ 73.7500%{transform:translateX(161.965px);opacity:0.3637;}
+ 75.0000%{transform:translateX(173.548px);opacity:0.5905;}
+ 75.2500%{transform:translateX(176.101px);opacity:0.6000;}
+ 76.2500%{transform:translateX(186.452px);opacity:0.5153;}
+ 77.5000%{transform:translateX(198.035px);opacity:0.2737;}
+ 78.7500%{transform:translateX(205.454px);opacity:0.0501;}
+ 79.5000%{transform:translateX(207.000px);opacity:0.0000;}
+ 80.0000%{transform:translateX(207.000px);opacity:0.0000;}
+ 81.2500%{transform:translateX(207.000px);opacity:0.0000;}
+ 82.5000%{transform:translateX(207.000px);opacity:0.0000;}
+ 83.7500%{transform:translateX(207.000px);opacity:0.0000;}
+ 85.0000%{transform:translateX(207.000px);opacity:0.0000;}
+ 86.2500%{transform:translateX(207.000px);opacity:0.0000;}
+ 87.2500%{transform:translateX(207.000px);opacity:0.0000;}
+ 87.5000%{transform:translateX(207.000px);opacity:0.0000;}
+ 88.7500%{transform:translateX(207.000px);opacity:0.0000;}
+ 90.0000%{transform:translateX(207.000px);opacity:0.0000;}
+ 91.2500%{transform:translateX(207.000px);opacity:0.0000;}
+ 92.5000%{transform:translateX(207.000px);opacity:0.0000;}
+ 93.7500%{transform:translateX(207.000px);opacity:0.0000;}
+ 95.0000%{transform:translateX(207.000px);opacity:0.0000;}
+ 96.0000%{transform:translateX(207.000px);opacity:0.0000;}
+ 96.2500%{transform:translateX(207.000px);opacity:0.0000;}
+ 97.5000%{transform:translateX(207.000px);opacity:0.0000;}
+ 98.7500%{transform:translateX(207.000px);opacity:0.0000;}
+ 100.0000%{transform:translateX(207.000px);opacity:0.0000;}
+}
+@keyframes stackr-loading-scene{
+ 0.0000%{opacity:0.0000;}
+ 1.2500%{opacity:0.2319;}
+ 2.5000%{opacity:0.6836;}
+ 3.7500%{opacity:0.9888;}
+ 4.0000%{opacity:1.0000;}
+ 5.0000%{opacity:1.0000;}
+ 6.2500%{opacity:1.0000;}
+ 7.5000%{opacity:1.0000;}
+ 8.7500%{opacity:1.0000;}
+ 10.0000%{opacity:1.0000;}
+ 11.2500%{opacity:1.0000;}
+ 12.5000%{opacity:1.0000;}
+ 13.7500%{opacity:1.0000;}
+ 14.5000%{opacity:1.0000;}
+ 15.0000%{opacity:1.0000;}
+ 16.2500%{opacity:1.0000;}
+ 17.5000%{opacity:1.0000;}
+ 18.7500%{opacity:1.0000;}
+ 19.5000%{opacity:1.0000;}
+ 20.0000%{opacity:1.0000;}
+ 21.2500%{opacity:1.0000;}
+ 22.5000%{opacity:1.0000;}
+ 23.7500%{opacity:1.0000;}
+ 25.0000%{opacity:1.0000;}
+ 26.2500%{opacity:1.0000;}
+ 27.0000%{opacity:1.0000;}
+ 27.5000%{opacity:1.0000;}
+ 28.2500%{opacity:1.0000;}
+ 28.7500%{opacity:1.0000;}
+ 30.0000%{opacity:1.0000;}
+ 30.5000%{opacity:1.0000;}
+ 31.2500%{opacity:1.0000;}
+ 32.5000%{opacity:1.0000;}
+ 33.7500%{opacity:1.0000;}
+ 35.0000%{opacity:1.0000;}
+ 36.0000%{opacity:1.0000;}
+ 36.2500%{opacity:1.0000;}
+ 37.5000%{opacity:1.0000;}
+ 38.7500%{opacity:1.0000;}
+ 40.0000%{opacity:1.0000;}
+ 41.2500%{opacity:1.0000;}
+ 42.2500%{opacity:1.0000;}
+ 42.5000%{opacity:1.0000;}
+ 43.7500%{opacity:1.0000;}
+ 45.0000%{opacity:1.0000;}
+ 46.2500%{opacity:1.0000;}
+ 47.5000%{opacity:1.0000;}
+ 48.7500%{opacity:1.0000;}
+ 49.2500%{opacity:1.0000;}
+ 50.0000%{opacity:1.0000;}
+ 51.2500%{opacity:1.0000;}
+ 52.5000%{opacity:1.0000;}
+ 53.7500%{opacity:1.0000;}
+ 55.0000%{opacity:1.0000;}
+ 56.2500%{opacity:1.0000;}
+ 56.5000%{opacity:1.0000;}
+ 57.5000%{opacity:1.0000;}
+ 58.2500%{opacity:1.0000;}
+ 58.7500%{opacity:1.0000;}
+ 60.0000%{opacity:1.0000;}
+ 61.2500%{opacity:1.0000;}
+ 62.2500%{opacity:1.0000;}
+ 62.5000%{opacity:1.0000;}
+ 63.0000%{opacity:1.0000;}
+ 63.7500%{opacity:1.0000;}
+ 65.0000%{opacity:1.0000;}
+ 66.2500%{opacity:1.0000;}
+ 67.5000%{opacity:1.0000;}
+ 68.7500%{opacity:1.0000;}
+ 70.0000%{opacity:1.0000;}
+ 71.2500%{opacity:1.0000;}
+ 71.7500%{opacity:1.0000;}
+ 72.5000%{opacity:1.0000;}
+ 73.7500%{opacity:1.0000;}
+ 75.0000%{opacity:1.0000;}
+ 75.2500%{opacity:1.0000;}
+ 76.2500%{opacity:1.0000;}
+ 77.5000%{opacity:1.0000;}
+ 78.7500%{opacity:1.0000;}
+ 79.5000%{opacity:1.0000;}
+ 80.0000%{opacity:1.0000;}
+ 81.2500%{opacity:1.0000;}
+ 82.5000%{opacity:1.0000;}
+ 83.7500%{opacity:1.0000;}
+ 85.0000%{opacity:1.0000;}
+ 86.2500%{opacity:1.0000;}
+ 87.2500%{opacity:1.0000;}
+ 87.5000%{opacity:0.9949;}
+ 88.7500%{opacity:0.9204;}
+ 90.0000%{opacity:0.7657;}
+ 91.2500%{opacity:0.5640;}
+ 92.5000%{opacity:0.3525;}
+ 93.7500%{opacity:0.1649;}
+ 95.0000%{opacity:0.0375;}
+ 96.0000%{opacity:0.0000;}
+ 96.2500%{opacity:0.0000;}
+ 97.5000%{opacity:0.0000;}
+ 98.7500%{opacity:0.0000;}
+ 100.0000%{opacity:0.0000;}
+}

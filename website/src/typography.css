@@ -1,0 +1,109 @@
+/* Commerce typography: neutral numerals, readable purchase facts, compact set names. */
+:root{--font-commerce:Inter,"Helvetica Neue",Arial,sans-serif;--text-body:15px;--text-secondary:12px}
+body{font-family:var(--font-commerce);font-size:var(--text-body);line-height:1.65}
+button,input,select,textarea{font-family:var(--font-commerce)}
+.price,.price-pair,.market-compare,.line-price,.summary-line,.stepper,.cart-info,.cart-limit,.purchase-limit,.detail-list,.info-facts,.stock-shortcut,.product-stock-link,.stock-group-status,.stock-group table,.condition,.card-condition,[data-condition],.admin-stock-row,.demand-grid,.interest-table-wrap{
+ font-family:var(--font-commerce);font-style:normal;font-variant-numeric:lining-nums tabular-nums;font-feature-settings:"lnum" 1,"tnum" 1
+}
+.price-pair .price,.line-price,.summary-line strong,.market-compare>strong{letter-spacing:-.015em}
+.quick-copy>p,.product-specifications p,.product-delivery p,.info-content,.info-card,.info-facts dt,.info-facts dd,.detail-list,.stock-heading p,.cart-empty p,.faq details p{font-size:15px;line-height:1.7}
+.quick-copy>.product-sub,.cart-info p,.cart-limit,.purchase-limit,.example-note,.random-note,.contents-note,.form-note,.contents-component figcaption,.contents-source,.reference-source{font-size:14px;line-height:1.65}
+.product-specifications summary,.product-delivery summary,.quick-copy .contents-jump,.quick-copy .product-stock-link,.quick-copy>.interest-button{font-size:15px;line-height:1.6}
+.product-info h3{font-size:16px;line-height:1.4;min-height:45px;overflow-wrap:anywhere}
+.product-meta,.language-label,.price-label,.market-compare>span,.market-compare>small,.saving-label,.product-card .purchase-limit,.product-card .product-sub{font-size:12px;line-height:1.6}
+.product-card .market-compare>strong{font-size:16px;line-height:1.4}
+.product-card .price-pair .price-pending{font-size:16px;line-height:1.5}
+.stock-shortcut,.interest-button,.save-product,.product-card .add-button{font-size:14px;line-height:1.5}
+.stock-shortcut,.interest-button,.save-product,.primary,.text-link,.contents-source,.reference-source{min-height:44px}
+.product-utility{align-items:start}
+.product-utility>*{min-width:0}
+.product-card .stock-shortcut{overflow-wrap:anywhere}
+.summary-line,.summary-line.muted{font-size:15px;line-height:1.65;gap:12px}
+.summary-line>:first-child{min-width:0;overflow-wrap:anywhere}
+.summary-line>:last-child{flex-shrink:0}
+.summary-line.total{font-size:19px}
+.cart-info h3{font-size:16px;line-height:1.4;overflow-wrap:anywhere}
+.line-price{font-size:17px;line-height:1.4}
+.stepper button{width:36px;height:40px;font-size:18px}
+.stepper output{width:32px;font-size:16px}
+.remove{font-size:14px;min-height:40px}
+.contents-item span:not(.contents-symbol){font-size:14px;line-height:1.6}
+.contents-item small,.contents-heading>span,.contents-heading .section-kicker,.contents-photo>span{font-size:12px;line-height:1.65}
+.contents-item{min-height:130px}
+.stock-filter,.shop-state-toolbar,.shop-state-toolbar>small,.pricing-status,.pricing-status button{font-size:12px;line-height:1.65}
+.shop-state-toolbar select,.stock-filter select{font-size:14px;min-height:44px}
+.stock-set strong,.stock-group-status>span{font-size:14px;line-height:1.6}
+.stock-set small,.stock-group-status small,.stock-group thead th,.stock-note{font-size:12px;line-height:1.65}
+.stock-group tbody th,.stock-group tbody td,.stock-group tbody th button{font-size:14px;line-height:1.65;overflow-wrap:anywhere}
+.stock-group tbody th span{font-size:12px;line-height:1.6}
+#interest-form>label,#interest-form .consent-line,.admin-intro,.admin-stock-tools label,.admin-stock-row>div>strong,.demand-heading p,.admin-empty,#admin-demand>details{font-size:14px;line-height:1.65}
+#interest-form input[type=email],#interest-form select,.shop-admin-dialog input,.shop-admin-dialog select{font-size:16px;min-height:44px}
+.admin-stock-row>label>span,.admin-stock-row>div>small,.admin-stock-tools>span,.admin-stock-row output,.demand-grid article>span,.demand-grid article>small{font-size:12px;line-height:1.65}
+.admin-save,.manage-shop,.load-more-products{font-size:14px;min-height:44px}
+.interest-table-wrap table{font-size:14px;line-height:1.65}
+.chase-cards strong{font-size:13px;line-height:1.5;overflow-wrap:anywhere}
+.chase-cards small,.chase-method,.set-empty,.app-set-cta p{font-size:12px;line-height:1.65}
+.app-set-cta .primary{font-size:14px;line-height:1.5;min-height:44px}
+.photo-unavailable>span{font-size:13px;line-height:1.5}
+.photo-unavailable>small{font-size:12px;line-height:1.6}
+.opening-caption p,.footer-brand-block>p,.shop-fineprint{font-size:15px;line-height:1.65}
+.notice,.notice button,.notice-inner>a,.format-browser button,.section-kicker,.shop-links,.shop-links a,.shop-links button,.footer-base{font-size:12px;line-height:1.6}
+.notice strong{font-size:11px}
+.notice-inner{min-height:38px;flex-wrap:wrap;padding-block:5px}
+.footer-column h3,.footer-column a,.footer-column button{font-size:14px;line-height:1.6}
+.faq summary{font-size:16px;line-height:1.6}
+
+@media(max-width:760px){
+ body{--text-body:16px}
+ .opening-caption p,.footer-brand-block>p,.shop-fineprint{font-size:16px;line-height:1.65}
+ .quick-copy>p,.quick-copy>.example-note,.quick-copy>.product-sub,.product-specifications p,.product-specifications .detail-list,.product-delivery p,.info-content,.info-card,.info-facts dt,.info-facts dd,.cart-info p,.cart-limit,.cart-empty p,.cart-summary .example-note,.quick-copy .purchase-limit,.random-note,.contents-note,.form-note,.contents-component figcaption,.stock-heading p,.stock-note,.faq details p{font-size:16px;line-height:1.65}
+ .detail-list li{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:12px}
+ .detail-list li>*{min-width:0;overflow-wrap:anywhere}
+ .product-specifications summary,.product-delivery summary,.quick-copy .contents-jump,.quick-copy .product-stock-link,.quick-copy>.interest-button,.quick-actions .primary,.quick-actions .save-product,.info-content .primary,.contents-source,.reference-source{font-size:16px;line-height:1.6}
+ .quick-actions{grid-template-columns:minmax(0,1fr);gap:4px}
+ .quick-actions .save-product{justify-self:start}
+ .quick-copy .market-compare>strong{font-size:20px}
+ .quick-copy .market-compare>span,.quick-copy .market-compare>small,.quick-copy .saving-label{font-size:14px;line-height:1.6}
+ .product-info h3{font-size:14px;line-height:1.45;min-height:41px}
+ .product-card .product-meta,.product-card .language-label,.product-card .price-label,.product-card .market-compare>span,.product-card .market-compare>small,.product-card .saving-label,.product-card .purchase-limit{font-size:12px;line-height:1.6}
+ .product-card .product-sub{font-size:13px;line-height:1.6}
+ .product-card .price-pair{grid-template-columns:minmax(0,1fr);gap:8px;min-height:0}
+ .product-card .price-pair .price{font-size:22px;line-height:1.3;white-space:normal;overflow-wrap:anywhere}
+ .product-card .price-pair .price-pending{font-size:16px;line-height:1.5}
+ .product-card .market-compare{border-left:0;border-top:1px solid var(--line);padding:8px 0 0;min-height:0}
+ .product-card .market-compare>strong{font-size:16px;line-height:1.4}
+ .product-card .add-button,.product-card .interest-button,.product-card .save-product{font-size:14px;line-height:1.5;white-space:normal}
+ .product-card .add-button{padding:10px 8px;gap:6px}
+ .product-card .add-button svg,.product-card .interest-button svg{flex-shrink:0}
+ .product-utility{grid-template-columns:minmax(0,1fr);gap:0}
+ .product-utility .save-product{justify-self:start}
+ .product-card .stock-shortcut{font-size:16px;line-height:1.5;text-align:left;min-height:44px}
+ .cart-item{gap:12px}.cart-img{width:60px;min-width:60px;padding:6px}
+ .cart-info h3{font-size:16px;line-height:1.45}
+ .cart-line{flex-wrap:wrap;gap:10px}
+ .summary-line,.summary-line.muted,.line-price,.stepper output{font-size:16px;line-height:1.6}
+ .summary-line.total{font-size:19px}
+ .cart-summary .primary{font-size:16px}
+ .info-facts{column-gap:12px}
+ .info-facts dt,.info-facts dd{min-width:0;overflow-wrap:anywhere}
+ .contents-grid,.contents-simple{grid-template-columns:minmax(0,1fr)}
+ .contents-item{padding:16px;min-height:0;gap:14px}
+ .contents-symbol{width:34px;min-width:34px;height:40px}
+ .contents-item span:not(.contents-symbol),.contents-item small{font-size:16px;line-height:1.6}
+ .contents-item strong{font-size:24px}
+ .contents-heading>span,.contents-heading .section-kicker,.contents-photo>span{font-size:12px;line-height:1.65}
+ .stock-filter select,.shop-state-toolbar select,.catalogue-right select,.header-search input{font-size:16px;min-height:44px}
+ .shop-state-toolbar select{max-width:190px}
+ .section-heading{flex-wrap:wrap;align-items:center;gap:12px}
+ .catalogue-right select{max-width:170px}
+ .stock-set strong,.stock-group-status>span,.stock-group tbody th,.stock-group tbody td,.stock-group tbody th button{font-size:16px;line-height:1.6}
+ .stock-set small,.stock-group-status small,.stock-group tbody th span{font-size:12px;line-height:1.6}
+ .stock-group>summary{flex-wrap:wrap}
+ .stock-group-status{flex-basis:100%;max-width:none;text-align:left;padding-left:0}
+ .stock-group>summary>svg{margin-left:auto}
+ #interest-form>label,#interest-form .consent-line,.admin-intro,.admin-stock-row>div>strong,.admin-save,.manage-shop,.load-more-products,.demand-heading p,.admin-empty,#admin-demand>details,.interest-table-wrap table{font-size:16px;line-height:1.65}
+ #interest-form input[type=email],#interest-form select,.shop-admin-dialog input,.shop-admin-dialog select{font-size:16px;min-height:44px}
+ .chase-cards strong{font-size:12px;line-height:1.55}.chase-cards small{font-size:12px;line-height:1.6}
+ .app-set-cta .primary{font-size:16px;gap:10px;white-space:normal}
+ .app-set-cta h3{font-size:19px;line-height:1.4}.app-set-cta p{font-size:14px;line-height:1.6}
+}

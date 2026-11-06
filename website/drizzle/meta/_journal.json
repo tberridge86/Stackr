@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1793561187732,
+      "tag": "0000_shop_stock_interest",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1793701288858,
+      "tag": "0001_stripe_checkout",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1793819280000,
+      "tag": "0002_owner_books",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1793820000000,
+      "tag": "0003_web_binders",
+      "breakpoints": true
+    }
+  ]
+}
