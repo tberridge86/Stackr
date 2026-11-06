@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "createdAt": "2026-11-06T16:45:32Z",
-  "sourceRevision": "39849cae364221aa2830fb3ceb8f86a1011b1d1a",
+  "createdAt": "2026-11-06T17:13:34Z",
+  "sourceRevision": "3bcfcf97f545fe44336e4ea2035887d8e0af938b",
   "sourceState": "Selected source files copied from this immutable Sites revision, with previously verified standalone export packaging and public evidence redactions retained.",
   "exportAdjustments": [
     "Added media restoration commands, Node 24 pin and media check before build. Product source is copied without transformation."
@@ -194,8 +194,8 @@
     },
     {
       "path": "docs/launch-ready-delivery-20261106.md",
-      "bytes": 5523,
-      "sha256": "3fe6afac9d24298fae1ee5d6bacbeb7a402a1cd409f43899e4fd7b896bc33f55"
+      "bytes": 6631,
+      "sha256": "c5aeb066e92de86123cada89197cbb39550546d116fd297bac74c5b30832f83e"
     },
     {
       "path": "drizzle/0000_shop_stock_interest.sql",
@@ -364,18 +364,18 @@
     },
     {
       "path": "src/collection.css",
-      "bytes": 37688,
-      "sha256": "558f0e9eeaca60d33eca3f9f14b1a659cd207a250f9e43b40f300cc830efc3eb"
+      "bytes": 36969,
+      "sha256": "f656883eeca1747d79983be7e5009a8093ad117005fb181ade53ed862c746bd1"
     },
     {
       "path": "src/collection.html",
-      "bytes": 17147,
-      "sha256": "188890c6104b93280f636f4b360da4212335297902884b26498d53fe010d9f54"
+      "bytes": 16154,
+      "sha256": "e52f38636248fcca679b0effe6b86daf34e8c5e4c3726b67798957d7c61c8272"
     },
     {
       "path": "src/collection.js",
-      "bytes": 85308,
-      "sha256": "5347b1c255256871fd962e4a3425c3563551b2c3de0a0622c54e3d118b9d75a1"
+      "bytes": 80176,
+      "sha256": "f1c8914b49429e03ce7af7a1eb70bca858ac40149128e38da6c59129a9f75653"
     },
     {
       "path": "src/collector.css",
@@ -709,13 +709,13 @@
     },
     {
       "path": "worker/binders.mjs",
-      "bytes": 38728,
-      "sha256": "07876884cd431e79edcce1cbd4ae6ef12d63b54d4bd78e490ae82f4cfead6600"
+      "bytes": 39063,
+      "sha256": "0a241651fa638d514cf198a2b424f3d0a418044915e7c643e473bd3a0644d747"
     },
     {
       "path": "worker/binders.test.mjs",
-      "bytes": 33697,
-      "sha256": "4eb0eada0c900f30db14ab0c409cafe9e6ebe4d502db7ebd3940c5d2601d8399"
+      "bytes": 34822,
+      "sha256": "90ccd3168f2db2140447813fed56e4c38a6d19e057b308d169b2742ea9ba395a"
     },
     {
       "path": "worker/browse-context.test.mjs",
@@ -759,8 +759,8 @@
     },
     {
       "path": "worker/collection-client.test.mjs",
-      "bytes": 91606,
-      "sha256": "bf62ca27227b836f25100ac7c800bbe1be098c96606d9ed3448a8ccaa7c575ed"
+      "bytes": 93074,
+      "sha256": "6a15454aada850bf74f16ac76c9a74d292af0b27286f6ee98100330a67d32418"
     },
     {
       "path": "worker/collector-artwork.test.mjs",
@@ -784,8 +784,8 @@
     },
     {
       "path": "worker/home-loading.test.mjs",
-      "bytes": 3772,
-      "sha256": "be8ac7d7996e357ec6485abec85f38dce1beee8356032ba3afa268f0d807fd48"
+      "bytes": 3927,
+      "sha256": "af74668a968bf65fceaab90f1ffa8d4ebbc9232adc1a5b2b7b4114bd0506dc46"
     },
     {
       "path": "worker/index.js",
@@ -929,10 +929,10 @@
     }
   ],
   "nativeDeployment": {
-    "version": 70,
-    "sourceRevision": "39849cae364221aa2830fb3ceb8f86a1011b1d1a",
+    "version": 71,
+    "sourceRevision": "3bcfcf97f545fe44336e4ea2035887d8e0af938b",
     "status": "succeeded",
-    "deployedAt": "2026-11-06T16:44:40.160971+00:00",
+    "deployedAt": "2026-11-06T17:13:14.422169+00:00",
     "url": "https://stackr-private-exchange-concept.berridge14.chatgpt.site"
   },
   "validation": {

@@ -20,7 +20,7 @@ function readyPageSelectors(params,privateRead=false){
  const cursor=params.get('cursor');if(cursor!==null&&!/^(?:0|[1-9]\d{0,4})$/.test(cursor))throw fault('Invalid checklist cursor.');
  const offset=integer(Number(cursor||0),privateRead?10000:400),snapshot=params.has('snapshot')?text(params.get('snapshot'),100):null;
  if((params.has('cursor')||privateRead)&&!snapshot)throw fault('Continue with the exact public checklist snapshot.');
- const revision=privateRead?integer(Number(params.get('expectedRevision')),1000000000):null;if(privateRead&&!revision)throw fault('Refresh the binder before loading its quantities.');
+ const revision=privateRead?integer(Number(params.get('expectedRevision')),1000000000):null;if(privateRead&&!revision)throw fault('Refresh the binder before loading its saved cards.');
  return {limit,offset,snapshot,revision};
 }
 const identity=request=>{const v=request.headers.get('oai-authenticated-user-id');return v&&v.length<=200&&!/[\x00-\x20\x7f]/.test(v)?v:null;};
@@ -63,10 +63,21 @@ function approvedImage(card,variant){
  return null;
 }
 function canonicalCard(card,cardId,variantId,binder){
- if(!card||card.game!=='pokemon'||card.cardId!==cardId||!UUID.test(card.set?.setId||'')||card.languageCode!==binder.language||binder.type==='set'&&card.set.setId!==binder.setId)throw fault('This printing does not belong to the binder’s set and language.');
- const variant=Array.isArray(card.variants)&&card.variants.find(v=>v.variantId===variantId);
+ if(!card||card.game!=='pokemon'||card.cardId!==cardId||!UUID.test(card.set?.setId||'')||card.languageCode!==binder.language||binder.type==='set'&&card.set.setId!==binder.setId)throw fault('This card does not belong to the binder’s set and language.');
+ const variant=Array.isArray(card.variants)&&card.variants.find(v=>v?.variantId===variantId);
  if(!variant)throw fault('Select an exact variant returned by the catalogue.');
  return {cardId,variantId,canonicalId:text(variant.canonicalId,400),variantCode:text(variant.variantCode,100),finishCode:variant.finishCode===null||variant.finishCode===undefined?null:text(variant.finishCode,100),setId:card.set.setId,language:card.languageCode,nativeName:text(card.names?.native,300),englishName:card.names?.englishDisplay?text(card.names.englishDisplay,300):null,collectorNumber:text(card.collectorNumber?.value,80),imageUrl:approvedImage(card,variant)};
+}
+function pulledCard(card,cardId,binder){
+ if(!card||card.game!=='pokemon'||card.cardId!==cardId||!UUID.test(card.set?.setId||'')||card.languageCode!==binder.language||binder.type==='set'&&card.set.setId!==binder.setId)throw fault('This card does not belong to the binder’s set and language.');
+ const rows=Array.isArray(card.variants)?card.variants:[],counts=new Map();
+ for(const row of rows)if(row&&UUID.test(row.variantId||''))counts.set(row.variantId,(counts.get(row.variantId)||0)+1);
+ // The UI records one boolean per card. Existing storage still needs an exact
+ // catalogue row internally; no finish or quantity choice is required from users.
+ const candidates=rows.filter(row=>row&&counts.get(row.variantId)===1);
+ candidates.sort((a,b)=>Number(b.variantId===card.defaultVariantId)-Number(a.variantId===card.defaultVariantId));
+ for(const candidate of candidates){try{return canonicalCard(card,cardId,candidate.variantId,binder);}catch{}}
+ throw fault('This card could not be confirmed. Try again in a moment.',503);
 }
 const binderDto=b=>({id:b.id,name:b.name,type:b.type,language:b.language,setId:b.set_id,setName:b.set_name,setTotal:b.set_total,setCheckedAt:b.set_checked_at,revision:b.revision,archived:b.archived===1,createdAt:b.created_at,updatedAt:b.updated_at});
 const itemDto=i=>({cardId:i.card_id,variantId:i.variant_id,canonicalId:i.canonical_id,variantCode:i.variant_code,finishCode:i.finish_code,setId:i.set_id,language:i.language,nativeName:i.native_name,englishName:i.english_name,collectorNumber:i.collector_number,imageUrl:i.image_url,quantity:i.quantity,updatedAt:i.updated_at});
@@ -141,8 +152,8 @@ export function createBinderService({fetchImpl=fetch,now=Date.now,onUpstreamFail
  async function ownership(db,user,binder,cardIds,offset){
   const where=' FROM web_binder_items i JOIN web_binders b ON b.id=i.binder_id WHERE b.id=? AND b.user_id=? AND i.quantity>0 AND i.card_id IN ('+cardIds.map(()=>'?').join(',')+')';
   const [rows,count]=await Promise.all([all(db.prepare('SELECT i.card_id,i.variant_id,i.quantity'+where+' ORDER BY i.card_id,i.variant_id LIMIT 50 OFFSET ?').bind(binder.id,user,...cardIds,offset)),db.prepare('SELECT COUNT(*) total'+where).bind(binder.id,user,...cardIds).first()]);
-  if((await own(db,user,binder.id)).revision!==binder.revision)throw fault('This binder changed while reading ownership. Tap again to refresh it.',409);
-  if(!Number.isSafeInteger(count?.total)||count.total<0||count.total>10000||offset>count.total||rows.length!==Math.min(50,count.total-offset))throw fault('The saved ownership could not be read consistently. Tap again to refresh it.',409);
+  if((await own(db,user,binder.id)).revision!==binder.revision)throw fault('This binder changed while reading your pulled cards. Tap again to refresh it.',409);
+  if(!Number.isSafeInteger(count?.total)||count.total<0||count.total>10000||offset>count.total||rows.length!==Math.min(50,count.total-offset))throw fault('Your pulled cards could not be read consistently. Tap again to refresh them.',409);
   return {binder,cardIds,ownership:rows.map(row=>({cardId:row.card_id,variantId:row.variant_id,quantity:row.quantity})),ownershipTotal:count.total,meta:{pagination:{limit:50,offset,nextCursor:offset+rows.length<count.total?String(offset+rows.length):null}}};
  }
  function saveItem(db,user,binderId,cardId,variantId,card,quantity,time){
@@ -195,10 +206,10 @@ export function createBinderService({fetchImpl=fetch,now=Date.now,onUpstreamFail
      for(const key of url.searchParams.keys())if(!['cardIds','limit','cursor','expectedRevision'].includes(key)||url.searchParams.getAll(key).length!==1)throw fault('Unsupported ownership parameter.');
      const cardIds=(url.searchParams.get('cardIds')||'').split(',');if(!cardIds.length||cardIds.length>50)throw fault('Read ownership for 1–50 cards at a time.');
      const ids=cardIds.map(uuid);if(new Set(ids).size!==ids.length)throw fault('Each ownership card must be unique.');
-     if(url.searchParams.has('limit')&&url.searchParams.get('limit')!=='50')throw fault('Ownership pages contain at most 50 saved finishes.');
+     if(url.searchParams.has('limit')&&url.searchParams.get('limit')!=='50')throw fault('Each page contains at most 50 saved card records.');
      const cursor=url.searchParams.get('cursor');if(cursor!==null&&!/^(?:0|[1-9]\d{0,4})$/.test(cursor))throw fault('Invalid ownership cursor.');const offset=integer(Number(cursor||0),10000);
      const revision=url.searchParams.has('expectedRevision')?integer(Number(url.searchParams.get('expectedRevision')),1000000000):null;
-     if(cursor!==null&&!revision)throw fault('Continue ownership with the exact binder revision.');if(revision!==null&&revision!==binder.revision)throw fault('This binder changed while reading ownership. Tap again to refresh it.',409);
+     if(cursor!==null&&!revision)throw fault('Continue with the exact binder revision.');if(revision!==null&&revision!==binder.revision)throw fault('This binder changed while reading your pulled cards. Tap again to refresh it.',409);
      return reply(await ownership(db,user,binder,ids,offset));
     }
     if(part==='items'){
@@ -210,14 +221,14 @@ export function createBinderService({fetchImpl=fetch,now=Date.now,onUpstreamFail
     if(part==='checklist'){
      if(binder.type!=='set')throw fault('Only a set binder has a set checklist.');
      if(url.searchParams.has('paged')){
-      const page=readyPageSelectors(url.searchParams,true);if(binder.revision!==page.revision)throw fault('This binder changed while loading. Reopen it to read consistent quantities.',409);
+      const page=readyPageSelectors(url.searchParams,true);if(binder.revision!==page.revision)throw fault('This binder changed while loading. Reopen it to refresh your pulled cards.',409);
       const bundle=await readyCataloguesService.get(binder.setId,binder.language,env,ctx);if(!bundle)throw fault('This set uses the paged catalogue checklist.',404);
       const ready=readyReference(bundle,now());if(page.snapshot!==ready.snapshotId)throw fault('The public checklist changed. Reopen the binder to refresh it.',409);
       const [items,counts]=await Promise.all([all(db.prepare('SELECT i.card_id,i.variant_id,i.quantity FROM web_binder_items i JOIN web_binders b ON b.id=i.binder_id WHERE b.id=? AND b.user_id=? AND i.quantity>0 ORDER BY i.card_id,i.variant_id LIMIT ? OFFSET ?').bind(binderId,user,page.limit,page.offset)),summary(db,user,binder)]);
       // Revision guards cover changes during either read as well as between
       // pages. Private rows are never retained in the shared public cache.
-      if((await own(db,user,binderId)).revision!==page.revision)throw fault('This binder changed while loading. Reopen it to read consistent quantities.',409);
-      if(page.offset>counts.totalVariants||items.length!==Math.min(page.limit,counts.totalVariants-page.offset))throw fault('The saved quantities could not be read consistently. Reopen this binder.',409);
+      if((await own(db,user,binderId)).revision!==page.revision)throw fault('This binder changed while loading. Reopen it to refresh your pulled cards.',409);
+      if(page.offset>counts.totalVariants||items.length!==Math.min(page.limit,counts.totalVariants-page.offset))throw fault('Your pulled cards could not be read consistently. Reopen this binder.',409);
       const progress={owned:counts.uniqueCards,total:counts.uniqueCards<=bundle.set.total?bundle.set.total:null,checkedAt:bundle.capturedAt,capturedAt:bundle.capturedAt,source:'public-catalogue-snapshot',catalogueVersionId:bundle.catalogueVersionId,stale:ready.stale,referenceConsistent:counts.uniqueCards<=bundle.set.total};
       return reply({ownership:items.map(item=>({cardId:item.card_id,variantId:item.variant_id,quantity:item.quantity})),ownershipTotal:counts.totalVariants,binderRevision:page.revision,ready,progress,meta:{apiVersion:'1',pagination:{limit:page.limit,offset:page.offset,nextCursor:page.offset+items.length<counts.totalVariants?String(page.offset+items.length):null}}});
      }
@@ -270,19 +281,17 @@ export function createBinderService({fetchImpl=fetch,now=Date.now,onUpstreamFail
     return reply({ok:true,replayed:again,binder:await own(db,user,binderId)});
    }
    if(part==='ownership'){
-    keys(data,['id','expectedRevision','cardId','owned']);const cardId=uuid(data.cardId);if(typeof data.owned!=='boolean')throw fault('Choose an owned or unowned state.');
+    keys(data,['id','expectedRevision','cardId','owned']);const cardId=uuid(data.cardId);if(typeof data.owned!=='boolean')throw fault('Choose pulled or not pulled.');
     const payload={operation:'ownership',binderId,expectedRevision:revision,cardId,owned:data.owned};
     if(await replay(db,user,id,payload))return reply({ok:true,replayed:true,binder:await own(db,user,binderId)});
     if(binder.revision!==revision||binder.archived)throw fault('This binder changed or is archived. Tap again to refresh it.',409);
     const statements=[],time=stamp();
     if(data.owned){
      const existing=await db.prepare('SELECT 1 present FROM web_binder_items WHERE binder_id=? AND card_id=? AND quantity>0 LIMIT 1').bind(binderId,cardId).first();
-     // A stale mark-owned intent must never replace an existing quantity or finish.
+     // Marking an already-pulled card preserves its existing saved records.
      if(!existing){
-      const raw=await upstream('/cards/'+cardId),current=raw.data.card,variantId=current?.defaultVariantId;
-      if(!UUID.test(variantId||'')||!Array.isArray(current?.variants)||current.variants.filter(variant=>variant.variantId===variantId).length!==1)throw fault('This card has no confirmed default finish. Use Edit quantity / finish to choose an exact finish.');
-      const variant=current.variants.find(row=>row.variantId===variantId);try{text(variant.canonicalId,400);text(variant.variantCode,100);if(variant.finishCode!==null&&variant.finishCode!==undefined)text(variant.finishCode,100);}catch{throw fault('This card has no confirmed default finish. Use Edit quantity / finish to choose an exact finish.');}
-      const card=canonicalCard(current,cardId,variantId,binder);statements.push(saveItem(db,user,binderId,cardId,variantId,card,1,time));
+      const raw=await upstream('/cards/'+cardId),card=pulledCard(raw.data.card,cardId,binder);
+      statements.push(saveItem(db,user,binderId,cardId,card.variantId,card,1,time));
      }
     }else{
      // The action guard, revision bump and every finish are one D1 transaction.
@@ -303,7 +312,7 @@ export function createBinderService({fetchImpl=fetch,now=Date.now,onUpstreamFail
    const time=stamp();
    const again=await apply(db,user,id,binderId,'item',revision,payload,[saveItem(db,user,binderId,cardId,variantId,card,quantity,time)]);
    return reply({ok:true,replayed:again,binder:await own(db,user,binderId)});
-  }catch(e){if(/binder_.*conflict|UNIQUE/.test(String(e.message)))return reply({error:'This binder changed or this action already exists. Refresh before retrying.'},409);if(/binder_item_limit/.test(String(e.message)))return reply({error:'This binder has reached its 10,000 variant limit.'},409);return reply({error:e.status?e.message:'Collection storage is temporarily unavailable. No change is confirmed.'},e.status||503);}
+  }catch(e){if(/binder_.*conflict|UNIQUE/.test(String(e.message)))return reply({error:'This binder changed or this action already exists. Refresh before retrying.'},409);if(/binder_item_limit/.test(String(e.message)))return reply({error:'This binder has reached its storage limit.'},409);return reply({error:e.status?e.message:'Collection storage is temporarily unavailable. No change is confirmed.'},e.status||503);}
  }
  return {handleRequest,checkCatalogue,checkPitchBlack:()=>checkFeaturedCatalogue('pitchBlack'),checkChaosRising:()=>checkFeaturedCatalogue('chaosRising'),checkJourneyTogether:()=>checkFeaturedCatalogue('journeyTogether'),checkPhantasmalFlames:()=>checkFeaturedCatalogue('phantasmalFlames'),checkAscendedHeroes:()=>checkFeaturedCatalogue('ascendedHeroes'),checkDeltaReign:()=>checkFeaturedCatalogue('deltaReign')};
 }

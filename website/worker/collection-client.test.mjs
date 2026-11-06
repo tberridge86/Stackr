@@ -4,6 +4,7 @@ import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 import {webcrypto} from 'node:crypto';
 const source=readFileSync(new URL('./catalogue-printings.mjs',import.meta.url),'utf8').replace(/^export /gm,'')+'\n'+readFileSync(new URL('../src/collection.js',import.meta.url),'utf8');
+const removedEditorIds=new Set(['card-dialog','card-form','card-dialog-name','card-dialog-identity','target-binder','card-variant','card-dialog-image']);
 function deferred(){let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b});return{promise,resolve,reject};}
 function harness(fetch,logos=[],options={}){
  const nodes=new Map(),documentEvents={};let renderedCards=[],renderedVersion=-1;
@@ -13,20 +14,21 @@ function harness(fetch,logos=[],options={}){
  node('collection-main').dataset.view='loading';
  function cardNodes(){
   const grid=node('binder-cards');if(renderedVersion!==grid.htmlWrites){renderedVersion=grid.htmlWrites;renderedCards=[...grid.innerHTML.matchAll(/<button\b([^>]*\bdata-card-key="([^"]+)"[^>]*)>/g)].map(match=>{
-   const tile=element(),article=element(),editor=element(),feedback=element();tile.dataset.cardKey=match[2];for(const attribute of match[1].matchAll(/(aria-[\w-]+)="([^"]*)"/g))tile.setAttribute(attribute[1],attribute[2]);tile.closest=()=>article;tile.article=article;editor.dataset.editCard=match[2];editor.closest=()=>article;article.parts={'.card-tile':tile,'.own-status':feedback};article.editor=editor;
-   const start=grid.innerHTML.lastIndexOf('<article',match.index),end=grid.innerHTML.indexOf('</article>',match.index)+10,original=grid.innerHTML.slice(start,end);Object.defineProperty(article,'outerHTML',{set(value){grid.innerHTML=grid.innerHTML.replace(original,value);}});return tile;
+   const tile=element(),article=element(),feedback=element();tile.dataset.cardKey=match[2];for(const attribute of match[1].matchAll(/(aria-[\w-]+)="([^"]*)"/g))tile.setAttribute(attribute[1],attribute[2]);tile.closest=()=>article;tile.article=article;article.parts={'.card-tile':tile,'.own-status':feedback};
+   const start=grid.innerHTML.lastIndexOf('<article',match.index),end=grid.innerHTML.indexOf('</article>',match.index)+10,original=grid.innerHTML.slice(start,end);Object.defineProperty(article,'outerHTML',{set(value){grid.innerHTML=grid.innerHTML.replace(original,value);}});
+   let badge=null;const art=element();art.append=value=>{badge=value;badge.remove=()=>{badge=null;};};if(original.includes('class="owned-badge"')){badge=element();badge.textContent='Pulled';badge.remove=()=>{badge=null;};}tile.querySelector=selector=>selector==='.owned-badge'?badge:selector==='.card-art'?art:null;return tile;
   });}return renderedCards;
  }
- const document={getElementById:node,querySelectorAll(selector){if(selector==='[data-view]')return[node('collection-main'),...navigation];if(selector==='button[data-view]')return navigation;if(selector==='#delta-card-list [data-list-number]')return options.deltaCards||[];if(selector==='[data-card-key]'||selector==='#binder-cards [data-card-key]')return cardNodes();if(selector==='[data-edit-card]')return cardNodes().map(tile=>tile.article.editor);if(selector==='dialog')return [...nodes.values()].filter(n=>n.id.endsWith('dialog'));return[];},addEventListener(name,fn){documentEvents[name]=fn;}};
+ const document={getElementById:id=>removedEditorIds.has(id)?null:node(id),createElement:()=>element(),querySelectorAll(selector){if(selector==='[data-view]')return[node('collection-main'),...navigation];if(selector==='button[data-view]')return navigation;if(selector==='#delta-card-list [data-list-number]')return options.deltaCards||[];if(selector==='[data-card-key]'||selector==='#binder-cards [data-card-key]')return cardNodes();if(selector==='dialog')return [...nodes.values()].filter(n=>n.id.endsWith('dialog'));return[];},addEventListener(name,fn){documentEvents[name]=fn;}};
  node('collection-set-logos').textContent=JSON.stringify({logos});
  node('collection-set-links').textContent=JSON.stringify({matches:options.links||{}});
  node('collection-covers').textContent=JSON.stringify({covers:options.covers||[]});
  node('create-form').elements={name:element('name'),language:element('language')};
  const historyEntries=[],scrolls=[];
  const context={document,window:{addEventListener(){},scrollTo:value=>scrolls.push(value),...options.window},crypto:webcrypto,navigator:options.navigator,Image:options.Image,URL,URLSearchParams,AbortController,setTimeout,clearTimeout,history:{replaceState(a,b,url){historyEntries.push(url);const u=new URL(url,'https://site.test');Object.assign(context.location,{pathname:u.pathname,search:u.search,hash:u.hash});}},location:{pathname:'/collection',search:'',hash:'',...options.location},fetch};
- const expose='globalThis.inspect={fetchReadySet,queueReady,scheduleReadySets,readyState:()=>[...readyPublic.values()],tapCard,openCardPreview,loadSavedBinderProgress,progressTask:()=>progressRun,openFeaturedBinder,warmCardImages,openCard,loadAccount,loadChecklist,markOwned,isTrialBinder,quickState:()=>[...quickDrafts.values()],start,lock,showView,openSetCollection,setTargetFromQuery,shopHrefForBinder,setLogoUrl,binderCover,renderBinders,openCreate,saveDraft,openBinder,loadCards,loadSets,renderSets,refreshSavedQuantity,cardState:()=>[...cardObjects.values()],advanceModal:()=>modalGeneration++,setMode:v=>mode=v};';
+ const expose='globalThis.inspect={fetchReadySet,queueReady,scheduleReadySets,readyState:()=>[...readyPublic.values()],tapCard,openCardPreview,loadSavedBinderProgress,progressTask:()=>progressRun,openFeaturedBinder,warmCardImages,loadAccount,loadChecklist,togglePulled,isTrialBinder,quickState:()=>[...quickDrafts.values()],start,lock,showView,openSetCollection,setTargetFromQuery,shopHrefForBinder,setLogoUrl,binderCover,renderBinders,openCreate,saveDraft,openBinder,loadCards,loadSets,renderSets,refreshPulledState,cardState:()=>[...cardObjects.values()],advanceModal:()=>modalGeneration++,setMode:v=>mode=v};';
  vm.runInNewContext(source.replace(/\nstart\(\);/, '\n'+expose),context);
- function form(){const f=node('test-form');f.fields=[element('quantity'),element('binderId'),element('variantId')];f.parts={'button.primary':element('submit'),'.dialog-status':element('feedback')};f.parts['button.primary'].textContent='Save quantity';return f;}
+ function form(){const f=node('test-form');f.fields=[element('name'),element('archived')];f.parts={'button.primary':element('submit'),'.dialog-status':element('feedback')};f.parts['button.primary'].textContent='Save changes';return f;}
  return {api:context.inspect,node,form,location:context.location,historyEntries,scrolls,cardNode:key=>cardNodes().find(n=>n.dataset.cardKey===key),visibleCards:()=>cardNodes().filter(n=>!n.article.hidden&&!n.article.removed).map(n=>n.dataset.cardKey),clickCard:key=>documentEvents.click({target:{closest:()=>({dataset:{cardKey:key}})}}),inspectCard:key=>documentEvents.click({target:{closest:()=>({dataset:{inspectCard:key}})}})};
 }
 const response=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json'}});
@@ -63,25 +65,25 @@ test('uncertain collection writes freeze visible fields and retry the identical 
  const pending=deferred(),calls=[];let attempt=0;
  const h=harness((url,options)=>{calls.push(JSON.parse(options.body));return ++attempt===1?pending.promise:Promise.resolve(response({ok:true}));});
  const form=h.form(),dialog=h.node('dialog');dialog.open=true;
- const draft={id:'same-action'},payload={id:draft.id,quantity:3};let saved=0;
- const first=h.api.saveDraft(draft,()=>draft,form,dialog,'/binder/items',()=>payload,()=>{saved++});
+ const draft={id:'same-action'},payload={id:draft.id,name:'Saved binder'};let saved=0;
+ const first=h.api.saveDraft(draft,()=>draft,form,dialog,'/binder',()=>payload,()=>{saved++});
  assert.ok(form.fields.every(f=>f.disabled));assert.equal(form.querySelector('button.primary').disabled,true);
  pending.reject(new TypeError('Network unavailable'));await first;
  assert.ok(form.fields.every(f=>f.disabled));assert.equal(form.querySelector('button.primary').textContent,'Retry same change');assert.match(form.querySelector('.dialog-status').textContent,/unchanged details/);
- await h.api.saveDraft(draft,()=>draft,form,dialog,'/binder/items',()=>({id:'different',quantity:4}),()=>{saved++});
+ await h.api.saveDraft(draft,()=>draft,form,dialog,'/binder',()=>({id:'different',name:'Changed binder'}),()=>{saved++});
  assert.deepEqual(calls,[payload,payload]);assert.equal(saved,1);
 });
-test('an old save cannot mutate or close a newer card dialog',async()=>{
+test('an old binder save cannot mutate or close a newer settings dialog',async()=>{
  const pending=deferred(),h=harness(()=>pending.promise),form=h.form(),dialog=h.node('dialog');dialog.open=true;
  const old={id:'old'};let current=old,callbacks=0;
- const request=h.api.saveDraft(old,()=>current,form,dialog,'/binder/items',()=>({id:'old',quantity:3}),()=>{callbacks++;dialog.close();});
- current={id:'new'};h.api.advanceModal();form.querySelector('.dialog-status').textContent='Loading the new card quantity';form.querySelector('button.primary').disabled=true;
+ const request=h.api.saveDraft(old,()=>current,form,dialog,'/binder',()=>({id:'old',name:'Old binder'}),()=>{callbacks++;dialog.close();});
+ current={id:'new'};h.api.advanceModal();form.querySelector('.dialog-status').textContent='Loading the new binder settings';form.querySelector('button.primary').disabled=true;
  pending.resolve(response({ok:true}));await request;
- assert.equal(callbacks,0);assert.equal(dialog.open,true);assert.equal(form.querySelector('button.primary').disabled,true);assert.equal(form.querySelector('.dialog-status').textContent,'Loading the new card quantity');
+ assert.equal(callbacks,0);assert.equal(dialog.open,true);assert.equal(form.querySelector('button.primary').disabled,true);assert.equal(form.querySelector('.dialog-status').textContent,'Loading the new binder settings');
 });
 test('definite validation failure permits corrections with a fresh action id',async()=>{
- const h=harness(()=>Promise.resolve(response({error:'Invalid quantity'},400))),form=h.form(),dialog=h.node('dialog');dialog.open=true;const draft={id:'bad-action'};
- await h.api.saveDraft(draft,()=>draft,form,dialog,'/binder/items',()=>({id:draft.id,quantity:-1}),()=>assert.fail('should not succeed'));
+ const h=harness(()=>Promise.resolve(response({error:'Invalid binder name'},400))),form=h.form(),dialog=h.node('dialog');dialog.open=true;const draft={id:'bad-action'};
+ await h.api.saveDraft(draft,()=>draft,form,dialog,'/binder',()=>({id:draft.id,name:''}),()=>assert.fail('should not succeed'));
  assert.equal(draft.payload,null);assert.notEqual(draft.id,'bad-action');assert.ok(form.fields.every(f=>!f.disabled));assert.equal(form.querySelector('button.primary').disabled,false);
 });
 test('refreshing the same binder invalidates an older search response and preserves fresh totals',async()=>{
@@ -108,11 +110,11 @@ test('a set binder opens its real checklist automatically without recording any 
  const h=setFlow();await h.api.openBinder('set-binder');
  assert.equal(h.calls.length,3);assert.match(h.calls[1],/\/checklist\?/);assert.match(h.node('binder-cards').innerHTML,/Second card/);assert.match(h.node('binder-cards').innerHTML,/First card/);assert.match(h.node('binder-cards').innerHTML,/data-owned="false"/);assert.equal(h.node('progress-percent').textContent,'0%');
 });
-test('saving a checklist quantity retains later loaded pages and refreshes exact ownership totals',async()=>{
+test('refreshing a confirmed pulled card retains later loaded pages and counts it once',async()=>{
  const h=setFlow();await h.api.openBinder('set-binder');const previous=h.node('binder-cards').innerHTML;
  assert.match(previous,/Second card/);h.setQuantity(3);
- await h.api.refreshSavedQuantity({binder:setBinder,payload:{cardId:'two',variantId:'normal',quantity:3}});
- assert.equal(h.calls.filter(url=>url.includes('/checklist')).length,2);assert.equal(h.node('binder-cards').innerHTML,previous);assert.equal(h.api.cardState().find(x=>x.card.cardId==='two').ownedVariants[0].quantity,3);assert.equal(h.node('progress-percent').textContent,'50%');assert.match(h.node('binder-summary').innerHTML,/<strong>3<\/strong><span>Copies/);
+ await h.api.refreshPulledState({binder:setBinder,payload:{cardId:'two'},ownership:{ownedQuantity:3,ownedVariants:[{variantId:'normal',quantity:3}]}});
+ assert.equal(h.calls.filter(url=>url.includes('/checklist')).length,2);assert.equal(h.node('binder-cards').innerHTML,previous);assert.equal(h.api.cardState().find(x=>x.card.cardId==='two').ownedVariants[0].quantity,3);assert.equal(h.node('progress-percent').textContent,'50%');assert.match(h.node('binder-summary').innerHTML,/<strong>1<\/strong><span>Pulled/);assert.doesNotMatch(h.node('binder-summary').innerHTML,/Copies|Variants|Quantity/);assert.equal(h.cardNode('two:catalogue').querySelector('.owned-badge').textContent,'Pulled');
 });
 test('set discovery follows opaque catalogue pages, sorts actual release dates and filters the loaded library',async()=>{
  const calls=[],h=harness(url=>{calls.push(url);const second=url.includes('cursor=next'),s={setId:second?'new':'old',game:'pokemon',languageCode:'en',nativeName:second?'New set':'Old set',englishDisplayName:second?'New set':'Old set',setCode:second?'NEW':'OLD',total:100,releaseDate:second?'2026-10-01':'2020-01-01'};return Promise.resolve(response({data:{sets:[s]},meta:{pagination:{nextCursor:second?null:'next'}}}));});
@@ -122,7 +124,7 @@ test('set discovery follows opaque catalogue pages, sorts actual release dates a
 });
 
 test('saving a card keeps the current checklist denominator when an older binder snapshot differs',async()=>{
- const h=setFlow(3);await h.api.openBinder('set-binder');h.setQuantity(1);await h.api.refreshSavedQuantity({binder:setBinder,payload:{cardId:'one',variantId:'normal',quantity:1}});assert.equal(h.node('progress-percent').textContent,'33%');assert.equal(h.node('progress-label').textContent,'1 / 3 unique cards owned');
+ const h=setFlow(3);await h.api.openBinder('set-binder');h.setQuantity(1);await h.api.refreshPulledState({binder:setBinder,payload:{cardId:'one'},ownership:{ownedQuantity:1,ownedVariants:[{variantId:'normal',quantity:1}]}});assert.equal(h.node('progress-percent').textContent,'33%');assert.equal(h.node('progress-label').textContent,'1 / 3 cards pulled');
 });
 test('catalogue failure gives an explicit retry instead of reporting an empty set search',async()=>{
  const h=harness(()=>Promise.resolve(response({error:'Catalogue unavailable'},503)));h.node('set-language').value='en';await assert.rejects(h.api.loadSets(),/Catalogue unavailable/);assert.equal(h.node('retry-sets').hidden,false);assert.match(h.node('set-grid').innerHTML,/Sets could not load/);assert.doesNotMatch(h.node('set-grid').innerHTML,/No matching/);assert.equal(h.node('set-result-count').textContent,'Set list unavailable.');
@@ -220,7 +222,7 @@ function trialFlow(options={}){
   if(url.includes('/checklist'))return response(ownershipPage(catalogue,binder(),[...quantities].filter(([,quantity])=>quantity>0).map(([cardId,quantity])=>({cardId,variantId:'variant-'+cardId.split('-').at(-1),quantity})),url));
   if(url.includes('/ownership')&&init.method==='POST'){
    const payload=JSON.parse(init.body);writes.push(payload);postAttempt++;
-   if(options.invalidDefault&&payload.owned)return response({error:'This card has no confirmed default finish. Use Edit quantity / finish to choose an exact finish.'},400);
+   if(options.unconfirmedCard&&payload.owned)return response({error:'This card could not be confirmed. Try again in a moment.'},503);
    if(!actions.has(payload.id)){actions.set(payload.id,payload);quantities.set(payload.cardId,payload.owned?1:0);revision++;}readAfterPost=true;
    if(options.uncertain&&postAttempt===1)throw new TypeError('Lost response');
    if(options.externalQuantity&&postAttempt>1)quantities.set(payload.cardId,options.externalQuantity);
@@ -235,7 +237,7 @@ function trialFlow(options={}){
  });return{...h,calls,writes,quantities};
 }
 test('30th Celebration automatically loads all 161 printings across four bounded pages without recording ownership',async()=>{
- const h=trialFlow();await h.api.openBinder('trial-binder');assert.equal(h.api.cardState().length,161);assert.equal(h.calls.filter(x=>x.url.includes('/catalogue/ready/')).length,4);assert.equal(h.calls.filter(x=>x.url.includes('/checklist')).length,1);assert.ok(h.calls.filter(x=>x.url.includes('/catalogue/ready/')||x.url.includes('/checklist')).every(x=>x.url.includes('paged=1')));assert.equal(h.writes.length,0);assert.match(h.node('cards-context').textContent,/Complete checklist loaded: 161/);assert.match(h.node('binder-cards').innerHTML,/Trial card 161/);assert.match(h.node('binder-cards').innerHTML,/data-edit-card/);assert.match(h.node('collection-status').textContent,/All 161 cards loaded/);
+ const h=trialFlow();await h.api.openBinder('trial-binder');assert.equal(h.api.cardState().length,161);assert.equal(h.calls.filter(x=>x.url.includes('/catalogue/ready/')).length,4);assert.equal(h.calls.filter(x=>x.url.includes('/checklist')).length,1);assert.ok(h.calls.filter(x=>x.url.includes('/catalogue/ready/')||x.url.includes('/checklist')).every(x=>x.url.includes('paged=1')));assert.equal(h.writes.length,0);assert.match(h.node('cards-context').textContent,/Complete checklist loaded: 161/);assert.match(h.node('binder-cards').innerHTML,/Trial card 161/);assert.match(h.node('binder-cards').innerHTML,/data-inspect-card/);assert.match(h.node('collection-status').textContent,/All 161 cards loaded/);
 });
 test('an interrupted public preload publishes no partial checklist and its retry action restarts bounded loading',async()=>{
  const h=trialFlow({failPage:100});await h.api.openBinder('trial-binder');assert.equal(h.api.cardState().length,0);assert.equal(h.node('more-cards').hidden,false);assert.equal(h.node('more-cards').textContent,'Retry loading cards');assert.equal(h.api.readyState().length,0);assert.doesNotMatch(h.node('binder-cards').innerHTML,/Trial card/);await h.node('more-cards').events.click({target:h.node('more-cards')});assert.equal(h.api.cardState().length,161);assert.match(h.node('cards-context').textContent,/Complete checklist loaded: 161/);
@@ -244,43 +246,43 @@ test('a mixed catalogue version cannot become a completed trial checklist',async
  const h=trialFlow({mixedVersion:true});await h.api.openBinder('trial-binder');assert.equal(h.api.cardState().length,0);assert.equal(h.api.readyState().length,0);assert.match(h.node('collection-status').textContent,/public checklist could not be confirmed/);assert.doesNotMatch(h.node('cards-context').textContent,/Complete/);
 });
 test('one-tap ownership saves one exact variant only once even if tapped twice quickly',async()=>{
- const h=trialFlow();await h.api.openBinder('trial-binder');const key='trial-card-1:catalogue';await Promise.all([h.api.markOwned(key),h.api.markOwned(key)]);assert.equal(h.writes.length,1);assert.equal(h.writes[0].owned,true);assert.equal(h.writes[0].variantId,undefined);assert.equal(h.api.cardState()[0].ownedVariants[0].quantity,1);assert.equal(h.api.cardState().length,161);
+ const h=trialFlow();await h.api.openBinder('trial-binder');const key='trial-card-1:catalogue';await Promise.all([h.api.togglePulled(key),h.api.togglePulled(key)]);assert.equal(h.writes.length,1);assert.equal(h.writes[0].owned,true);assert.equal(h.writes[0].variantId,undefined);assert.equal(h.api.cardState()[0].ownedVariants[0].quantity,1);assert.equal(h.api.cardState().length,161);
 });
 test('tapping a checklist card selects one owned copy and keeps it unselected until confirmed',async()=>{
  const pending=deferred(),h=trialFlow({pendingRead:pending});await h.api.openBinder('trial-binder');
- assert.match(h.node('binder-cards').innerHTML,/aria-pressed="false" aria-label="Mark owned: Trial card 1"/);
+ assert.match(h.node('binder-cards').innerHTML,/aria-pressed="false" aria-label="Not pulled: Trial card 1. Tap to mark pulled."/);
  const selection=h.api.tapCard('trial-card-1:catalogue');await tick();assert.equal(h.writes.length,0);assert.equal(h.api.cardState()[0].ownedVariants.length,0);
  assert.equal(h.cardNode('trial-card-1:catalogue').attributes['aria-pressed'],'false');
  pending.resolve(response(cardOwnershipPage({id:'trial-binder',type:'set',setId:TRIAL_SET,language:'en',revision:1},[],'https://site.test/?cardIds=trial-card-1')));await selection;
- assert.equal(h.writes.length,1);assert.equal(h.writes[0].owned,true);assert.equal(h.api.cardState()[0].ownedVariants[0].quantity,1);assert.equal(h.node('card-dialog').open,false);
+ assert.equal(h.writes.length,1);assert.equal(h.writes[0].owned,true);assert.equal(h.api.cardState()[0].ownedVariants[0].quantity,1);
  assert.equal(h.cardNode('trial-card-1:catalogue').attributes['aria-pressed'],'true');
 });
 test('tapping an owned checklist card removes it without opening the quantity editor',async()=>{
  const h=trialFlow();await h.api.openBinder('trial-binder');await h.api.tapCard('trial-card-1:catalogue');
- h.node('card-form').elements.quantity={value:1};await h.api.tapCard('trial-card-1:catalogue');
- assert.equal(h.node('card-dialog').open,false);assert.equal(h.writes.length,2);assert.deepEqual(h.writes.map(write=>write.owned),[true,false]);assert.equal(h.quantities.get('trial-card-1'),0);assert.equal(h.api.cardState()[0].ownedVariants.length,0);assert.equal(h.cardNode('trial-card-1:catalogue').attributes['aria-pressed'],'false');
+ await h.api.tapCard('trial-card-1:catalogue');
+ assert.equal(h.writes.length,2);assert.deepEqual(h.writes.map(write=>write.owned),[true,false]);assert.equal(h.quantities.get('trial-card-1'),0);assert.equal(h.api.cardState()[0].ownedVariants.length,0);assert.equal(h.cardNode('trial-card-1:catalogue').attributes['aria-pressed'],'false');
 });
 test('queued owned taps read fresh revisions and cannot race against each other',async()=>{
- const h=trialFlow();await h.api.openBinder('trial-binder');await Promise.all([h.api.markOwned('trial-card-1:catalogue'),h.api.markOwned('trial-card-2:catalogue')]);assert.equal(h.writes.length,2);assert.deepEqual(h.writes.map(p=>p.expectedRevision),[1,2]);assert.notEqual(h.writes[0].id,h.writes[1].id);assert.equal(h.api.cardState().filter(x=>x.ownedVariants.length).length,2);
+ const h=trialFlow();await h.api.openBinder('trial-binder');await Promise.all([h.api.togglePulled('trial-card-1:catalogue'),h.api.togglePulled('trial-card-2:catalogue')]);assert.equal(h.writes.length,2);assert.deepEqual(h.writes.map(p=>p.expectedRevision),[1,2]);assert.notEqual(h.writes[0].id,h.writes[1].id);assert.equal(h.api.cardState().filter(x=>x.ownedVariants.length).length,2);
 });
 test('the owned shortcut preserves an existing higher quantity discovered after a stale checklist',async()=>{
- const h=trialFlow({alreadyOwned:3});await h.api.openBinder('trial-binder');await h.api.markOwned('trial-card-1:catalogue');assert.equal(h.writes.length,0);assert.equal(h.api.cardState()[0].ownedVariants[0].quantity,3);
+ const h=trialFlow({alreadyOwned:3});await h.api.openBinder('trial-binder');await h.api.togglePulled('trial-card-1:catalogue');assert.equal(h.writes.length,0);assert.equal(h.api.cardState()[0].ownedVariants[0].quantity,3);
 });
 test('an uncertain owned write retries identical intent and reads the latest quantity after replay',async()=>{
- const h=trialFlow({uncertain:true,externalQuantity:3});await h.api.openBinder('trial-binder');await h.api.markOwned('trial-card-1:catalogue');assert.equal(h.api.cardState()[0].ownedVariants.length,0);assert.match(h.api.quickState()[0].error,/not confirmed/);await h.api.markOwned('trial-card-1:catalogue');assert.deepEqual(h.writes[0],h.writes[1]);assert.equal(h.api.cardState()[0].ownedVariants[0].quantity,3);
+ const h=trialFlow({uncertain:true,externalQuantity:3});await h.api.openBinder('trial-binder');await h.api.togglePulled('trial-card-1:catalogue');assert.equal(h.api.cardState()[0].ownedVariants.length,0);assert.match(h.api.quickState()[0].error,/not confirmed/);await h.api.togglePulled('trial-card-1:catalogue');assert.deepEqual(h.writes[0],h.writes[1]);assert.equal(h.api.cardState()[0].ownedVariants[0].quantity,3);
 });
 test('a confirmed owned write with a failed refresh retries the read without writing twice',async()=>{
- const h=trialFlow({failConfirmedRefresh:true});await h.api.openBinder('trial-binder');await h.api.markOwned('trial-card-1:catalogue');assert.match(h.api.quickState()[0].error,/Saved/);await h.api.markOwned('trial-card-1:catalogue');assert.equal(h.writes.length,1);assert.equal(h.api.cardState()[0].ownedVariants[0].quantity,1);
+ const h=trialFlow({failConfirmedRefresh:true});await h.api.openBinder('trial-binder');await h.api.togglePulled('trial-card-1:catalogue');assert.match(h.api.quickState()[0].error,/Saved/);await h.api.togglePulled('trial-card-1:catalogue');assert.equal(h.writes.length,1);assert.equal(h.api.cardState()[0].ownedVariants[0].quantity,1);
 });
 test('leaving the binder while its saved-quantity read is pending cancels an undispatched owned change',async()=>{
- const pending=deferred(),h=trialFlow({pendingRead:pending});await h.api.openBinder('trial-binder');const request=h.api.markOwned('trial-card-1:catalogue');await tick();h.api.showView('library');pending.resolve(response(cardOwnershipPage({id:'trial-binder',type:'set',setId:TRIAL_SET,language:'en',revision:1},[],'https://site.test/?cardIds=trial-card-1')));await request;assert.equal(h.writes.length,0);
+ const pending=deferred(),h=trialFlow({pendingRead:pending});await h.api.openBinder('trial-binder');const request=h.api.togglePulled('trial-card-1:catalogue');await tick();h.api.showView('library');pending.resolve(response(cardOwnershipPage({id:'trial-binder',type:'set',setId:TRIAL_SET,language:'en',revision:1},[],'https://site.test/?cardIds=trial-card-1')));await request;assert.equal(h.writes.length,0);
 });
 test('archived and signed-out trial collections cannot use the owned shortcut',async()=>{
- const h=trialFlow({archived:true});await h.api.openBinder('trial-binder');await h.api.markOwned('trial-card-1:catalogue');assert.equal(h.writes.length,0);h.api.lock();await h.api.markOwned('trial-card-1:catalogue');assert.equal(h.writes.length,0);assert.equal(h.api.quickState().length,0);
+ const h=trialFlow({archived:true});await h.api.openBinder('trial-binder');await h.api.togglePulled('trial-card-1:catalogue');assert.equal(h.writes.length,0);h.api.lock();await h.api.togglePulled('trial-card-1:catalogue');assert.equal(h.writes.length,0);assert.equal(h.api.quickState().length,0);
 });
-test('invalid current defaults leave the image unselected and show an actionable card-level edit message',async()=>{
- const h=trialFlow({invalidDefault:true});await h.api.openBinder('trial-binder');await h.api.tapCard('trial-card-1:catalogue');
- assert.equal(h.api.cardState()[0].ownedVariants.length,0);assert.equal(h.cardNode('trial-card-1:catalogue').attributes['aria-pressed'],'false');assert.match(h.cardNode('trial-card-1:catalogue').article.parts['.own-status'].textContent,/Edit quantity \/ finish/);assert.equal(h.node('card-dialog').open,false);
+test('an unconfirmed card remains not pulled and never asks for a quantity or finish choice',async()=>{
+ const h=trialFlow({unconfirmedCard:true});await h.api.openBinder('trial-binder');await h.api.tapCard('trial-card-1:catalogue');
+ assert.equal(h.api.cardState()[0].ownedVariants.length,0);assert.equal(h.cardNode('trial-card-1:catalogue').attributes['aria-pressed'],'false');assert.match(h.node('collection-status').textContent,/This card could not be confirmed/);assert.doesNotMatch(h.node('collection-status').textContent+h.cardNode('trial-card-1:catalogue').article.parts['.own-status'].textContent,/quantity|finish|style|choose/i);
 });
 
 function customOwnershipFlow(options={}){
@@ -311,35 +313,38 @@ function customOwnershipFlow(options={}){
  });return {...h,calls,writes,control,binder,rows,ownershipRows,card};
 }
 test('other set binders share the exact add/remove image behavior without a quantity dialog',async()=>{
- const h=customOwnershipFlow({type:'set'});await h.api.openBinder('custom-binder');await h.api.tapCard('custom-card-1:catalogue');await h.api.tapCard('custom-card-1:catalogue');assert.deepEqual(h.writes.map(write=>write.owned),[true,false]);assert.equal(h.node('card-dialog').open,false);assert.equal(h.api.cardState()[0].ownedVariants.length,0);
+ const h=customOwnershipFlow({type:'set'});await h.api.openBinder('custom-binder');await h.api.tapCard('custom-card-1:catalogue');await h.api.tapCard('custom-card-1:catalogue');assert.deepEqual(h.writes.map(write=>write.owned),[true,false]);assert.equal(h.api.cardState()[0].ownedVariants.length,0);
 });
-test('custom search hydrates ownership before displaying images and removes every saved finish on a second owned-state tap',async()=>{
+test('custom search displays a single Pulled state for legacy rows and clears it with one image tap',async()=>{
  const h=customOwnershipFlow({items:[[1,'normal',2],[1,'holo',3]]});await h.api.openBinder('custom-binder');h.api.setMode('search');await h.api.loadCards(true);
- const key='custom-card-1:catalogue';assert.equal(h.cardNode(key).attributes['aria-pressed'],'true');assert.match(h.cardNode(key).attributes['aria-label'],/Remove Custom card 1 from owned \(all copies and finishes\)/);assert.match(h.cardNode(key).article.editor.textContent,/5 copies · 2 finishes/);
- await h.api.tapCard(key);assert.equal(h.writes[0].owned,false);assert.equal(h.rows().length,0);assert.equal(h.cardNode(key).attributes['aria-pressed'],'false');await h.api.tapCard(key);assert.equal(h.writes[1].owned,true);assert.equal(h.rows()[0].quantity,1);assert.equal(h.node('card-dialog').open,false);
+ const key='custom-card-1:catalogue';assert.equal(h.cardNode(key).attributes['aria-pressed'],'true');assert.equal(h.cardNode(key).attributes['aria-label'],'Pulled: Custom card 1. Tap to clear.');assert.equal(h.cardNode(key).querySelector('.owned-badge').textContent,'Pulled');assert.doesNotMatch(h.node('binder-cards').innerHTML,/5 copies|2 finishes|quantity|finish|data-edit-card|own-toggle/i);
+ await h.api.tapCard(key);assert.equal(h.writes[0].owned,false);assert.equal(h.rows().length,0);assert.equal(h.cardNode(key).attributes['aria-pressed'],'false');await h.api.tapCard(key);assert.equal(h.writes[1].owned,true);assert.equal(h.rows()[0].quantity,1);
 });
-test('custom Owned removes every loaded finish tile and keeps the next page offset aligned',async()=>{
- const items=[[1,'normal',2],[1,'holo',3],...Array.from({length:53},(_,i)=>[i+2])],h=customOwnershipFlow({items});await h.api.openBinder('custom-binder');assert.equal(h.api.cardState().length,50);assert.match(h.cardNode('custom-card-1:normal').article.editor.textContent,/5 copies · 2 finishes/);
- await h.api.tapCard('custom-card-1:normal');assert.equal(h.api.cardState().filter(entry=>entry.card.cardId==='custom-card-1').length,0);assert.equal(h.api.cardState().length,48);await h.api.loadCards(false);
+test('custom Pulled groups legacy rows into one card and keeps the next page offset aligned after clearing it',async()=>{
+ const items=[[1,'normal',2],[1,'holo',3],...Array.from({length:53},(_,i)=>[i+2])],h=customOwnershipFlow({items});await h.api.openBinder('custom-binder');assert.equal(h.api.cardState().length,49);assert.equal(h.visibleCards().filter(key=>key==='custom-card-1:catalogue').length,1);assert.equal(h.cardNode('custom-card-1:catalogue').querySelector('.owned-badge').textContent,'Pulled');
+ await h.api.tapCard('custom-card-1:catalogue');assert.equal(h.api.cardState().filter(entry=>entry.card.cardId==='custom-card-1').length,0);assert.equal(h.api.cardState().length,48);await h.api.loadCards(false);
  assert.equal(h.calls.some(call=>call.url.endsWith('/custom-binder?offset=48')),true);assert.equal(h.api.cardState().length,53);assert.equal(new Set(h.api.cardState().map(entry=>entry.card.cardId)).size,53);assert.equal(h.node('more-cards').hidden,true);
+ const remaining=customOwnershipFlow({items:[...Array.from({length:60},(_,i)=>[1,'legacy-'+i,1]),[2],[3]]});await remaining.api.openBinder('custom-binder');assert.equal(remaining.visibleCards().length,1);await remaining.api.tapCard('custom-card-1:catalogue');assert.equal(remaining.visibleCards().length,0);assert.match(remaining.node('binder-cards').innerHTML,/No pulled cards on this page/);assert.equal(remaining.node('more-cards').hidden,false);await remaining.api.loadCards(false);assert.deepEqual(remaining.visibleCards(),['custom-card-2:catalogue','custom-card-3:catalogue']);assert.doesNotMatch(remaining.node('binder-cards').innerHTML,/No pulled cards on this page/);assert.equal(remaining.node('more-cards').hidden,true);assert.ok(remaining.calls.some(call=>call.url.endsWith('/custom-binder?offset=0')));
 });
 test('custom search merges the same printing across result pages and retains every catalogue finish',async()=>{
  const first={...trialCard(1),cardId:'custom-card-1',set:{setId:'other-set'}},second={...first,defaultVariantId:'holo',variants:[{...first.variants[0],variantId:'holo',canonicalId:'canonical-holo',variantCode:'holo',finishCode:'holo'}]},h=customOwnershipFlow({searchPages:[[first],[second]]});await h.api.openBinder('custom-binder');h.api.setMode('search');await h.api.loadCards(true);await h.api.loadCards(false);
  assert.equal(h.visibleCards().length,1);assert.equal(h.api.cardState().length,1);assert.deepEqual(Array.from(h.api.cardState()[0].card.variants,v=>v.variantId),['variant-1','holo']);
 });
 test('uncertain whole-card removal keeps the original action and target after changing tabs',async()=>{
- const h=customOwnershipFlow({items:[[1,'normal',2],[1,'holo',3]]});await h.api.openBinder('custom-binder');h.control.uncertain=true;await h.api.tapCard('custom-card-1:normal');assert.equal(h.api.cardState().length,2,'Unconfirmed removal keeps the original visible quantities');assert.match(h.api.quickState()[0].error,/not confirmed/);
+ const h=customOwnershipFlow({items:[[1,'normal',2],[1,'holo',3]]});await h.api.openBinder('custom-binder');h.control.uncertain=true;await h.api.tapCard('custom-card-1:catalogue');assert.equal(h.api.cardState().length,1,'Unconfirmed clearing keeps the original pulled state');assert.equal(h.cardNode('custom-card-1:catalogue').attributes['aria-pressed'],'true');assert.match(h.api.quickState()[0].error,/not confirmed/);
  h.api.setMode('search');await h.api.loadCards(true);await h.api.tapCard('custom-card-1:catalogue');assert.deepEqual(h.writes[1],h.writes[0]);assert.equal(h.writes[1].owned,false);assert.equal(h.rows().length,0);assert.equal(h.api.quickState().length,0);await h.api.tapCard('custom-card-1:catalogue');assert.equal(h.writes[2].owned,true);assert.equal(h.rows()[0].quantity,1);
 });
 test('private ownership hydration stages all bounded pages before rendering custom owned cards',async()=>{
  const h=customOwnershipFlow({items:Array.from({length:121},(_,i)=>[1,'finish-'+i,1])});h.control.pending=deferred();h.control.pendingOffset=50;
  const task=h.api.openBinder('custom-binder');await tick();assert.equal(h.api.cardState().length,0);assert.equal(h.visibleCards().length,0);
  const pending=h.control.pending;h.control.pending=null;pending.resolve(response(cardOwnershipPage(h.binder(),h.ownershipRows(),'https://site.test/?cardIds=custom-card-1&cursor=50')));await task;
- assert.equal(h.api.cardState().length,50);assert.equal(h.api.cardState()[0].ownedVariants.length,121);assert.match(h.cardNode('custom-card-1:finish-0').article.editor.textContent,/121 copies · 121 finishes/);const pages=h.calls.filter(call=>call.url.includes('/ownership?'));assert.equal(pages.length,3);assert.ok(pages.every(call=>call.url.includes('limit=50')&&call.url.includes('expectedRevision=1')));
+ assert.equal(h.api.cardState().length,1);assert.equal(h.api.cardState()[0].ownedVariants.length,121);assert.equal(h.cardNode('custom-card-1:catalogue').querySelector('.owned-badge').textContent,'Pulled');assert.doesNotMatch(h.node('binder-cards').innerHTML,/121|finish-|quantity|copies|data-edit-card/);const pages=h.calls.filter(call=>call.url.includes('/ownership?'));assert.equal(pages.length,3);assert.ok(pages.every(call=>call.url.includes('limit=50')&&call.url.includes('expectedRevision=1')));
+ await h.api.loadCards(false);await h.api.loadCards(false);assert.equal(h.api.cardState().length,1);assert.equal(h.visibleCards().length,1);assert.equal(h.node('more-cards').hidden,true);assert.equal(h.writes.length,0,'Grouping old rows never rewrites saved selections');
+ await h.api.tapCard('custom-card-1:catalogue');assert.equal(h.visibleCards().length,0);assert.match(h.node('binder-cards').innerHTML,/No pulled cards yet/);assert.equal(h.node('more-cards').hidden,true);assert.match(h.node('binder-summary').innerHTML,/<strong>0<\/strong><span>Pulled/);
 });
 test('a changed detail revision or invalid ownership continuation renders no mixed custom owned state',async()=>{
  const h=customOwnershipFlow({items:[[1]]});h.control.changeRevision=true;await assert.rejects(h.api.openBinder('custom-binder'),/binder changed/);assert.equal(h.api.cardState().length,0);assert.equal(h.visibleCards().length,0);
- const paged=customOwnershipFlow({items:Array.from({length:60},(_,i)=>[1,'finish-'+i,1])});paged.control.pending=deferred();paged.control.pendingOffset=50;const task=paged.api.openBinder('custom-binder');await tick();const second=cardOwnershipPage({...paged.binder(),revision:2},paged.ownershipRows(),'https://site.test/?cardIds=custom-card-1&cursor=50');paged.control.pending.resolve(response(second));await assert.rejects(task,/ownership pages could not be confirmed/);assert.equal(paged.api.cardState().length,0);assert.equal(paged.visibleCards().length,0);
+ const paged=customOwnershipFlow({items:Array.from({length:60},(_,i)=>[1,'finish-'+i,1])});paged.control.pending=deferred();paged.control.pendingOffset=50;const task=paged.api.openBinder('custom-binder');await tick();const second=cardOwnershipPage({...paged.binder(),revision:2},paged.ownershipRows(),'https://site.test/?cardIds=custom-card-1&cursor=50');paged.control.pending.resolve(response(second));await assert.rejects(task,/pulled cards could not be confirmed/);assert.equal(paged.api.cardState().length,0);assert.equal(paged.visibleCards().length,0);
 });
 test('leaving during custom ownership hydration cancels silently without altering the next view',async()=>{
  const h=customOwnershipFlow({items:[[1]]});h.control.pending=deferred();const task=h.api.openBinder('custom-binder');await tick();h.api.showView('library');h.node('collection-status').textContent='Your saved binders';h.control.pending.resolve(response(cardOwnershipPage(h.binder(),h.ownershipRows(),'https://site.test/?cardIds=custom-card-1')));await task;assert.equal(h.node('collection-status').textContent,'Your saved binders');assert.equal(h.node('collection-main').dataset.view,'library');assert.equal(h.writes.length,0);
@@ -362,20 +367,17 @@ function pitchFlow(setId=PITCH_SET,total=120){
   if(url.includes('/items'))return Promise.resolve(response({binder,quantity:0}));
   const count=[...saved.values()].filter(Boolean).length;return Promise.resolve(response({binder,items:[],summary:{uniqueCards:count,totalQuantity:count,totalVariants:count},hasMore:false,progress:{owned:count,total}}));
  });
- h.node('card-form').elements.quantity={value:1};return {...h,calls,binder,writes};
+ return {...h,calls,binder,writes};
 }
-test('Pitch Black toggles its full checklist directly while the separate editor refreshes current canonical finishes',async()=>{
+test('Pitch Black shows only pulled/not pulled despite multiple catalogue styles',async()=>{
  const h=pitchFlow();await h.api.openBinder(h.binder.id);assert.equal(h.api.cardState().length,120);assert.match(h.node('cards-context').textContent,/Complete checklist loaded: 120 cards/);assert.equal(h.node('more-cards').hidden,true);assert.equal((h.node('binder-cards').innerHTML.match(/data-card-key=/g)||[]).length,120);assert.equal(h.api.cardState()[0].card.variants.length,2);
- await h.api.tapCard('pitch-card-1:catalogue');assert.equal(h.node('card-dialog').open,false);assert.equal(h.writes[0].owned,true);assert.equal(h.api.cardState()[0].ownedVariants[0].variantId,'variant-1');
- await h.api.openCard('pitch-card-1:catalogue');assert.equal(h.node('card-dialog').open,true);assert.match(h.node('card-variant').innerHTML,/current-holo/);assert.match(h.node('card-variant').innerHTML,/current-reverse/);assert.doesNotMatch(h.node('card-variant').innerHTML,/provider-holo-alias/);assert.ok(h.calls.some(c=>c.url.includes('/catalogue/cards/pitch-card-1')));assert.equal(h.writes.length,1,'Opening the editor does not change ownership');
-});
-test('a saved provider alias is never silently rewritten or replaced with a new finish',async()=>{
- const h=pitchFlow();await h.api.openBinder(h.binder.id);const entry=h.api.cardState()[0];entry.ownedVariants=[{variantId:'old-provider-alias',quantity:3}];await assert.rejects(h.api.openCard('pitch-card-1:catalogue'),/saved finish is not in the current catalogue/);assert.equal(h.node('card-dialog').open,false);assert.equal(entry.ownedVariants[0].quantity,3);assert.ok(h.calls.every(c=>c.method===undefined));
+ await h.api.tapCard('pitch-card-1:catalogue');assert.equal(h.writes[0].owned,true);assert.equal(h.api.cardState()[0].ownedVariants[0].variantId,'variant-1');
+ assert.equal(h.cardNode('pitch-card-1:catalogue').querySelector('.owned-badge').textContent,'Pulled');assert.doesNotMatch(h.node('binder-cards').innerHTML,/quantity|finish|holo|reverse|data-edit-card|own-toggle/i);assert.equal(h.node('owned-tab').textContent,'Pulled 1');assert.equal(h.node('missing-tab').textContent,'Not pulled 119');assert.match(h.node('binder-summary').innerHTML,/<strong>1<\/strong><span>Pulled/);assert.ok(h.calls.every(call=>!call.url.includes('/items')&&!call.url.includes('/catalogue/cards/')));
 });
 
 for(const [label,setId] of [['Chaos Rising','816ff627-a585-4953-99c4-a15c9b0b80e5'],['Journey Together','4f3046f3-9ab7-4068-a7df-dbe2b08c263c'],['Phantasmal Flames','977bf107-e10c-4d93-a7a4-3d7b775c5003'],['Delta Reign','a1bde625-6996-5451-bcda-fb80fe5b428b']])test(label+' uses the same direct owned/unowned image toggle',async()=>{
  const h=pitchFlow(setId,122);assert.equal(h.api.isTrialBinder(h.binder),true);await h.api.openBinder(h.binder.id);assert.equal(h.api.cardState().length,122);assert.match(h.node('cards-context').textContent,/Complete checklist loaded: 122 cards/);assert.equal(h.node('more-cards').hidden,true);
- await h.api.tapCard('pitch-card-1:catalogue');await h.api.tapCard('pitch-card-1:catalogue');assert.equal(h.node('card-dialog').open,false);assert.deepEqual(h.writes.map(write=>write.owned),[true,false]);assert.equal(h.api.cardState()[0].ownedVariants.length,0);
+ await h.api.tapCard('pitch-card-1:catalogue');await h.api.tapCard('pitch-card-1:catalogue');assert.deepEqual(h.writes.map(write=>write.owned),[true,false]);assert.equal(h.api.cardState()[0].ownedVariants.length,0);
 });
 
 test('Delta Reign list bookmarks show the sourced read-only list without creating a binder or requesting a guessed set',async()=>{
@@ -383,7 +385,7 @@ test('Delta Reign list bookmarks show the sourced read-only list without creatin
 });
 
 test('Ascended Heroes loads its full 295-card checklist and uses the same direct ownership toggle',async()=>{
- const h=pitchFlow('ddc668c0-316e-4dab-8c51-625167508fd6',295);assert.equal(h.api.isTrialBinder(h.binder),true);await h.api.openBinder(h.binder.id);assert.equal(h.api.cardState().length,295);assert.match(h.node('cards-context').textContent,/Complete checklist loaded: 295 cards/);assert.equal(h.node('more-cards').hidden,true);await h.api.tapCard('pitch-card-1:catalogue');assert.equal(h.node('card-dialog').open,false);assert.equal(h.writes[0].owned,true);await h.api.tapCard('pitch-card-1:catalogue');assert.equal(h.writes[1].owned,false);
+ const h=pitchFlow('ddc668c0-316e-4dab-8c51-625167508fd6',295);assert.equal(h.api.isTrialBinder(h.binder),true);await h.api.openBinder(h.binder.id);assert.equal(h.api.cardState().length,295);assert.match(h.node('cards-context').textContent,/Complete checklist loaded: 295 cards/);assert.equal(h.node('more-cards').hidden,true);await h.api.tapCard('pitch-card-1:catalogue');assert.equal(h.writes[0].owned,true);await h.api.tapCard('pitch-card-1:catalogue');assert.equal(h.writes[1].owned,false);
 });
 
 test('opening a binder removes discovery chrome and restoring sets or sign-in restores the right context',async()=>{
@@ -527,12 +529,12 @@ test('search typed while the last checklist page is pending is applied when the 
 });
 test('a saved owned change immediately leaves Missing while the full checklist remains available',async()=>{
  const h=trialFlow();await h.api.openBinder('trial-binder');h.node('missing-tab').events.click();assert.equal(h.visibleCards().length,161);
- await h.api.markOwned('trial-card-1:catalogue');assert.equal(h.visibleCards().length,160);assert.ok(!h.visibleCards().includes('trial-card-1:catalogue'));assert.equal(h.api.cardState().length,161);
+ await h.api.togglePulled('trial-card-1:catalogue');assert.equal(h.visibleCards().length,160);assert.ok(!h.visibleCards().includes('trial-card-1:catalogue'));assert.equal(h.api.cardState().length,161);
  h.node('owned-tab').events.click();assert.deepEqual(h.visibleCards(),['trial-card-1:catalogue']);assert.equal(h.writes.length,1);
 });
 test('artwork inspection opens a large approved image without reading or changing owned quantities',async()=>{
  const h=phantasmalSearchFlow();await h.api.openBinder(h.binder.id);const reads=h.calls.length;
- h.inspectCard('phantasmal-13:catalogue');assert.equal(h.node('card-preview-dialog').open,true);assert.equal(h.node('card-preview-title').textContent,'Mega Charizard X ex');assert.equal(h.node('card-preview-image').src,'https://assets.stackrtcg.com/detail.webp');assert.equal(h.node('card-dialog').open,false);assert.equal(h.calls.length,reads);
+ h.inspectCard('phantasmal-13:catalogue');assert.equal(h.node('card-preview-dialog').open,true);assert.equal(h.node('card-preview-title').textContent,'Mega Charizard X ex');assert.equal(h.node('card-preview-image').src,'https://assets.stackrtcg.com/detail.webp');assert.equal(h.calls.length,reads);
  h.api.lock();assert.equal(h.node('card-preview-dialog').open,false);assert.equal(h.api.cardState().length,0);assert.equal(h.node('card-query').value,'');
 });
 test('saved binder progress is read with at most three concurrent requests and reused for the same revision',async()=>{
@@ -542,8 +544,8 @@ test('saved binder progress is read with at most three concurrent requests and r
   if(url.startsWith('/api/binders?'))return response({binders,hasMore:false});
   reads++;inFlight++;maxInFlight=Math.max(maxInFlight,inFlight);await tick();inFlight--;
   const binder=binders.find(b=>url==='/api/binders/'+b.id);return response({binder,summary:{uniqueCards:27,totalVariants:30,totalQuantity:40},progress:{owned:27,total:100},items:[],hasMore:false});
- });await h.api.start();assert.match(h.node('binder-grid').innerHTML,/Loading progress/);assert.doesNotMatch(h.node('binder-grid').innerHTML,/0 \/ 100 collected/);await h.api.progressTask();
- assert.equal(maxInFlight,3);assert.equal(reads,5);assert.match(h.node('binder-grid').innerHTML,/27 \/ 100 collected/);assert.match(h.node('binder-grid').innerHTML,/value="27"/);
+ });await h.api.start();assert.match(h.node('binder-grid').innerHTML,/Loading progress/);assert.doesNotMatch(h.node('binder-grid').innerHTML,/0 \/ 100 pulled/);await h.api.progressTask();
+ assert.equal(maxInFlight,3);assert.equal(reads,5);assert.match(h.node('binder-grid').innerHTML,/27 \/ 100 pulled/);assert.match(h.node('binder-grid').innerHTML,/value="27"/);
  await h.api.loadSavedBinderProgress();assert.equal(reads,5);h.api.lock();assert.equal(h.node('binder-grid').innerHTML,'');assert.equal(h.node('binder-grid').dataset.renderKey,'');
 });
 test('an unavailable saved progress read never renders a false zero and an existing cover says Open binder',async()=>{
@@ -569,7 +571,7 @@ function ownershipPage(value,binder,items=[],url='https://site.test/'){
 test('a preloaded public checklist opens with one fresh private quantity read and never stores ownership in its cache',async()=>{
  const publicData=publicReady(),calls=[],binder={...coverBinder};let quantity=2;
  const h=harness((url,options)=>{calls.push({url,options});if(url.includes('/catalogue/ready/'))return Promise.resolve(response(publicPage(publicData,url)));if(url.includes('/checklist'))return Promise.resolve(response(ownershipPage(publicData,binder,[{cardId:'trial-card-1',variantId:'variant-1',quantity}],url)));return Promise.resolve(response({binder,items:[],summary:{uniqueCards:1,totalQuantity:quantity,totalVariants:1},hasMore:false,progress:{owned:1,total:3}}));});
- await h.api.fetchReadySet(TRIAL_SET);await h.api.openBinder(binder.id);assert.equal(h.api.cardState().length,3);assert.equal(h.api.cardState()[0].ownedVariants[0].quantity,2);assert.match(calls.find(call=>call.url.includes('/checklist')).url,/paged=1&limit=50&snapshot=/);assert.ok(calls.find(call=>call.url.includes('/checklist')).url.includes('expectedRevision=1'));assert.equal(calls.filter(call=>call.url.includes('/checklist')).length,1);assert.doesNotMatch(JSON.stringify(h.api.readyState()),/ownedQuantity|ownedVariants|ownership|quantity/);assert.match(h.node('progress-date').textContent,/saved quantities were checked now/);
+ await h.api.fetchReadySet(TRIAL_SET);await h.api.openBinder(binder.id);assert.equal(h.api.cardState().length,3);assert.equal(h.api.cardState()[0].ownedVariants[0].quantity,2);assert.match(calls.find(call=>call.url.includes('/checklist')).url,/paged=1&limit=50&snapshot=/);assert.ok(calls.find(call=>call.url.includes('/checklist')).url.includes('expectedRevision=1'));assert.equal(calls.filter(call=>call.url.includes('/checklist')).length,1);assert.doesNotMatch(JSON.stringify(h.api.readyState()),/ownedQuantity|ownedVariants|ownership|quantity/);assert.match(h.node('progress-date').textContent,/pulled cards were checked now/);
  quantity=4;await h.api.openBinder(binder.id);assert.equal(h.api.cardState()[0].ownedVariants[0].quantity,4);assert.equal(calls.filter(call=>call.url.includes('/catalogue/ready/')).length,1);assert.equal(calls.filter(call=>call.url.includes('/checklist')).length,2);
 });
 test('the paged endpoint publishes a full binder and an unsupported protocol cannot fall back to a full legacy response',async()=>{
@@ -645,7 +647,7 @@ test('private mismatches cannot publish missing cards, mixed snapshots, revision
 });
 test('a known printing retains a saved legacy finish quantity without hiding the owned card',async()=>{
  const value=publicReady(),h=harness(url=>Promise.resolve(response(url.includes('/catalogue/ready/')?publicPage(value,url):url.includes('/checklist')?ownershipPage(value,coverBinder,[{cardId:'trial-card-1',variantId:'saved-legacy-alias',quantity:4}],url):coverDetail())));
- await h.api.openBinder(coverBinder.id);assert.equal(h.api.cardState()[0].ownedVariants[0].variantId,'saved-legacy-alias');assert.equal(h.api.cardState()[0].ownedVariants[0].quantity,4);assert.match(h.node('binder-cards').innerHTML,/4 owned/);
+ await h.api.openBinder(coverBinder.id);assert.equal(h.api.cardState()[0].ownedVariants[0].variantId,'saved-legacy-alias');assert.equal(h.api.cardState()[0].ownedVariants[0].quantity,4);assert.match(h.node('binder-cards').innerHTML,/>Pulled<\/span>/);
 });
 test('a private revision conflict discards staged rows and retries once from the current binder revision',async()=>{
  for(const conflictsContinue of [false,true]){

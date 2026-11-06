@@ -124,13 +124,20 @@ test('mark-owned preserves an existing higher quantity and never silently rewrit
   const state=await f.ok('/'+binder.id+'/ownership?cardIds='+CARD);assert.deepEqual(state.ownership,[{cardId:CARD,variantId:HOLO,quantity:6}]);assert.equal(state.ownershipTotal,1);
  }finally{f.close();}
 });
-test('missing, stale or ambiguous default finishes cannot mark a card owned',async()=>{
- const f=fixture();try{
-  const {binder}=await f.create();for(const change of [card=>delete card.defaultVariantId,card=>card.defaultVariantId=randomUUID(),card=>card.variants.push({...card.variants[0]}),card=>card.variants[0].canonicalId='',card=>card.variants[0].variantCode=null]){
-   f.state.card=printing();change(f.state.card);const r=await f.call('/'+binder.id+'/ownership',{id:randomUUID(),expectedRevision:binder.revision,cardId:CARD,owned:true});assert.equal(r.status,400);assert.match((await r.json()).error,/Edit quantity \/ finish/);
-  }
-  assert.equal((await f.ok('/'+binder.id)).summary.totalQuantity,0);assert.equal((await f.ok('/'+binder.id)).binder.revision,1);assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM web_binder_actions').get().n,1);
- }finally{f.close();}
+test('pulled state needs no finish choice when the catalogue default is missing or unusable',async()=>{
+ const cases=[[card=>delete card.defaultVariantId,NORMAL],[card=>card.defaultVariantId=randomUUID(),NORMAL],[card=>card.variants.push({...card.variants[0]}),HOLO],[card=>card.variants[0].canonicalId='',HOLO],[card=>card.variants[0].variantCode=null,HOLO],[card=>card.variants.unshift(null),NORMAL]];
+ for(const [change,expected] of cases){const f=fixture();try{
+  const {binder}=await f.create();change(f.state.card);
+  const intent={id:randomUUID(),expectedRevision:binder.revision,cardId:CARD,owned:true};await f.ok('/'+binder.id+'/ownership',intent);
+  const saved=await f.ok('/'+binder.id);assert.equal(saved.summary.uniqueCards,1);assert.equal(saved.items.length,1);assert.equal(saved.items[0].variantId,expected);assert.equal(saved.items[0].quantity,1);
+  assert.equal((await f.ok('/'+binder.id+'/ownership',intent)).replayed,true);assert.equal((await f.ok('/'+binder.id)).summary.uniqueCards,1);
+ }finally{f.close();}}
+});
+test('an unverifiable card leaves pulled state unchanged without asking for quantity or finish',async()=>{
+ for(const change of [card=>card.variants=[],card=>card.variants.forEach(row=>row.canonicalId=''),card=>card.variants.forEach(row=>row.variantId='invalid'),card=>card.variants.push(...card.variants.map(row=>({...row})))]){const f=fixture();try{
+  const {binder}=await f.create();change(f.state.card);const r=await f.call('/'+binder.id+'/ownership',{id:randomUUID(),expectedRevision:binder.revision,cardId:CARD,owned:true});assert.equal(r.status,503);const {error}=await r.json();assert.equal(error,'This card could not be confirmed. Try again in a moment.');assert.doesNotMatch(error,/finish|quantit|variant|cop(y|ies)/i);
+  assert.equal((await f.ok('/'+binder.id)).summary.uniqueCards,0);assert.equal((await f.ok('/'+binder.id)).binder.revision,1);assert.equal(f.sql.prepare('SELECT COUNT(*) n FROM web_binder_actions').get().n,1);
+ }finally{f.close();}}
 });
 test('whole-card ownership enforces the canonical set, printed language, private owner, archive and same-origin boundaries',async()=>{
  const f=fixture();try{
