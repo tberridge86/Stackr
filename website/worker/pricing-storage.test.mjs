@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 import {createPriceService, STALE_MS} from './pricing.mjs';
+import {createStockroomService} from './stockroom.mjs';
 
 // Execute the actual Worker adapter against durable-object semantics without a
 // browser, live retailer, or a large re-import of the image-bearing bundle.
@@ -13,7 +14,8 @@ const identity={...product,edition:'standard',cardsPerPack:null};delete identity
 const descriptor={id:'retailer',name:'Example UK',url:'https://retailer.example/black',format:'jsonld',country:'GB',currency:'GBP',identity,match:{titles:['Black Bolt Booster Bundle'],requiredText:['6 booster packs','English']}};
 const document='<script type="application/ld+json">'+JSON.stringify({'@type':'Product',name:'Black Bolt Booster Bundle',description:'6 booster packs in English.',offers:{'@type':'Offer',price:'69.99',priceCurrency:'GBP',availability:'https://schema.org/InStock'}})+'</script>';
 function freshAdapter(){
- const context=vm.createContext({createPriceService,PRICE_PRODUCTS:[product],PRICE_SOURCES:{black:[descriptor]},PRICE_SEEDS:[],Date,Response,Request,URL});
+ const stockroom=createStockroomService({products:[product],getFeed:async()=>null});
+ const context=vm.createContext({createPriceService,stockroom,PRICE_PRODUCTS:[product],PRICE_SOURCES:{black:[descriptor]},PRICE_SEEDS:[],Date,Response,Request,URL});
  return vm.runInContext(adapter+';({priceResponse});',context);
 }
 const request=()=>new Request('https://stackr.local/api/prices');

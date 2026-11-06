@@ -20,6 +20,718 @@
       "approved_printing_artworks": 141
     }
   ],
+  "import": [
+    {
+      "cohort_sha256": "160fe970eecb90afa3d6e3dcd68c74e60c7c5800299fd82c213a2b04e7f42124",
+      "issued_identities": [
+        {
+          "number": "001",
+          "printing_id": "40c00417-f3f8-43c5-a4df-ef08ac584832",
+          "variant_id": "804ccbbe-d367-47cc-8766-bd5da0cfa2c1"
+        },
+        {
+          "number": "002",
+          "printing_id": "12ca7dcf-a49b-4f15-84ce-5537afb38d61",
+          "variant_id": "c69fed0a-c520-4d71-843e-c5f43aa7f08c"
+        },
+        {
+          "number": "003",
+          "printing_id": "54abac53-c989-409c-88f7-a66b8ef97c9f",
+          "variant_id": "1fbf9820-0cc4-48e0-bd26-a9c9ecffd594"
+        },
+        {
+          "number": "004",
+          "printing_id": "a9775cf1-5911-4545-a31a-61caf3650d03",
+          "variant_id": "ac384e84-616c-4a66-9e85-8223340c14f2"
+        },
+        {
+          "number": "005",
+          "printing_id": "bf4aab42-8684-47f1-ac77-815a61c01e6a",
+          "variant_id": "acec581f-dd88-4b50-a09f-acce071c1f1f"
+        },
+        {
+          "number": "006",
+          "printing_id": "216b3cfc-0314-4b4f-a8b0-c43646b71710",
+          "variant_id": "7b520327-1407-40ac-844f-195c591e8c0d"
+        },
+        {
+          "number": "007",
+          "printing_id": "0646ea99-9dcf-4694-b0c6-8b6b3fbdbe07",
+          "variant_id": "0dc9f812-ac7d-4646-9dea-b186a118ffbd"
+        },
+        {
+          "number": "008",
+          "printing_id": "93b4408a-01dc-4e16-bdcb-5e97d57f969b",
+          "variant_id": "852cfb2c-33cb-4b52-bae1-e866e578c7db"
+        },
+        {
+          "number": "009",
+          "printing_id": "7b040827-21c3-44e4-a626-6c0ee58660bf",
+          "variant_id": "7c3d5e59-6a68-4bd3-87bd-0bd7c1d2e261"
+        },
+        {
+          "number": "010",
+          "printing_id": "214ad25b-1a4f-4576-8fdd-6493cd5c7bc1",
+          "variant_id": "488fb1a8-79a9-4c92-b41e-7c3bbd79c2c8"
+        },
+        {
+          "number": "011",
+          "printing_id": "6711b593-497f-4c48-a1e7-a3a82eb6a25c",
+          "variant_id": "d9e37419-ab4e-4207-9d98-5ac71eae7355"
+        },
+        {
+          "number": "012",
+          "printing_id": "f2f96266-af98-4248-93b3-2b6864c9bc2e",
+          "variant_id": "529c52d2-cdba-472b-b856-138db844b128"
+        },
+        {
+          "number": "013",
+          "printing_id": "e036696c-0cfe-4e4c-bee3-73d3d174dc9f",
+          "variant_id": "87b8db98-9ed2-4e80-9d7e-c21f44c362c7"
+        },
+        {
+          "number": "014",
+          "printing_id": "0dd65425-ea51-40d5-abd7-0b0353973846",
+          "variant_id": "e9421ca6-be8d-40ab-9182-d6163b131502"
+        },
+        {
+          "number": "015",
+          "printing_id": "4d85d6c4-d7fe-4459-822b-9dec6a2d7f0f",
+          "variant_id": "b146b504-44a3-46d9-85a5-37af7962dd40"
+        },
+        {
+          "number": "016",
+          "printing_id": "f0d9e1fb-0052-4537-8f99-715d9c605a6b",
+          "variant_id": "e74392ae-18c0-4b5d-9423-19bd0132d4fa"
+        },
+        {
+          "number": "017",
+          "printing_id": "942d1cdd-7afc-4d32-8968-91464b09eed5",
+          "variant_id": "9374e47a-044a-4bb9-904b-f9ef12269677"
+        },
+        {
+          "number": "018",
+          "printing_id": "4e399449-632f-4574-82a1-9ab1d1d88afc",
+          "variant_id": "89bc9f43-94e5-476b-9dcf-1ee907b629c9"
+        },
+        {
+          "number": "019",
+          "printing_id": "bf018501-a261-481d-a9a1-782dbf66c64a",
+          "variant_id": "87c9670d-da1c-492f-823e-9d45cd825db0"
+        },
+        {
+          "number": "020",
+          "printing_id": "7cace6ba-77e7-42c7-a4ae-25b6532c21ec",
+          "variant_id": "db4d8ac0-1a15-4e8c-97cb-01d12480f100"
+        },
+        {
+          "number": "021",
+          "printing_id": "2fc8adf5-0bce-4c36-a24c-86c6e9ee6c17",
+          "variant_id": "d1936df7-9e04-456f-adc7-f40d4f61b9bc"
+        },
+        {
+          "number": "022",
+          "printing_id": "5358401f-6029-4376-b387-6a1b701951a1",
+          "variant_id": "378b11dc-bfe4-48ed-9388-8ade52f9f6bc"
+        },
+        {
+          "number": "023",
+          "printing_id": "fef86694-676f-4b97-981c-ad0d791ed107",
+          "variant_id": "b3536a92-8521-4465-b768-fb15bf680f36"
+        },
+        {
+          "number": "024",
+          "printing_id": "1d6c5c3d-9967-4abf-8b26-9d364b6b6b4b",
+          "variant_id": "e21b3e08-2ad0-4413-ab65-fb5a74894e45"
+        },
+        {
+          "number": "025",
+          "printing_id": "230a3eed-8966-401a-8168-8acee07f5cfd",
+          "variant_id": "77b843d6-e7cd-49fe-87a8-ff6d040d8268"
+        },
+        {
+          "number": "026",
+          "printing_id": "c0115233-2cd4-4d35-89ca-0a519c9c094e",
+          "variant_id": "7101a1d7-df92-4ab4-baf5-20ca705b3b12"
+        },
+        {
+          "number": "027",
+          "printing_id": "e259318c-d220-4d96-b9be-6ab079b6ef9f",
+          "variant_id": "d206f088-23cd-42e9-9464-021382efe3ba"
+        },
+        {
+          "number": "028",
+          "printing_id": "a0f88f22-4c62-46e7-b03d-cbb3cecb8f71",
+          "variant_id": "d125fa6d-0d68-4950-994f-a16249375c5a"
+        },
+        {
+          "number": "029",
+          "printing_id": "0f2f8e30-53cb-4682-ae2c-8c09e93b8eac",
+          "variant_id": "d9e70d95-354f-4b20-bc8e-03bd582c4df7"
+        },
+        {
+          "number": "030",
+          "printing_id": "9492c629-b3a8-423f-851c-4e43c1574e79",
+          "variant_id": "7a7901c7-f28a-4a05-9ff5-c8770ce2d311"
+        },
+        {
+          "number": "031",
+          "printing_id": "634e31a0-b324-4c09-96cb-cec6f21ae9d2",
+          "variant_id": "a402ec63-381c-4595-997e-483f076fca6a"
+        },
+        {
+          "number": "032",
+          "printing_id": "40ca29ed-0b50-4284-90b8-9248feebd22a",
+          "variant_id": "459997a3-7d24-4837-9027-fbd261dbb26d"
+        },
+        {
+          "number": "033",
+          "printing_id": "e5332bc6-2259-4b18-9846-03c013edd257",
+          "variant_id": "637cae4f-3bd4-48b7-830f-32b0ccb4a8a0"
+        },
+        {
+          "number": "034",
+          "printing_id": "68424d17-cc20-4d35-aef5-262db9cee474",
+          "variant_id": "1edf7491-0801-4f32-80f9-85b1c0604eb1"
+        },
+        {
+          "number": "035",
+          "printing_id": "9de561fb-f743-4b75-bf8f-853d7d2ffbda",
+          "variant_id": "deeb7cf6-d7f2-43c6-8ecb-358cbb986303"
+        },
+        {
+          "number": "036",
+          "printing_id": "d1f45569-6823-4ed4-bbf3-baa83421b708",
+          "variant_id": "befa88fd-3bbc-4f4e-b2ad-d8d7ec918e02"
+        },
+        {
+          "number": "037",
+          "printing_id": "8f1b60e5-bfbf-4dff-b171-df76b4b91c35",
+          "variant_id": "dfc07312-74c1-4243-872e-d794eb7b5912"
+        },
+        {
+          "number": "038",
+          "printing_id": "5f09c3ab-7adb-4e35-8fe2-066d36be0771",
+          "variant_id": "8dee20cd-f581-43f6-8966-a47490e4dfcf"
+        },
+        {
+          "number": "039",
+          "printing_id": "575ceb64-bce4-49ab-8ec9-0c66e07f3f1a",
+          "variant_id": "fd1eeeae-de22-4cf6-81ee-2348d69688ce"
+        },
+        {
+          "number": "040",
+          "printing_id": "8f080e2a-2084-40a4-893e-3fab6cdeaeb7",
+          "variant_id": "09777039-348c-4697-a36e-eacdd767194b"
+        },
+        {
+          "number": "041",
+          "printing_id": "4266d388-3d0c-4881-8a85-28862cf65b2d",
+          "variant_id": "2074f280-8fbf-41f0-863c-d248aa095294"
+        },
+        {
+          "number": "042",
+          "printing_id": "cf5409a5-1c4a-4858-975a-70cefac1ea26",
+          "variant_id": "411bc988-c7b0-44b4-abb9-f24062c3775a"
+        },
+        {
+          "number": "043",
+          "printing_id": "9dc41924-a534-4d42-9254-693245a5bfea",
+          "variant_id": "ff31ab77-ef26-4802-9b98-60b7a0b7c8b8"
+        },
+        {
+          "number": "044",
+          "printing_id": "8fc185b0-fe15-4238-9c75-3894d7255cbe",
+          "variant_id": "74fb641f-90b5-4895-b3c5-603551703a20"
+        },
+        {
+          "number": "045",
+          "printing_id": "ffb38e36-07ff-429b-b640-5ef3c1ab38bd",
+          "variant_id": "f068a5f6-e847-4452-a5cf-fc8c18925afa"
+        },
+        {
+          "number": "046",
+          "printing_id": "96dd8004-c8fd-4f89-9657-0eadf99850a2",
+          "variant_id": "9a00603e-ff53-4206-a3c2-072e331f8629"
+        },
+        {
+          "number": "047",
+          "printing_id": "f1f46910-59a7-4fa7-be98-deaa5f4691df",
+          "variant_id": "82619328-58b2-42f0-9d7d-66a4e28c4e3a"
+        },
+        {
+          "number": "048",
+          "printing_id": "8cd7a809-1680-4090-8813-8d3ef4f2a726",
+          "variant_id": "854cf6b3-f373-46f6-b533-2438dd03b6f7"
+        },
+        {
+          "number": "049",
+          "printing_id": "8c0e6e40-aa06-453d-bfa9-5bdd3bccf16c",
+          "variant_id": "e56432ae-e219-42dd-a3b4-0f18b8803801"
+        },
+        {
+          "number": "050",
+          "printing_id": "bbb4f0ad-308c-44a9-b99d-4b73478159f2",
+          "variant_id": "f2ff1bf5-c063-4b7c-afd5-53098c5087b4"
+        },
+        {
+          "number": "051",
+          "printing_id": "2eecac9a-b46f-494b-8e72-3c7d070ea936",
+          "variant_id": "bd88a187-e4c0-46d9-be9a-44f992d7f2e6"
+        },
+        {
+          "number": "052",
+          "printing_id": "742daec4-97a2-4c5c-bd51-8b23f4a52b89",
+          "variant_id": "dcc2f867-29c4-4084-a0e7-d1c78e630740"
+        },
+        {
+          "number": "053",
+          "printing_id": "42f48c7c-016e-475f-bb7b-a134c50d66bf",
+          "variant_id": "ec671649-6bb4-4657-b2ac-4cd14e869796"
+        },
+        {
+          "number": "054",
+          "printing_id": "4a49e57b-0731-4c65-bea4-f73599a04d7a",
+          "variant_id": "d6703dee-32fb-4058-aec8-29ac87a65b98"
+        },
+        {
+          "number": "055",
+          "printing_id": "57aca0fa-c64f-4384-886d-307f5a1a3763",
+          "variant_id": "ee1b01e3-d615-457a-baaf-4501eed637ab"
+        },
+        {
+          "number": "056",
+          "printing_id": "66a22b98-f749-4777-a3da-d18dfa8727f0",
+          "variant_id": "a3e4eb62-fb92-4ce3-82f1-e77397b5a5b8"
+        },
+        {
+          "number": "057",
+          "printing_id": "1b9a6e2c-343f-4349-9e41-1c6f0282e867",
+          "variant_id": "6b9dda3d-c69a-4ee4-8562-7370f974a132"
+        },
+        {
+          "number": "058",
+          "printing_id": "6c601fa8-c994-42f4-aedd-b377276e5215",
+          "variant_id": "c93dc242-2466-49cd-a0b0-8d8aa87acf87"
+        },
+        {
+          "number": "059",
+          "printing_id": "2be531cf-c1d3-41b3-adc3-f6a31703619a",
+          "variant_id": "f96a9833-9d5e-4b7c-9e73-8e3b1fc6bc69"
+        },
+        {
+          "number": "060",
+          "printing_id": "6f76643f-89f2-440f-9e8d-5ec8da21626e",
+          "variant_id": "78ebbb49-f453-43ea-ac40-253dda095ea6"
+        },
+        {
+          "number": "061",
+          "printing_id": "2d23235d-e082-4459-93e9-975918fdcbca",
+          "variant_id": "b691c75f-9dbc-4bc7-aef0-bb0f3f835e58"
+        },
+        {
+          "number": "062",
+          "printing_id": "83212a50-5178-41fa-85fd-7b813fdc41f0",
+          "variant_id": "112b91ef-20b0-4d50-a9b4-e06da2438f68"
+        },
+        {
+          "number": "063",
+          "printing_id": "00d6accc-f5e2-4c08-b499-79995af06cf9",
+          "variant_id": "6e389079-31e7-4756-9a8c-e03ee6439b74"
+        },
+        {
+          "number": "064",
+          "printing_id": "0c53b5e8-3d45-480f-ac50-34ac1be59567",
+          "variant_id": "db0661de-fb71-4300-b61e-b4cf71525e26"
+        },
+        {
+          "number": "065",
+          "printing_id": "f3ab1b24-402e-490d-8c54-7a5dc78bcd5e",
+          "variant_id": "49984588-e601-42a2-a2dd-29c8822a9928"
+        },
+        {
+          "number": "066",
+          "printing_id": "d06a07f3-501d-4263-8292-63aef5baa770",
+          "variant_id": "6396dfbc-768a-4b70-82cc-933e9771d056"
+        },
+        {
+          "number": "067",
+          "printing_id": "ea634798-cbaa-4c56-8b55-e5fa1118cd4d",
+          "variant_id": "26e90bc9-9974-4df5-a997-4d3c04fcca98"
+        },
+        {
+          "number": "068",
+          "printing_id": "4a9d2b95-9e14-41c8-8e67-18f3d1c8aac3",
+          "variant_id": "f4f7051a-e996-46c8-ab4f-888d2da7f50e"
+        },
+        {
+          "number": "069",
+          "printing_id": "21ca3269-b6b9-4553-a3f2-5a1918c1fd28",
+          "variant_id": "60c1aabd-f1f9-419e-b1ec-dac68a01de4c"
+        },
+        {
+          "number": "070",
+          "printing_id": "fd4d5c92-9357-410a-b829-c90e2d40be2b",
+          "variant_id": "4f83fc7e-0b07-46f9-a349-c4b381122976"
+        },
+        {
+          "number": "071",
+          "printing_id": "66de90bb-43cf-4496-b7f7-d8f05a468424",
+          "variant_id": "bf9671dd-cf33-4894-a6c1-f4a2c94d5c65"
+        },
+        {
+          "number": "072",
+          "printing_id": "d8e8068a-0888-48c1-8f11-a7d01e6b765a",
+          "variant_id": "6de58e74-6e41-4199-8422-364ee1cc81ef"
+        },
+        {
+          "number": "073",
+          "printing_id": "e0669440-00e1-4370-845d-95568a13bb0f",
+          "variant_id": "2282fb50-787f-44e6-9c8a-a463066988a9"
+        },
+        {
+          "number": "074",
+          "printing_id": "9de81472-398a-496e-a3f7-f6ed44b4106b",
+          "variant_id": "1f890102-c6e5-4d7f-b555-ab3cb83d3207"
+        },
+        {
+          "number": "075",
+          "printing_id": "d03618e4-8ef4-4843-a9a5-db2f977ada03",
+          "variant_id": "874f17fc-2953-4510-a6b8-843db7448940"
+        },
+        {
+          "number": "076",
+          "printing_id": "9137f687-ccdf-40e3-a506-63998a0d9eeb",
+          "variant_id": "983a2e91-38ee-4507-95ff-b98a8a390efe"
+        },
+        {
+          "number": "077",
+          "printing_id": "f7dfb465-7088-4630-82fa-3c83f9c8a4f7",
+          "variant_id": "c95d4003-7e1b-4976-a60e-4180b1b54c1e"
+        },
+        {
+          "number": "078",
+          "printing_id": "6f6b9974-739c-403d-9b77-21bd7abc0067",
+          "variant_id": "c3c5a8b3-8916-4636-8f26-76cb025b2f62"
+        },
+        {
+          "number": "079",
+          "printing_id": "7d17ff3a-fd93-4133-8ff7-61cd3c5f7cb8",
+          "variant_id": "bdefd6cc-b434-4fce-8752-5dc47d9c55bb"
+        },
+        {
+          "number": "080",
+          "printing_id": "b57fe248-a56d-48f0-b138-56ddd44081da",
+          "variant_id": "aeddcebd-b62d-4dcd-9a77-76fd8d7630a7"
+        },
+        {
+          "number": "081",
+          "printing_id": "e1113e81-de44-43d7-ae4b-5f0854ce914e",
+          "variant_id": "82b03c10-4e64-4b5c-987d-c1c9b60d4b1a"
+        },
+        {
+          "number": "082",
+          "printing_id": "df11cb57-fd85-4ece-9f51-baf87e448dc4",
+          "variant_id": "4869f8a1-fc83-41e3-9753-d98feb10e435"
+        },
+        {
+          "number": "083",
+          "printing_id": "30df0b1b-bd9e-4b3b-b695-950aa88d4c1a",
+          "variant_id": "866d6e44-b61a-4f2d-8e9c-6d64ed4ce52a"
+        },
+        {
+          "number": "084",
+          "printing_id": "a8014447-79db-49d3-a4fb-d620ac951a01",
+          "variant_id": "9c8c0da1-448d-4d29-8f6a-baf12ecc27bc"
+        },
+        {
+          "number": "085",
+          "printing_id": "05a321c6-e902-468c-91e7-97a817c0f653",
+          "variant_id": "fbada59e-0a41-4288-b5b1-5f9ae04b557e"
+        },
+        {
+          "number": "086",
+          "printing_id": "2f4a2b5e-c218-4a72-b2b0-3175f6a5b2ab",
+          "variant_id": "9fb2fac7-178d-42ea-9bdb-9bae351d33f5"
+        },
+        {
+          "number": "087",
+          "printing_id": "4eb0b63c-63b4-404b-8c1b-0f004590ee73",
+          "variant_id": "982c01cc-0663-4dff-8705-e7ba2233000f"
+        },
+        {
+          "number": "088",
+          "printing_id": "1dfc022a-7de1-405f-813a-dff006dc15fd",
+          "variant_id": "a082be1e-8a5b-4489-82c1-cfa5c1c2896e"
+        },
+        {
+          "number": "089",
+          "printing_id": "c40c7445-35f4-41dc-8f5a-70ac24a83d32",
+          "variant_id": "94bcd08a-1737-438e-9fca-e5ae683a08fa"
+        },
+        {
+          "number": "090",
+          "printing_id": "3df289f1-59fe-449d-b50e-b6b8fc055cfc",
+          "variant_id": "bb460280-40a0-40b7-bd06-07aa9211ff9f"
+        },
+        {
+          "number": "091",
+          "printing_id": "f2d70edf-5907-4a19-867a-7912d01e73b9",
+          "variant_id": "a316102f-e757-4a37-938c-4ba8f4002aa7"
+        },
+        {
+          "number": "092",
+          "printing_id": "d80b9a14-2801-4809-9160-589a9b916bf6",
+          "variant_id": "36585040-6e95-4c93-9548-bd7baf3fdec5"
+        },
+        {
+          "number": "093",
+          "printing_id": "a0109a1c-e8ad-419f-ab69-69859d9a1b64",
+          "variant_id": "f0f400f2-7b2b-44fe-a6b7-27a34201150c"
+        },
+        {
+          "number": "094",
+          "printing_id": "e2d17b28-05d3-4c37-b3dc-6d6e5ab291bd",
+          "variant_id": "9751d942-b57b-4878-8bff-7cd5f589db59"
+        },
+        {
+          "number": "095",
+          "printing_id": "ab20a783-8828-439b-b885-3b4666e78144",
+          "variant_id": "e456e52b-77dd-4371-bda8-ae51dfc3386a"
+        },
+        {
+          "number": "096",
+          "printing_id": "61fdf1bc-6d2f-469b-ac9a-25099899180d",
+          "variant_id": "65f55684-fbbc-4718-adbe-c2adf6eb696f"
+        },
+        {
+          "number": "097",
+          "printing_id": "0fb9b398-b86a-4439-8a02-344e1d499084",
+          "variant_id": "06185f9f-ee8d-4c94-b9e9-b91880fefdc7"
+        },
+        {
+          "number": "098",
+          "printing_id": "ede698d9-20fc-4056-b20a-afccf54861d2",
+          "variant_id": "5368a493-19be-45ed-adb8-79a025f05f51"
+        },
+        {
+          "number": "099",
+          "printing_id": "97300890-b66c-4c48-80f1-5c70f59ca227",
+          "variant_id": "98cbdc11-7014-47de-abae-f236ae06e55f"
+        },
+        {
+          "number": "100",
+          "printing_id": "59582295-a400-4d50-b88b-306fddc447fb",
+          "variant_id": "25e6467e-fd15-4126-b348-67eec9722af1"
+        },
+        {
+          "number": "101",
+          "printing_id": "52821141-2441-4203-98e2-454f3d3cb6c7",
+          "variant_id": "caa0d955-7f95-499d-a3a7-dbbab0d9da19"
+        },
+        {
+          "number": "102",
+          "printing_id": "a6115267-a28a-4efb-8e05-f61511c24594",
+          "variant_id": "2d2a3d4f-2980-494b-833e-003f7beb7a37"
+        },
+        {
+          "number": "103",
+          "printing_id": "7295f689-45b9-42ec-8e24-5f422d77bdbf",
+          "variant_id": "f4782e42-122c-429c-93ba-df578fb5e18f"
+        },
+        {
+          "number": "104",
+          "printing_id": "bd135a95-3a96-4bf7-b844-8bba2bb84761",
+          "variant_id": "053574df-616c-4581-9e1a-2eaff4b94ead"
+        },
+        {
+          "number": "105",
+          "printing_id": "8350134b-6f43-476d-b8ef-d83840d85474",
+          "variant_id": "ba3e4569-e939-46bd-82d8-aa0426a7d5b7"
+        },
+        {
+          "number": "106",
+          "printing_id": "c88913be-28dd-4a19-bbbd-8f76e86c6ec8",
+          "variant_id": "c72882bd-8b99-4c9a-b7df-aad4063462d5"
+        },
+        {
+          "number": "107",
+          "printing_id": "427f9944-3113-4d86-96db-0fadf2df5ee4",
+          "variant_id": "d4cee801-9a2a-4e4a-b9e9-287e6c335668"
+        },
+        {
+          "number": "108",
+          "printing_id": "4cd79267-bc01-4b5a-86f2-5f28c6f229c2",
+          "variant_id": "1f10dbb3-4f5b-4a92-ac3a-808fc946bebd"
+        },
+        {
+          "number": "109",
+          "printing_id": "0dbcc9bd-b43a-44eb-b009-a3548727633c",
+          "variant_id": "4b64b35e-d583-48dc-9b2f-88a937ab39fe"
+        },
+        {
+          "number": "110",
+          "printing_id": "ae563fbf-fa00-4c9e-a603-719ee6241b78",
+          "variant_id": "cb856f33-c813-475f-97d2-b766121d01de"
+        },
+        {
+          "number": "111",
+          "printing_id": "15b173d5-07a2-489b-a7d2-7bcf4b25dd44",
+          "variant_id": "692198b2-b374-43c4-82bb-f36350282037"
+        },
+        {
+          "number": "112",
+          "printing_id": "b5388b4e-b881-4e64-8f5e-2ace1ddc0bea",
+          "variant_id": "8ee28d8d-4e95-436a-8de4-79146ec22c14"
+        },
+        {
+          "number": "113",
+          "printing_id": "4d0d3ba2-dc59-4fe0-b07b-adb3d5ae15ed",
+          "variant_id": "a1427e60-db16-46b9-a5c6-35b1763e79e6"
+        },
+        {
+          "number": "114",
+          "printing_id": "262cc7c8-7dde-40bd-b409-6b69ff3a141f",
+          "variant_id": "6819faf2-f604-4a22-90c4-0ac7ad7ecd3e"
+        },
+        {
+          "number": "115",
+          "printing_id": "e8e773b1-428c-4efd-864d-256533e2b264",
+          "variant_id": "c6ab6740-ff34-42dd-876f-826be55d5680"
+        },
+        {
+          "number": "116",
+          "printing_id": "85678d5b-86d4-4139-8fc1-c42fe01f8304",
+          "variant_id": "66a46e64-ef04-4317-84c8-1da1d65385f3"
+        },
+        {
+          "number": "117",
+          "printing_id": "b23eea37-515d-44f8-be8d-985c706e2897",
+          "variant_id": "1f705467-be8a-46a4-bd22-4c5acaec3b92"
+        },
+        {
+          "number": "118",
+          "printing_id": "12e6b8bc-6b2b-4547-90e2-86f763e218ea",
+          "variant_id": "b43bab85-05e9-44e8-8375-ed0a744e1164"
+        },
+        {
+          "number": "119",
+          "printing_id": "3315b9e2-2a63-412a-88ba-bfb3663f13a1",
+          "variant_id": "08dd421e-1f56-499b-869d-404dfc2eb600"
+        },
+        {
+          "number": "120",
+          "printing_id": "14db8abc-ef79-4c88-831b-67111bf3c0a7",
+          "variant_id": "c6b7afc9-7683-4d55-b6ac-043a76e204aa"
+        },
+        {
+          "number": "121",
+          "printing_id": "ef76881d-f1c9-4109-9cf5-b70268c54971",
+          "variant_id": "522bca67-c927-4008-8335-65f34f17a750"
+        },
+        {
+          "number": "122",
+          "printing_id": "1eaf2c47-5e6c-424c-927d-98750c8a41b1",
+          "variant_id": "84d9406c-db77-4dff-8023-d745cccea520"
+        },
+        {
+          "number": "123",
+          "printing_id": "14a1b079-1477-4021-955b-cc3e584a803d",
+          "variant_id": "483f97d0-5b50-4a87-9b58-5e8feb43c0b9"
+        },
+        {
+          "number": "124",
+          "printing_id": "ede90a8c-de88-4ccc-99ee-6999e7aa2671",
+          "variant_id": "04926fdc-55f7-417e-8d9a-b3b224b6b17c"
+        },
+        {
+          "number": "125",
+          "printing_id": "0d304cba-c85b-400f-b40f-2b033acfc4d9",
+          "variant_id": "40e9a679-a0ef-43a3-8129-8541ec20df52"
+        },
+        {
+          "number": "126",
+          "printing_id": "29694bda-db5c-4457-a4e8-92d13665f539",
+          "variant_id": "38514910-97ba-4536-a2e0-5bd78abc93de"
+        },
+        {
+          "number": "127",
+          "printing_id": "98c2dbc6-3b01-4f46-9092-fba002c9e82a",
+          "variant_id": "72aaddef-9bce-4a5f-ae5c-b1494c014e5f"
+        },
+        {
+          "number": "128",
+          "printing_id": "00aaf2ce-d268-4edf-8806-a5e35cd6e45a",
+          "variant_id": "c4877cff-ab25-4514-893b-07a17532db34"
+        },
+        {
+          "number": "129",
+          "printing_id": "cba40d64-a10b-46ad-bf18-1f4c29e38bdd",
+          "variant_id": "2bc04a63-9677-4a9b-b5a7-9eebd41ac037"
+        },
+        {
+          "number": "130",
+          "printing_id": "e962a3e9-91d7-42ae-9530-0e0bfeafad05",
+          "variant_id": "02230776-cfd4-4df0-be7a-79a8d889bd23"
+        },
+        {
+          "number": "131",
+          "printing_id": "63f8fefb-f8cf-41a9-99d3-1d395bd19708",
+          "variant_id": "53a8ab34-2d20-415f-a50c-cf371946487d"
+        },
+        {
+          "number": "132",
+          "printing_id": "fac5c084-0b98-494f-ba0d-3054babf35f5",
+          "variant_id": "6a18e60d-6ba0-4611-bf52-683167875b95"
+        },
+        {
+          "number": "133",
+          "printing_id": "791a5f37-a275-4581-9639-3a8b5405004f",
+          "variant_id": "11abf4e6-9bdd-4448-8344-1981b8d58f9d"
+        },
+        {
+          "number": "134",
+          "printing_id": "81198cc7-2e9d-46e2-adb8-6c50bb6f82b9",
+          "variant_id": "c32e14a3-005a-41d4-af94-9d0c695739ea"
+        },
+        {
+          "number": "135",
+          "printing_id": "8b776f37-465a-4327-99b2-0be443af3c52",
+          "variant_id": "2648e7db-1645-459e-bddd-675f046a0dbb"
+        },
+        {
+          "number": "136",
+          "printing_id": "8dac27fe-2af1-4541-b123-1611d51c8125",
+          "variant_id": "2493d80e-3916-4b60-a557-d35092d40583"
+        },
+        {
+          "number": "137",
+          "printing_id": "4e1b5ac5-0a1a-4d50-a682-2c81ed6ee4af",
+          "variant_id": "1ffbe5d4-43de-463a-a18b-e7344f0cb303"
+        },
+        {
+          "number": "138",
+          "printing_id": "c738aedf-8b12-4b02-aadc-d2eb5cf8c34d",
+          "variant_id": "b6702a5b-9c13-4a5c-b434-1687284aef6d"
+        },
+        {
+          "number": "139",
+          "printing_id": "f4ae6afb-e25e-4400-888d-66aeaab28004",
+          "variant_id": "d7c6bd17-8352-4655-89de-63621724bfe2"
+        },
+        {
+          "number": "140",
+          "printing_id": "3ce584da-35f6-4e8d-a28e-97ef8d075b8e",
+          "variant_id": "b2640322-5f05-4cd7-b4d6-6a4ee1a89416"
+        },
+        {
+          "number": "141",
+          "printing_id": "8585e998-4f25-406a-92b2-cbece2783d2c",
+          "variant_id": "c4828a19-70df-4719-bbb6-c28474efe30c"
+        }
+      ]
+    }
+  ],
   "limitations": [
     "141 numbered English printings only; finishes explicitly unclassified with NULL finish_code",
     "Approved printing-scoped artwork uses hash-pinned existing Site media delivery",
@@ -29,6 +741,6 @@
   "derivedFrom": {
     "path": "docs/delta-reign-catalogue-release-20261106.json",
     "sha256": "4e373f5c387bdb0e500865bb1966fb2b3e3f0abd933c4161f0aaebbd3c7703e4",
-    "scope": "Public catalogue activation, identity counts and limitations only; import execution details omitted."
+    "scope": "Public catalogue activation, printing and variant identity mappings, counts and limitations; import-run details omitted."
   }
 }

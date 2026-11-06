@@ -131,6 +131,62 @@
 .binder-title-logo[data-logo-status=unavailable]{visibility:hidden}
 @media(max-width:600px){.binder-name-row{gap:10px}.binder-title-logo{flex-basis:60px;height:34px}#binder-detail .binder-name-row #binder-title{font-size:22px}}
 
+/* Keep search and ownership filters within reach while browsing a whole set. */
+.binder-controls{position:sticky;top:var(--stackr-header-height,64px);z-index:15;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:12px 20px;padding:10px 0;background:#fbf9fff5;backdrop-filter:blur(10px);border-bottom:1px solid #e5daed}
+#binder-detail .binder-controls .binder-tabs{margin:0;gap:6px;flex-wrap:nowrap}
+#binder-detail .binder-controls .binder-tabs button{min-height:44px;padding:8px 13px;font-size:14px;white-space:nowrap}
+#binder-detail .binder-controls #card-search{width:100%;max-width:580px;justify-self:end;margin:0;gap:8px}
+.binder-controls input{min-height:44px;font-size:16px}
+.binder-controls .primary{min-height:44px;padding:10px 16px}
+#binder-detail #cards-context{margin:10px 0 14px;font-size:13px;color:#665472}
+#card-filter-empty{margin:14px 0 24px;padding:30px 20px}
+#card-filter-empty .secondary{margin-top:18px}
+#binder-detail .card-tile strong{font-size:14px;line-height:1.35;margin-top:10px;min-height:2.7em}
+#binder-detail .card-tile small{font-size:13px;line-height:1.4;color:#705e7a}
+#binder-detail .own-toggle{font-size:14px;min-height:44px}
+.card-tile[data-owned=false] .card-art img{opacity:.5;filter:none}
+.card-tile[data-owned=true] .card-art img{opacity:1;filter:none}
+.card-tile[data-owned=false] .card-art{outline:1px solid #d8cce3}
+.card-tile[data-owned=true] .card-art{outline:2px solid #6b4384;box-shadow:0 3px 12px #5b337418}
+.owned-badge{font-size:12px;padding:5px 8px}
+.saved-binder-progress{display:grid;gap:7px;min-height:37px;margin:6px 0 2px;color:#614775;font-size:13px}
+.saved-binder-progress>span{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.saved-binder-progress b{font:650 13px Inter,Arial,sans-serif;color:#4e2d66}
+.saved-binder-progress progress{width:100%;height:6px;border:0;border-radius:8px;overflow:hidden;appearance:none;background:#e8deef}
+.saved-binder-progress progress::-webkit-progress-bar{background:#e8deef}
+.saved-binder-progress progress::-webkit-progress-value{background:#795398;border-radius:8px}
+.saved-binder-progress progress::-moz-progress-bar{background:#795398;border-radius:8px}
+.saved-binder-progress.pending{align-content:center;color:#705e7a;font-size:12px}
+.binder-caption .binder-open{display:flex;justify-content:space-between;gap:8px;padding:8px 0;font-size:14px;font-weight:650;color:#5b3374}
+.collection-featured .collection-trial h2{text-wrap:balance}
+.collection-featured .collection-pending>div:last-child{grid-template-rows:60px auto 44px}
+.collection-featured .collection-pending>div:last-child>p:not(.eyebrow){position:static;width:auto;height:auto;padding:0;clip:auto;overflow:visible;white-space:normal;font-size:13px;line-height:1.5;margin:0}
+#card-preview-dialog{width:min(620px,calc(100vw - 32px));max-width:620px;max-height:calc(100dvh - 32px);padding:22px}
+#card-preview-dialog .dialog-head{gap:16px;margin-bottom:16px}
+#card-preview-dialog .dialog-head h2{font-size:24px;line-height:1.2;overflow-wrap:break-word}
+#card-preview-dialog .dialog-head button{flex:none;min-width:44px;min-height:44px}
+#card-preview-image{display:block;width:100%;max-height:70dvh;object-fit:contain;margin:auto;border-radius:10px}
+#card-preview-identity{text-align:center;font-size:14px;margin:14px 0 0}
+@media(max-width:760px){
+ .binder-controls{grid-template-columns:minmax(0,1fr);gap:8px;padding:8px 0}
+ #binder-detail .binder-controls .binder-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+ #binder-detail .binder-controls .binder-tabs button{padding:8px;font-size:14px}
+ #binder-detail .binder-controls .binder-tabs:has(#search-tab:not([hidden])){grid-template-columns:repeat(2,minmax(0,1fr))}
+ #binder-detail .binder-controls #card-search{max-width:none}
+ .binder-caption strong{font-size:18px}
+ .binder-caption>span{font-size:13px}
+ .saved-binder-progress{font-size:12px}
+ .collection-featured .collection-pending>div:last-child{grid-template-rows:50px auto 44px}
+}
+@media(max-width:480px){
+ #card-preview-dialog{width:calc(100vw - 24px);padding:16px;max-height:calc(100dvh - 24px)}
+ #card-preview-dialog .dialog-head h2{font-size:21px}
+ #card-preview-image{max-height:68dvh}
+}
 /* Selection reflects confirmed saved ownership; a pending save keeps its previous state. */
 .card-tile[aria-pressed=true] .card-art{outline:3px solid #8751ad;outline-offset:2px;box-shadow:0 0 0 5px #ece0f4}
 .card-tile[aria-pressed=true]:hover .card-art{box-shadow:0 0 0 5px #e1d0ee}
+
+/* Artwork inspection is separate from card-tap ownership. */
+.inspect-card{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-height:44px;margin:4px 0 0;padding:8px 4px;border:0;border-radius:8px;background:transparent;color:#614775;font-size:13px;text-decoration:underline;text-underline-offset:3px}
+.inspect-card:hover{background:#f0e8f8;color:#462658}

@@ -69,11 +69,11 @@ function productCard(p){
  const photo='<button class="product-image-button" data-quick="'+p.id+'" aria-label="View '+full+'"><span class="product-tilt" data-product-tilt>'+productPhoto(p,'lazy')+'</span><span class="product-view-hint">View product '+icon('arrow')+'</span></button>';
  const title='<button class="product-name-button" data-quick="'+p.id+'">'+escapeHtml(p.name)+'</button>';
  return '<article class="product-card '+(available?'is-in-stock':'is-interest-only')+'" data-product="'+p.id+'">'+
- '<div class="product-visual">'+setBadge(p)+photo+'</div>'+
- '<div class="product-info"><p class="product-meta">'+escapeHtml(p.type)+'<span class="language-label">'+languageBadge(p)+'</span></p><h3 data-title-length="'+(p.name.length>30?'long':'regular')+'">'+title+'</h3>'+
- '<p class="product-sub">'+packText(p)+(p.cardsPerPack?' · '+p.cardsPerPack+' cards per pack':'')+'</p>'+(productReleaseLabel(p)?'<p class="product-release">'+escapeHtml(productReleaseLabel(p))+'</p>':'')+'<div class="product-bottom">'+pricePair(p)+
+ '<div class="product-visual">'+setBadge(p)+saveButton(p,saved)+photo+'</div>'+
+ '<div class="product-info"><h3 data-title-length="'+(p.name.length>30?'long':'regular')+'">'+title+'</h3><p class="product-meta">'+escapeHtml(p.type)+'<span class="language-label">'+languageBadge(p)+'</span></p>'+
+ '<p class="product-sub">'+packText(p)+'</p>'+(productIsUpcoming(p)?'<p class="product-release">'+escapeHtml(productReleaseLabel(p))+'</p>':'')+'<div class="product-bottom">'+pricePair(p)+
  (available?'<button class="add-button" data-add="'+p.id+'" '+(cartMaximum(p.id)<=(state.cart[p.id]||0)?'disabled':'')+' aria-label="Add '+full+' to bag">'+icon('plus')+' '+addLabel(p)+'</button>':'')+'</div>'+
- '<div class="product-utility">'+saveButton(p,saved)+'<button class="stock-shortcut" data-product-stock="'+p.id+'">'+stockLabel(p.id)+'</button></div>'+(available?'<p class="purchase-limit">Maximum 3 per product per order</p>':interestButton(p))+'</div></article>';
+ '<div class="product-utility"><button class="stock-shortcut" data-product-stock="'+p.id+'">'+stockLabel(p.id)+'</button></div>'+(available?'<p class="purchase-limit">Maximum 3 per product per order</p>':interestButton(p))+'</div></article>';
 }
 function renderProducts(){
  const normal=query.trim().toLocaleLowerCase('en-GB');
@@ -91,15 +91,20 @@ function renderProducts(){
  renderCatalogueNavigation();
  get('results-note').hidden=!normal&&!onlySaved&&setKey==='all'&&category==='All'&&priceRange==='all'&&language==='all'&&availability==='all';
  get('shop-title').textContent=setKey==='all'?'Shop Pokémon':(setEntries.find(s=>s.key===setKey).setName||setEntries.find(s=>s.key===setKey).name);
- get('active-filter').textContent=[language!=='all'?language:'',setKey!=='all'?(setEntries.find(s=>s.key===setKey).setName||setEntries.find(s=>s.key===setKey).name):'',category!=='All'?formatLabels[category]:'',priceRange!=='all'?budgetLabels[priceRange]:'',availability!=='all'?({in_stock:'In stock',out_of_stock:'Out of stock',unknown:'Stock not set'}[availability]):'',onlySaved?'Saved products':'',normal?'Search: '+query.trim():''].filter(Boolean).join(' · ');
+ get('active-filter').textContent=[language!=='all'?language:'',setKey!=='all'?(setEntries.find(s=>s.key===setKey).setName||setEntries.find(s=>s.key===setKey).name):'',category!=='All'?formatLabels[category]:'',priceRange!=='all'?budgetLabels[priceRange]:'',availability!=='all'?({in_stock:'In stock',out_of_stock:'Out of stock',unknown:'Availability to be confirmed'}[availability]):'',onlySaved?'Saved products':'',normal?'Search: '+query.trim():''].filter(Boolean).join(' · ');
  const signature=JSON.stringify([category,setKey,language,onlySaved,query,sort,priceRange,availability]),changed=signature!==lastFilterSignature;
  if(changed){productLimit=24;lastFilterSignature=signature;}
  renderGroupedCatalogue(list,changed);
  document.querySelectorAll('[data-language]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.language===language)));
+ if(get('availability-filter')&&shopReady){
+  const candidates=products.filter(p=>matchesLanguage(p)&&matchesBudget(p)&&matchesSet(p,setKey)&&(category==='All'||p.category===category)&&(!onlySaved||state.saved.includes(p.id))&&matchesSearch(p));
+  for(const option of get('availability-filter').options){const labels={all:'All products',in_stock:'In stock',out_of_stock:'Out of stock',unknown:'To be confirmed'};option.textContent=labels[option.value]+' ('+candidates.filter(p=>option.value==='all'||stockStatus(p)===option.value).length+')';}
+ }
+ if(get('shop-language-select'))get('shop-language-select').value=language;
  renderSearchSuggestions(list.length,list);updateCounts();rememberBrowseContext();if(filterSheet?.open)refreshFilterDraft();
 }
 function reset(){
- category='All';language='English';availability='in_stock';onlySaved=false;query='';priceRange='all';sort='featured';get('sort').value='featured';get('budget').value='all';if(get('availability-filter'))get('availability-filter').value='in_stock';get('search').value='';clearSetFilter();renderFeature(byId('asc-etb'));renderProducts();
+ category='All';language='English';availability='all';onlySaved=false;query='';priceRange='all';sort='featured';get('sort').value='featured';get('budget').value='all';if(get('availability-filter'))get('availability-filter').value='all';get('search').value='';clearSetFilter();renderFeature(byId('asc-etb'));renderProducts();
 }
 function add(id){
  const p=byId(id);if(!p)return;
@@ -154,10 +159,10 @@ function quick(id){
  const rows=[['Set',p.setName||p.name],['Product format',p.edition&&p.edition!=='standard'?p.edition:'Standard retail edition'],['Availability',stockLabel(p.id)],...(productReleaseLabel(p)?[['Release',productReleaseLabel(p).replace(/^(?:Published|Set) release: /,'')]]:[]),['Language',p.language],['Pack count',packText(p,true)],['Unit','1 retail item'],...(p.cardsPerPack?[['Cards per pack',p.cardsPerPack]]:[]),...(p.reference?[['Catalogue ref',p.reference]]:[])];
  get('quick-body').innerHTML='<div class="quick-art"><button class="inspection-launch" data-inspect-photo="'+p.id+'" aria-label="Inspect '+escapeHtml(p.name+' '+p.type)+' photograph" '+(!p.image||p.imagePending?'disabled':'')+'><span class="product-tilt" data-product-tilt>'+productPhoto(p,'eager')+'</span><span class="inspect-hint">'+icon('search')+' Inspect photo</span></button><div class="photo-tools"><span>Product photograph</span>'+(p.photoReference?'<button class="photo-reference" data-photo-reference="'+p.id+'">Another supplier view</button>':'')+'</div></div>'+
  '<div class="quick-copy">'+setMark(p,'quick-set-mark')+
- '<span class="eyebrow">'+escapeHtml(p.series)+'</span><h2 id="quick-title">'+escapeHtml(p.name)+'</h2><div class="product-sub">'+escapeHtml(p.type)+'</div>'+(productReleaseLabel(p)?'<p class="product-release">'+escapeHtml(productReleaseLabel(p))+'</p>':'')+
- '<div class="product-detail-jumps"><a class="contents-jump" href="#product-contents" data-view-contents>Box contents '+icon('arrow')+'</a><a class="contents-jump" href="#product-chases" data-view-chases>Chase cards '+icon('arrow')+'</a></div>'+pricePair(p)+'<div class="quick-actions" data-quick-actions>'+quickProductActions(p)+'</div>'+
+ '<span class="eyebrow">'+escapeHtml(p.series)+'</span><h2 id="quick-title">'+escapeHtml(p.name)+'</h2><div class="product-sub quick-product-identity">'+escapeHtml(p.type)+'<span>'+languageBadge(p)+'</span></div><p class="quick-availability" data-product-stock="'+p.id+'">'+stockLabel(p.id)+'</p>'+pricePair(p)+'<div class="quick-action-panel"><p class="preview-action-note">Shop preview · Orders are not open</p><div class="quick-actions" data-quick-actions>'+quickProductActions(p)+'</div></div>'+
+ '<div class="product-detail-jumps"><a class="contents-jump" href="#product-contents" data-view-contents>Box contents '+icon('arrow')+'</a><a class="contents-jump" href="#product-chases" data-view-chases>Collector picks '+icon('arrow')+'</a></div>'+
  priceShareButton(p)+'<p class="purchase-limit" data-quick-limit '+(!isProductInStock(p)?'hidden':'')+'>Maximum 3 of each product per order</p><button class="product-stock-link" data-product-stock="'+p.id+'">'+stockLabel(p.id)+' · Stock &amp; arrivals '+icon('arrow')+'</button><details class="product-specifications"><summary>Product details '+icon('chevron')+'</summary><p>'+escapeHtml(p.description)+'</p><ul class="detail-list">'+rows.map(([label,value])=>'<li><span>'+label+'</span><strong'+(label==='Availability'?' data-detail-stock':'')+'>'+escapeHtml(value)+'</strong></li>').join('')+'</ul></details>'+
- '<p class="example-note">Availability is managed by the shop owner. Orders and payments are not open.</p><details class="product-delivery"><summary>Delivery &amp; returns '+icon('chevron')+'</summary><p>Delivery charges are not set. Dispatch services and final returns terms will be published before orders open.</p><button class="text-link" data-info="delivery">Read delivery &amp; returns '+icon('arrow')+'</button></details><p class="random-note">Booster contents are random. Only separately listed promo cards are guaranteed as part of the product format.</p></div>'+renderSetHighlights(p)+renderContents(p)+'<div class="quick-related">'+relatedProducts(p)+'</div>';
+ '<details class="product-delivery"><summary>Delivery &amp; returns '+icon('chevron')+'</summary><p>Delivery charges are not set. Dispatch services and final returns terms will be published before orders open.</p><button class="text-link" data-info="delivery">Read delivery &amp; returns '+icon('arrow')+'</button></details><p class="random-note">Booster contents are random. Only separately listed promo cards are guaranteed as part of the product format.</p></div>'+renderSetHighlights(p)+renderContents(p)+'<div class="quick-related">'+relatedProducts(p)+'</div>';
  if(!get('quick-dialog').open)get('quick-dialog').showModal();
  get('quick-dialog').scrollTop=0;
 }
@@ -206,7 +211,7 @@ get('sort').addEventListener('change',e=>{sort=e.target.value;renderProducts();}
 get('budget').addEventListener('change',e=>{priceRange=e.target.value;renderProducts();});
 get('filter-toggle').addEventListener('click',()=>{if(matchMedia('(max-width:900px)').matches){openFilterSheet();return;}const open=get('catalogue-filters').classList.toggle('open');get('filter-toggle').setAttribute('aria-expanded',String(open));});
 get('quick-dialog').addEventListener('close',()=>{
- if(productHistoryIsClosing)return;
+ if(productHistoryIsClosing||interestReturnProduct)return;
  if(location.hash.startsWith('#product/')){
   if(history.state?.stackrProductEntry)history.back();
   else{history.replaceState({...history.state,stackrProduct:null,stackrProductEntry:false},'','#shop');restoreBrowseContext(history.state?.stackrBrowse);}

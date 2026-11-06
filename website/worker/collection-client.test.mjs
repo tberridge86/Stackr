@@ -6,22 +6,25 @@ import {webcrypto} from 'node:crypto';
 const source=readFileSync(new URL('./catalogue-printings.mjs',import.meta.url),'utf8').replace(/^export /gm,'')+'\n'+readFileSync(new URL('../src/collection.js',import.meta.url),'utf8');
 function deferred(){let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b});return{promise,resolve,reject};}
 function harness(fetch,logos=[],options={}){
- const nodes=new Map();
- function element(id=''){return {id,value:'',checked:false,hidden:false,disabled:false,open:false,textContent:'',_html:'',htmlWrites:0,get innerHTML(){return this._html;},set innerHTML(value){this._html=value;this.htmlWrites++;},dataset:{},elements:{},reset(){},classList:{toggle(){}},events:{},addEventListener(name,fn){this.events[name]=fn;},attributes:{},setAttribute(name,value){this.attributes[name]=value;},hasAttribute(name){return name in this.attributes;},replaceChildren(){this.innerHTML='';},insertAdjacentHTML(_,html){this.innerHTML+=html;},focus(){},close(){this.open=false;},showModal(){this.open=true;},querySelector(sel){return this.parts?.[sel]||node(id+sel);},querySelectorAll(){return this.fields||[];}};}
+ const nodes=new Map(),documentEvents={};let renderedCards=[],renderedVersion=-1;
+ function element(id=''){return {id,value:'',checked:false,hidden:false,disabled:false,open:false,textContent:'',_html:'',htmlWrites:0,get innerHTML(){return this._html;},set innerHTML(value){this._html=value;this.htmlWrites++;},dataset:{},elements:{},reset(){},classList:{toggle(){}},events:{},addEventListener(name,fn){this.events[name]=fn;},attributes:{},setAttribute(name,value){this.attributes[name]=value;},hasAttribute(name){return name in this.attributes;},replaceChildren(){this.innerHTML='';},insertAdjacentHTML(_,html){this.innerHTML+=html;},focus(){},remove(){this.removed=true;},append(){},close(){this.open=false;},showModal(){this.open=true;},querySelector(sel){return this.parts?.[sel]||node(id+sel);},querySelectorAll(){return this.fields||[];}};}
  const node=id=>{if(!nodes.has(id))nodes.set(id,element(id));return nodes.get(id);};
  const navigation=['sets','library'].map(view=>{const button=node('nav-'+view);button.dataset.view=view;return button;});
  node('collection-main').dataset.view='loading';
- const document={getElementById:node,querySelectorAll(selector){if(selector==='[data-view]')return[node('collection-main'),...navigation];if(selector==='button[data-view]')return navigation;if(selector==='#delta-card-list [data-list-number]')return options.deltaCards||[];return[];},addEventListener(){}};
+ function cardNodes(){
+  const grid=node('binder-cards');if(renderedVersion!==grid.htmlWrites){renderedVersion=grid.htmlWrites;renderedCards=[...grid.innerHTML.matchAll(/<button\b([^>]*\bdata-card-key="([^"]+)"[^>]*)>/g)].map(match=>{const tile=element(),article=element();tile.dataset.cardKey=match[2];for(const attribute of match[1].matchAll(/(aria-[\w-]+)="([^"]*)"/g))tile.setAttribute(attribute[1],attribute[2]);tile.closest=()=>article;tile.article=article;return tile;});}return renderedCards;
+ }
+ const document={getElementById:node,querySelectorAll(selector){if(selector==='[data-view]')return[node('collection-main'),...navigation];if(selector==='button[data-view]')return navigation;if(selector==='#delta-card-list [data-list-number]')return options.deltaCards||[];if(selector==='[data-card-key]'||selector==='#binder-cards [data-card-key]')return cardNodes();if(selector==='dialog')return [...nodes.values()].filter(n=>n.id.endsWith('dialog'));return[];},addEventListener(name,fn){documentEvents[name]=fn;}};
  node('collection-set-logos').textContent=JSON.stringify({logos});
  node('collection-set-links').textContent=JSON.stringify({matches:options.links||{}});
  node('collection-covers').textContent=JSON.stringify({covers:options.covers||[]});
  node('create-form').elements={name:element('name'),language:element('language')};
  const historyEntries=[],scrolls=[];
  const context={document,window:{addEventListener(){},scrollTo:value=>scrolls.push(value),...options.window},crypto:webcrypto,navigator:options.navigator,Image:options.Image,URL,URLSearchParams,AbortController,setTimeout,clearTimeout,history:{replaceState(a,b,url){historyEntries.push(url);const u=new URL(url,'https://site.test');Object.assign(context.location,{pathname:u.pathname,search:u.search,hash:u.hash});}},location:{pathname:'/collection',search:'',hash:'',...options.location},fetch};
- const expose='globalThis.inspect={fetchReadySet,queueReady,scheduleReadySets,readyState:()=>[...readyPublic.values()],openFeaturedBinder,warmCardImages,openCard,tapCard,loadAccount,loadChecklist,markOwned,isTrialBinder,quickState:()=>[...quickDrafts.values()],start,lock,showView,openSetCollection,setTargetFromQuery,shopHrefForBinder,setLogoUrl,binderCover,renderBinders,openCreate,saveDraft,openBinder,loadCards,loadSets,renderSets,refreshSavedQuantity,cardState:()=>[...cardObjects.values()],advanceModal:()=>modalGeneration++,setMode:v=>mode=v};';
+ const expose='globalThis.inspect={fetchReadySet,queueReady,scheduleReadySets,readyState:()=>[...readyPublic.values()],tapCard,openCardPreview,loadSavedBinderProgress,progressTask:()=>progressRun,openFeaturedBinder,warmCardImages,openCard,loadAccount,loadChecklist,markOwned,isTrialBinder,quickState:()=>[...quickDrafts.values()],start,lock,showView,openSetCollection,setTargetFromQuery,shopHrefForBinder,setLogoUrl,binderCover,renderBinders,openCreate,saveDraft,openBinder,loadCards,loadSets,renderSets,refreshSavedQuantity,cardState:()=>[...cardObjects.values()],advanceModal:()=>modalGeneration++,setMode:v=>mode=v};';
  vm.runInNewContext(source.replace(/\nstart\(\);/, '\n'+expose),context);
  function form(){const f=node('test-form');f.fields=[element('quantity'),element('binderId'),element('variantId')];f.parts={'button.primary':element('submit'),'.dialog-status':element('feedback')};f.parts['button.primary'].textContent='Save quantity';return f;}
- return {api:context.inspect,node,form,location:context.location,historyEntries,scrolls};
+ return {api:context.inspect,node,form,location:context.location,historyEntries,scrolls,cardNode:key=>cardNodes().find(n=>n.dataset.cardKey===key),visibleCards:()=>cardNodes().filter(n=>!n.article.hidden&&!n.article.removed).map(n=>n.dataset.cardKey),clickCard:key=>documentEvents.click({target:{closest:()=>({dataset:{cardKey:key}})}}),inspectCard:key=>documentEvents.click({target:{closest:()=>({dataset:{inspectCard:key}})}})};
 }
 const response=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json'}});
 const tick=()=>new Promise(r=>setImmediate(r));
@@ -96,10 +99,10 @@ function setFlow(currentTotal=2){
 }
 test('a set binder opens its real checklist automatically without recording any cards as owned',async()=>{
  const h=setFlow();await h.api.openBinder('set-binder');
- assert.equal(h.calls.length,2);assert.match(h.calls[1],/\/checklist\?/);assert.match(h.node('binder-cards').innerHTML,/First card/);assert.match(h.node('binder-cards').innerHTML,/data-owned="false"/);assert.equal(h.node('progress-percent').textContent,'0%');
+ assert.equal(h.calls.length,3);assert.match(h.calls[1],/\/checklist\?/);assert.match(h.node('binder-cards').innerHTML,/Second card/);assert.match(h.node('binder-cards').innerHTML,/First card/);assert.match(h.node('binder-cards').innerHTML,/data-owned="false"/);assert.equal(h.node('progress-percent').textContent,'0%');
 });
 test('saving a checklist quantity retains later loaded pages and refreshes exact ownership totals',async()=>{
- const h=setFlow();await h.api.openBinder('set-binder');await h.api.loadCards(false);const previous=h.node('binder-cards').innerHTML;
+ const h=setFlow();await h.api.openBinder('set-binder');const previous=h.node('binder-cards').innerHTML;
  assert.match(previous,/Second card/);h.setQuantity(3);
  await h.api.refreshSavedQuantity({binder:setBinder,payload:{cardId:'two',variantId:'normal',quantity:3}});
  assert.equal(h.calls.filter(url=>url.includes('/checklist')).length,2);assert.equal(h.node('binder-cards').innerHTML,previous);assert.equal(h.api.cardState().find(x=>x.card.cardId==='two').ownedVariants[0].quantity,3);assert.equal(h.node('progress-percent').textContent,'50%');assert.match(h.node('binder-summary').innerHTML,/<strong>3<\/strong><span>Copies/);
@@ -222,8 +225,8 @@ function trialFlow(options={}){
 test('30th Celebration automatically loads all 161 printings across four bounded pages without recording ownership',async()=>{
  const h=trialFlow();await h.api.openBinder('trial-binder');assert.equal(h.api.cardState().length,161);assert.equal(h.calls.filter(x=>x.url.includes('/catalogue/ready/')).length,4);assert.equal(h.calls.filter(x=>x.url.includes('/checklist')).length,1);assert.ok(h.calls.filter(x=>x.url.includes('/catalogue/ready/')||x.url.includes('/checklist')).every(x=>x.url.includes('paged=1')));assert.equal(h.writes.length,0);assert.match(h.node('cards-context').textContent,/Complete checklist loaded: 161/);assert.match(h.node('binder-cards').innerHTML,/Trial card 161/);assert.match(h.node('binder-cards').innerHTML,/data-own-card/);assert.match(h.node('collection-status').textContent,/All 161 cards loaded/);
 });
-test('an interrupted public preload publishes no partial checklist and reopening starts a complete bounded retry',async()=>{
- const h=trialFlow({failPage:100});await h.api.openBinder('trial-binder');assert.equal(h.api.cardState().length,0);assert.equal(h.node('more-cards').hidden,true);assert.equal(h.api.readyState().length,0);assert.doesNotMatch(h.node('binder-cards').innerHTML,/Trial card/);await h.api.openBinder('trial-binder');assert.equal(h.api.cardState().length,161);assert.match(h.node('cards-context').textContent,/Complete checklist loaded: 161/);
+test('an interrupted public preload publishes no partial checklist and its retry action restarts bounded loading',async()=>{
+ const h=trialFlow({failPage:100});await h.api.openBinder('trial-binder');assert.equal(h.api.cardState().length,0);assert.equal(h.node('more-cards').hidden,false);assert.equal(h.node('more-cards').textContent,'Retry loading cards');assert.equal(h.api.readyState().length,0);assert.doesNotMatch(h.node('binder-cards').innerHTML,/Trial card/);await h.node('more-cards').events.click({target:h.node('more-cards')});assert.equal(h.api.cardState().length,161);assert.match(h.node('cards-context').textContent,/Complete checklist loaded: 161/);
 });
 test('a mixed catalogue version cannot become a completed trial checklist',async()=>{
  const h=trialFlow({mixedVersion:true});await h.api.openBinder('trial-binder');assert.equal(h.api.cardState().length,0);assert.equal(h.api.readyState().length,0);assert.match(h.node('collection-status').textContent,/public checklist could not be confirmed/);assert.doesNotMatch(h.node('cards-context').textContent,/Complete/);
@@ -235,8 +238,10 @@ test('tapping a checklist card selects one owned copy and keeps it unselected un
  const pending=deferred(),h=trialFlow({pendingRead:pending});await h.api.openBinder('trial-binder');
  assert.match(h.node('binder-cards').innerHTML,/aria-pressed="false" aria-label="Mark owned: Trial card 1"/);
  const selection=h.api.tapCard('trial-card-1:catalogue');await tick();assert.equal(h.writes.length,0);assert.equal(h.api.cardState()[0].ownedVariants.length,0);
+ assert.equal(h.cardNode('trial-card-1:catalogue').attributes['aria-pressed'],'false');
  pending.resolve(response({binder:{id:'trial-binder',type:'set',setId:TRIAL_SET,language:'en',revision:1},quantity:0}));await selection;
  assert.equal(h.writes.length,1);assert.equal(h.writes[0].quantity,1);assert.equal(h.api.cardState()[0].ownedVariants[0].quantity,1);assert.equal(h.node('card-dialog').open,false);
+ assert.equal(h.cardNode('trial-card-1:catalogue').attributes['aria-pressed'],'true');
 });
 test('tapping an owned checklist card opens the quantity editor without removing its copies',async()=>{
  const h=trialFlow();await h.api.openBinder('trial-binder');await h.api.tapCard('trial-card-1:catalogue');
@@ -403,6 +408,68 @@ test('Start binder creates only after confirmation and opens the new checklist w
  assert.equal(writes.length,1);assert.equal(h.node('create-dialog').open,false);assert.equal(h.node('collection-main').dataset.view,'binder');assert.match(h.node('binder-cards').innerHTML,/Trial card 1/);assert.equal(h.api.cardState().length,1);
 });
 
+function phantasmalSearchFlow(){
+ const setId='977bf107-e10c-4d93-a7a4-3d7b775c5003',hits=[13,109,125,130],calls=[];
+ const binder={id:'phantasmal-search',name:'Phantasmal Flames',type:'set',setId,language:'en',revision:1,archived:false,setTotal:130};
+ const catalogue=readyCatalogue(Array.from({length:130},(_,i)=>{
+  const n=i+1,card={...trialCard(n),cardId:'phantasmal-'+n,set:{setId},names:{englishDisplay:hits.includes(n)?'Mega Charizard X ex':'Other card '+n,native:hits.includes(n)?'Mega Charizard X ex':'Other card '+n}};
+  card.variants[0].image.derivatives=[{role:'card-grid',deliveryUrl:'https://assets.stackrtcg.com/grid.webp'},{role:'detail-page',deliveryUrl:'https://assets.stackrtcg.com/detail.webp'}];return card;
+ }),setId);
+ const h=harness((url,init)=>{
+  calls.push({url,method:init.method});assert.equal(init.method,undefined);assert.ok(!url.includes('/catalogue/search'),'A set search must use the full set checklist, not a page of global results');
+  if(url.includes('/catalogue/ready/'))return Promise.resolve(response(publicPage(catalogue,url)));
+  if(url.includes('/checklist'))return Promise.resolve(response(ownershipPage(catalogue,binder,[{cardId:'phantasmal-13',variantId:'variant-13',quantity:2}],url)));
+  return Promise.resolve(response({binder,summary:{uniqueCards:1,totalVariants:1,totalQuantity:2},items:[],hasMore:false,progress:{owned:1,total:130}}));
+ });return {...h,calls,binder};
+}
+test('Phantasmal search finds Charizard across the full set and All, Owned and Missing retain the query',async()=>{
+ const h=phantasmalSearchFlow();await h.api.openBinder(h.binder.id);
+ assert.equal(h.visibleCards().length,130);assert.equal(h.node('card-search').hidden,false);
+ h.node('card-query').value='Charizard';h.node('card-query').events.input();
+ assert.deepEqual(h.visibleCards(),[13,109,125,130].map(n=>'phantasmal-'+n+':catalogue'));assert.match(h.node('cards-context').textContent,/4 of 130 cards · complete set/);
+ h.node('owned-tab').events.click();assert.deepEqual(h.visibleCards(),['phantasmal-13:catalogue']);assert.equal(h.node('card-query').value,'Charizard');
+ h.node('missing-tab').events.click();assert.deepEqual(h.visibleCards(),[109,125,130].map(n=>'phantasmal-'+n+':catalogue'));
+ h.node('card-query').value='';h.node('card-query').events.input();assert.equal(h.visibleCards().length,129);
+ h.node('checklist-tab').events.click();assert.equal(h.visibleCards().length,130);assert.equal(h.calls.length,5,'Filtering a loaded set does not fetch new catalogue pages or write ownership');
+});
+test('a no-match set search stays editable and clearing it restores the complete checklist',async()=>{
+ const h=phantasmalSearchFlow();await h.api.openBinder(h.binder.id);
+ h.node('card-query').value='Definitely absent';h.node('card-query').events.input();assert.equal(h.visibleCards().length,0);assert.equal(h.node('card-filter-empty').hidden,false);assert.match(h.node('card-filter-empty').innerHTML,/No matching cards/);assert.doesNotMatch(h.node('card-filter-empty').innerHTML,/next page/);
+ assert.equal(h.node('card-search').hidden,false);assert.equal(h.node('card-query').disabled,false);
+ h.node('card-query').value='';h.node('card-query').events.input();assert.equal(h.visibleCards().length,130);assert.equal(h.node('card-filter-empty').hidden,true);
+ h.node('card-query').value='13/94';h.node('card-query').events.input();assert.deepEqual(h.visibleCards(),['phantasmal-13:catalogue'],'Collector number search matches the numerator without matching 130');
+});
+test('search typed while the last checklist page is pending is applied when the full set is ready',async()=>{
+ const h=delayedChecklist(),task=h.api.openBinder('ordered-binder');await tick();
+ h.node('card-query').value='Trial card 2';h.node('card-query').events.input();assert.equal(h.node('card-filter-empty').hidden,true);assert.match(h.node('binder-cards').innerHTML,/card-loading-art/);
+ h.finish();await task;assert.deepEqual(h.visibleCards(),['trial-card-2:catalogue']);assert.match(h.node('cards-context').textContent,/1 of 3 cards · complete set/);
+});
+test('a saved owned change immediately leaves Missing while the full checklist remains available',async()=>{
+ const h=trialFlow();await h.api.openBinder('trial-binder');h.node('missing-tab').events.click();assert.equal(h.visibleCards().length,161);
+ await h.api.markOwned('trial-card-1:catalogue');assert.equal(h.visibleCards().length,160);assert.ok(!h.visibleCards().includes('trial-card-1:catalogue'));assert.equal(h.api.cardState().length,161);
+ h.node('owned-tab').events.click();assert.deepEqual(h.visibleCards(),['trial-card-1:catalogue']);assert.equal(h.writes.length,1);
+});
+test('artwork inspection opens a large approved image without reading or changing owned quantities',async()=>{
+ const h=phantasmalSearchFlow();await h.api.openBinder(h.binder.id);const reads=h.calls.length;
+ h.inspectCard('phantasmal-13:catalogue');assert.equal(h.node('card-preview-dialog').open,true);assert.equal(h.node('card-preview-title').textContent,'Mega Charizard X ex');assert.equal(h.node('card-preview-image').src,'https://assets.stackrtcg.com/detail.webp');assert.equal(h.node('card-dialog').open,false);assert.equal(h.calls.length,reads);
+ h.api.lock();assert.equal(h.node('card-preview-dialog').open,false);assert.equal(h.api.cardState().length,0);assert.equal(h.node('card-query').value,'');
+});
+test('saved binder progress is read with at most three concurrent requests and reused for the same revision',async()=>{
+ const binders=Array.from({length:5},(_,i)=>({...coverBinder,id:'progress-'+i,name:'Binder '+i,setTotal:100,revision:1}));let inFlight=0,maxInFlight=0,reads=0;
+ const h=harness(async(url,init)=>{
+  assert.equal(init.method,undefined);
+  if(url.startsWith('/api/binders?'))return response({binders,hasMore:false});
+  reads++;inFlight++;maxInFlight=Math.max(maxInFlight,inFlight);await tick();inFlight--;
+  const binder=binders.find(b=>url==='/api/binders/'+b.id);return response({binder,summary:{uniqueCards:27,totalVariants:30,totalQuantity:40},progress:{owned:27,total:100},items:[],hasMore:false});
+ });await h.api.start();assert.match(h.node('binder-grid').innerHTML,/Loading progress/);assert.doesNotMatch(h.node('binder-grid').innerHTML,/0 \/ 100 collected/);await h.api.progressTask();
+ assert.equal(maxInFlight,3);assert.equal(reads,5);assert.match(h.node('binder-grid').innerHTML,/27 \/ 100 collected/);assert.match(h.node('binder-grid').innerHTML,/value="27"/);
+ await h.api.loadSavedBinderProgress();assert.equal(reads,5);h.api.lock();assert.equal(h.node('binder-grid').innerHTML,'');assert.equal(h.node('binder-grid').dataset.renderKey,'');
+});
+test('an unavailable saved progress read never renders a false zero and an existing cover says Open binder',async()=>{
+ const h=harness(url=>Promise.resolve(url.startsWith('/api/binders?')?response({binders:[coverBinder],hasMore:false}):response({error:'Unavailable'},503)));
+ await h.api.start();assert.equal(h.node('trial30-open').textContent,'Open binder →');assert.equal(h.node('pitch-black-open').textContent,'Start binder →');await h.api.progressTask();assert.match(h.node('binder-grid').innerHTML,/Progress unavailable/);assert.doesNotMatch(h.node('binder-grid').innerHTML,/0%|value="0"/);
+});
+
 function publicReady(setId=TRIAL_SET,total=3){
  const value=readyCatalogue(Array.from({length:total},(_,index)=>({...trialCard(index+1),set:{setId}})),setId);return {...value,meta:publicPage(value).meta};
 }
@@ -444,6 +511,27 @@ test('sign-in loss aborts pending public preloads and late responses cannot refi
 test('an inconsistent complete snapshot cannot appear as a finished binder',async()=>{
  const value=publicReady();value.cards[1].catalogueVersionId='another-version';const h=harness(url=>{assert.ok(!url.includes('/checklist'),'Unverified public pages cannot request private ownership');return Promise.resolve(response(url.includes('/catalogue/ready/')?publicPage(value,url):coverDetail()));});
  await h.api.openBinder(coverBinder.id);assert.equal(h.api.readyState().length,0);assert.equal(h.api.cardState().length,0);assert.doesNotMatch(h.node('binder-cards').innerHTML,/Trial card/);assert.match(h.node('collection-status').textContent,/complete public checklist could not be confirmed/);
+});
+test('a ready Phantasmal snapshot keeps all Charizard results searchable through fresh Owned and Missing filters',async()=>{
+ const setId='977bf107-e10c-4d93-a7a4-3d7b775c5003',value=publicReady(setId,130),hits=[13,109,125,130],binder={...coverBinder,setId,name:'Phantasmal Flames'},calls=[];
+ for(const n of hits)value.cards[n-1].names={native:'Mega Charizard X ex',englishDisplay:'Mega Charizard X ex'};
+ const h=harness((url,init)=>{calls.push(url);assert.equal(init.method,undefined);return Promise.resolve(response(url.includes('/catalogue/ready/')?publicPage(value,url):url.includes('/checklist')?ownershipPage(value,binder,[{cardId:'trial-card-13',variantId:'variant-13',quantity:2}],url):{binder,summary:{uniqueCards:1,totalQuantity:2,totalVariants:1},items:[],hasMore:false,progress:{owned:1,total:130}}));});
+ await h.api.fetchReadySet(setId);await h.api.openBinder(binder.id);assert.equal(h.visibleCards().length,130);
+ h.node('card-query').value='Charizard';h.node('card-query').events.input();assert.deepEqual(h.visibleCards(),hits.map(n=>'trial-card-'+n+':catalogue'));
+ h.node('owned-tab').events.click();assert.deepEqual(h.visibleCards(),['trial-card-13:catalogue']);
+ h.node('missing-tab').events.click();assert.deepEqual(h.visibleCards(),[109,125,130].map(n=>'trial-card-'+n+':catalogue'));
+ h.node('card-query').value='';h.node('card-query').events.input();assert.equal(h.visibleCards().length,129);
+ h.node('checklist-tab').events.click();assert.equal(h.visibleCards().length,130);assert.equal(calls.length,5);assert.doesNotMatch(JSON.stringify(h.api.readyState()),/ownedQuantity|ownedVariants|ownership|quantity/);
+});
+test('late private ownership pages cannot publish a checklist after sign-in loss or navigation',async()=>{
+ for(const leave of ['lock','navigate']){
+  const pending=deferred(),value=publicReady(),h=harness(url=>url.includes('/catalogue/ready/')?Promise.resolve(response(publicPage(value,url))):url.includes('/checklist')?pending.promise:Promise.resolve(response(coverDetail())));
+  const opening=h.api.openBinder(coverBinder.id);await tick();
+  if(leave==='lock')h.api.lock();else h.api.showView('library');
+  const before=h.node('binder-cards').innerHTML;
+  pending.resolve(response(ownershipPage(value,coverBinder,[])));await opening;
+  assert.equal(h.api.readyState().length,leave==='lock'?0:1);assert.doesNotMatch(JSON.stringify(h.api.readyState()),/ownership|quantity|ownedVariants/);assert.equal(h.api.cardState().length,0);assert.equal(h.node('binder-cards').innerHTML,before);assert.equal(h.node('collection-main').dataset.view,leave==='lock'?'sign-in':'library');
+ }
 });
 
 test('private opening stages three bounded ownership pages and publishes the complete consistent checklist once',async()=>{

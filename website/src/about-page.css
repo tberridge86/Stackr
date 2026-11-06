@@ -12,3 +12,40 @@
 @media(max-width:760px){:root{--header-height:66px}.about-header{padding-inline:20px;gap:16px}.about-home img{width:128px;max-height:38px}.about-return{gap:7px;font-size:13px}.about-return svg{width:17px}.about-main{padding:40px 24px 0}.about-brand-curve{width:500px;left:-350px;top:150px;opacity:.16}.about-wordmark{width:min(280px,75vw);margin-bottom:23px}.about-introduction{margin-bottom:32px}.about-introduction h1{font-size:34px;max-width:18ch}.about-layout{display:flex;flex-direction:column;gap:32px}.about-founder{position:static;width:240px;max-width:100%;align-self:center}.about-founder figcaption{margin-top:14px}.about-copy{font-size:16px;line-height:1.8;max-width:66ch}.about-copy p{margin-bottom:22px}.about-copy .about-closing{font-size:25px;line-height:1.5;margin-top:32px}.about-next{display:block;margin-top:40px;padding-block:18px}.about-next a{display:flex;gap:24px;min-height:52px;font-size:15px}.about-footer{padding:18px 24px 28px}}
 @media(max-width:380px){.about-header{padding-inline:16px}.about-home img{width:115px}.about-return{font-size:12px;gap:5px}.about-main{padding-inline:20px}.about-introduction h1{font-size:31px}.about-founder{width:220px}.about-copy .about-closing{font-size:23px}.about-footer{padding-inline:20px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.about-next a:active{transform:none}}
+
+/* A shorter opening puts the founder and the story ahead of repeated branding. */
+.about-main{padding-top:46px}
+.about-copy{scroll-margin-top:16px}
+.about-introduction{margin-bottom:36px}
+.about-eyebrow{display:block;margin:0 0 12px;color:#625b75;font-size:11px;line-height:1.5;letter-spacing:.1em;font-weight:700}
+.about-introduction h1{font-size:clamp(34px,4vw,48px);font-weight:650}
+.about-standfirst{max-width:42ch;margin:14px 0 0;color:#625b75;font-size:18px;line-height:1.65}
+.about-collectors{margin:0 0 26px;padding:0;border-block:1px solid #ded5e8}
+.about-collectors>summary{display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:58px;padding:12px 0;color:#29183e;list-style:none;cursor:pointer;font-weight:650;font-size:16px}
+.about-collectors>summary::-webkit-details-marker{display:none}
+.about-collectors>summary:after{content:'+';font-size:25px;font-weight:400;line-height:1}
+.about-collectors[open]>summary:after{content:'−'}
+.about-collectors>div{padding:8px 0 0;color:#625b75}
+.about-collectors p{font-size:15px;line-height:1.8}
+.about-collectors>summary:focus-visible{outline:3px solid #6938f5;outline-offset:5px}
+.about-practical{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,.6fr);gap:30px 60px;align-items:center;margin-top:56px;padding:32px;border:1px solid #e5dfee;border-radius:14px;background:#f4eefb}
+.about-practical h2{font:650 30px/1.15 var(--display-font);letter-spacing:-.02em;margin:0 0 14px}
+.about-practical p{font-size:15px;line-height:1.8;max-width:62ch;margin:0;color:#625b75}
+.about-practical-links{display:grid;gap:4px}
+.about-practical-links>a{display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:48px;padding:8px 0;color:#29183e;font-size:15px;font-weight:600;text-decoration:none;border-bottom:1px solid #ded4e9}
+.about-practical-links>a:last-child{border-bottom:0}
+.about-practical-links>a:hover{text-decoration:underline}
+.about-next{margin-top:28px}
+.about-footer p{font-size:13px}
+@media(max-width:760px){
+ .about-main{padding-top:30px}
+ .about-introduction{margin-bottom:28px}
+ .about-eyebrow{font-size:10px;letter-spacing:.08em}
+ .about-standfirst{font-size:16px;line-height:1.6}
+ .about-founder{width:220px}
+ .about-layout{gap:28px}
+ .about-practical{display:block;margin-top:36px;padding:24px 22px}
+ .about-practical h2{font-size:27px}
+ .about-practical-links{margin-top:20px}
+ .about-next{margin-top:24px}
+}

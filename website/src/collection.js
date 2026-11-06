@@ -40,6 +40,8 @@ function binderCover(info,className='binder-cover'){
 }
 let binders=[],active=null,libraryOffset=0,sets=[],setCursor=null,setLanguage='en',view='sets',mode='owned',cardOffset=0,cardCursor=null,cardObjects=new Map(),generation=0,searchGeneration=0,locked=false,createDraft=null,cardDraft=null,editDraft=null,modalGeneration=0;
 let setsLoading=false,linkedSet=null,linkedTarget=null,accountGeneration=0;
+let cardFilter='all',checklistComplete=false,checklistContext='',progressGeneration=0,progressRun=null;
+const binderViews=new Map(),binderSummaries=new Map();
 const TRIAL_SET_ID='258cb8e5-c769-540d-9e3c-40d4ed4dafdb';
 const PITCH_BLACK_SET_ID='d6d58c17-5923-496e-94ef-5819f34ae10c';
 const CHAOS_RISING_SET_ID='816ff627-a585-4953-99c4-a15c9b0b80e5';
@@ -98,7 +100,15 @@ function scheduleReadySets(){
 }
 function cancelReady(){readyEpoch++;if(readyScheduled?.idle!==undefined)window.cancelIdleCallback?.(readyScheduled.idle);if(readyScheduled?.timer!==undefined)clearTimeout(readyScheduled.timer);readyScheduled=null;for(const controller of readyControllers)controller.abort();for(const waiter of readyWaiters.splice(0))waiter.resolve(false);readyControllers.clear();readyPublic.clear();readyPending.clear();readyQueue=[];readyActive=0;}
 const needsCurrentFinishes=id=>[PITCH_BLACK_SET_ID,CHAOS_RISING_SET_ID,JOURNEY_TOGETHER_SET_ID,PHANTASMAL_FLAMES_SET_ID,ASCENDED_HEROES_SET_ID].includes(id);
-const isTrialBinder=b=>b?.type==='set'&&[TRIAL_SET_ID,PITCH_BLACK_SET_ID,CHAOS_RISING_SET_ID,JOURNEY_TOGETHER_SET_ID,PHANTASMAL_FLAMES_SET_ID,ASCENDED_HEROES_SET_ID,DELTA_REIGN_SET_ID].includes(b.setId)&&b.language==='en';
+const isTrialBinder=b=>b?.type==='set'&&readySetIds.includes(b.setId)&&b.language==='en';
+const featuredBinders=[['trial30-open',TRIAL_SET_ID,'30th Celebration'],['pitch-black-open',PITCH_BLACK_SET_ID,'Pitch Black'],['chaos-rising-open',CHAOS_RISING_SET_ID,'Chaos Rising'],['journey-together-open',JOURNEY_TOGETHER_SET_ID,'Journey Together'],['phantasmal-flames-open',PHANTASMAL_FLAMES_SET_ID,'Phantasmal Flames'],['ascended-heroes-open',ASCENDED_HEROES_SET_ID,'Ascended Heroes'],['delta-reign-open',DELTA_REIGN_SET_ID,'Delta Reign']];
+function updateFeaturedActions(){
+ for(const [id,setId,name] of featuredBinders){
+  const count=binders.filter(b=>b.type==='set'&&b.setId===setId&&b.language==='en'&&!b.archived).length;
+  const action=count>1?'Choose binder':count?'Open binder':'Start binder';
+  $(id).textContent=action+' →';$(id).setAttribute('aria-label',action.replace('binder',name+' binder'));
+ }
+}
 let ownershipEpoch=0,trialLoading=false,trialVersion=null;
 const quickDrafts=new Map();let quickQueue=Promise.resolve();
 const setLinks=(()=>{try{return JSON.parse($('collection-set-links')?.textContent||'{"matches":{}}').matches;}catch{return {};}})();
@@ -123,7 +133,7 @@ async function openSetCollection(target,auto=true){
    matches.push(...result.binders);if(!result.hasMore)break;
    if(!Number.isSafeInteger(result.nextOffset)||result.nextOffset<=offset||page===3)throw Error('Your matching binder list is incomplete. Retry before creating another.');offset=result.nextOffset;
   }
-  for(const b of matches){const i=binders.findIndex(old=>old.id===b.id);if(i>=0)binders[i]=b;else binders.push(b);}
+  for(const b of matches){const i=binders.findIndex(old=>old.id===b.id);if(i>=0)binders[i]=b;else binders.push(b);}updateFeaturedActions();
   if(auto&&matches.length===1){await openBinder(matches[0].id);return;}
   $('linked-binder-grid').innerHTML=matches.map(b=>'<button class="binder" data-binder="'+esc(b.id)+'">'+binderCover(b)+'<span class="binder-caption"><strong>'+esc(b.name)+'</strong><span>'+esc(languages[b.language])+'</span></span></button>').join('');
   $('linked-set-state').textContent=matches.length?'Choose your saved binder.':'Preparing this set’s checklist…';
@@ -139,25 +149,77 @@ function matchesNotice(){return 'The set or your existing binders could not be c
 
 let checklistReference=null,checklistSeen=new Set(),checklistCards=new Map(),checklistExpected=null,seenCursors=new Set();
 function status(message,error=false){$('collection-status').textContent=message;$('collection-status').classList.toggle('error',error);}
-function lock(){locked=true;cancelReady();$('collection-main').setAttribute('aria-busy','false');$('collection-main').dataset.view='sign-in';$('collection-intro').hidden=false;ownershipEpoch++;accountGeneration++;quickDrafts.clear();trialLoading=false;generation++;modalGeneration++;binders=[];active=null;cardObjects.clear();$('collection-app').hidden=true;$('sign-in').hidden=false;$('account-name').textContent='Your account';$('account-email').textContent='';$('account-counts').textContent='';$('account-link').textContent='Sign in';document.querySelectorAll('dialog').forEach(d=>d.close());$('binder-grid').replaceChildren();$('linked-binder-grid').replaceChildren();linkedSet=null;$('collection-sign-in').href='/signin-with-chatgpt?return_to='+encodeURIComponent('/collection'+(location.search||'')+(location.hash||''));$('account-link').href=$('collection-sign-in').href;$('binder-cards').replaceChildren();$('new-binder').disabled=true;}
+function lock(){locked=true;cancelReady();progressGeneration++;binderSummaries.clear();binderViews.clear();checklistComplete=false;checklistContext='';$('card-query').value='';$('card-filter-empty').hidden=true;$('binder-grid').dataset.renderKey='';$('collection-main').setAttribute('aria-busy','false');$('collection-main').dataset.view='sign-in';$('collection-intro').hidden=false;ownershipEpoch++;accountGeneration++;quickDrafts.clear();trialLoading=false;generation++;modalGeneration++;binders=[];active=null;cardObjects.clear();$('collection-app').hidden=true;$('sign-in').hidden=false;$('account-name').textContent='Your account';$('account-email').textContent='';$('account-counts').textContent='';$('account-link').textContent='Sign in';document.querySelectorAll('dialog').forEach(d=>d.close());$('binder-grid').replaceChildren();$('linked-binder-grid').replaceChildren();linkedSet=null;$('collection-sign-in').href='/signin-with-chatgpt?return_to='+encodeURIComponent('/collection'+(location.search||'')+(location.hash||''));$('account-link').href=$('collection-sign-in').href;$('binder-cards').replaceChildren();$('new-binder').disabled=true;}
 async function api(path='',body){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),40000);try{const r=await fetch('/api/binders'+path,{credentials:'same-origin',cache:'no-store',signal:controller.signal,headers:{Accept:'application/json',...(body?{'Content-Type':'application/json'}:{})},...(body?{method:'POST',body:JSON.stringify(body)}:{})});if(r.status===401){lock();throw Error('Sign in to open your private website collection.');}if(r.redirected||!r.headers.get('Content-Type')?.startsWith('application/json'))throw Error('Sign in again or retry.');const data=await r.json();if(!r.ok||body&&data.ok!==true)throw Object.assign(Error(data.error||'The change was not confirmed.'),{status:r.status});return data;}finally{clearTimeout(timer);}}
 const query=o=>'?'+new URLSearchParams(Object.entries(o).filter(([,v])=>v!==null&&v!==undefined));
 async function act(button,fn){if(button.disabled)return;button.disabled=true;try{await fn();}catch(e){status(e.name==='AbortError'?'The response timed out. Retry to confirm the same action.':e.message,true);}finally{button.disabled=false;}}
-function showView(name){$('collection-app').hidden=false;$('collection-main').setAttribute('aria-busy','false');if(name!=='binder'){ownershipEpoch++;trialLoading=false;}generation++;searchGeneration++;view=name;$('collection-main').dataset.view=name;$('collection-intro').hidden=name!=='sets';$('discover-sets').hidden=true;document.querySelectorAll('[data-view-panel]').forEach(s=>s.hidden=s.dataset.viewPanel!==name);$('binder-detail').hidden=name!=='binder';document.querySelectorAll('button[data-view]').forEach(b=>b.setAttribute('aria-current',b.dataset.view===name?'page':'false'));$('account-link').setAttribute('aria-current',name==='account'?'page':'false');history.replaceState(null,'',(location.pathname||'/collection')+(name==='linked'?(location.search||''):'')+(name==='binder'?'#binder/'+active.id:'#'+name));}
+function showView(name){progressGeneration++;$('card-filter-empty').hidden=true;$('collection-app').hidden=false;$('collection-main').setAttribute('aria-busy','false');if(name!=='binder'){ownershipEpoch++;trialLoading=false;}generation++;searchGeneration++;view=name;$('collection-main').dataset.view=name;$('collection-intro').hidden=name!=='sets';$('discover-sets').hidden=true;document.querySelectorAll('[data-view-panel]').forEach(s=>s.hidden=s.dataset.viewPanel!==name);$('binder-detail').hidden=name!=='binder';document.querySelectorAll('button[data-view]').forEach(b=>b.setAttribute('aria-current',b.dataset.view===name?'page':'false'));$('account-link').setAttribute('aria-current',name==='account'?'page':'false');history.replaceState(null,'',(location.pathname||'/collection')+(name==='linked'?(location.search||''):'')+(name==='binder'?'#binder/'+active.id:'#'+name));}
 async function loadAccount(){const gen=++accountGeneration;$('retry-account').hidden=true;$('account-counts').textContent='Checking your saved binders…';try{const data=await api('/account');if(gen!==accountGeneration||locked)return;if(!data.account||!data.collection)throw Error('Your account details could not be confirmed.');$('account-name').textContent=data.account.displayName||'Your account';$('account-email').textContent=data.account.email||'';$('account-email').hidden=!data.account.email;$('account-counts').textContent=data.collection.activeBinders+(data.collection.activeBinders===1?' saved binder · ':' saved binders · ')+data.collection.archivedBinders+' archived';}catch(e){if(gen===accountGeneration&&!locked){$('account-counts').textContent=e.message;$('retry-account').hidden=false;}throw e;}}
-function renderBinders(){const list=binders.filter(b=>b.archived===$('show-archived').checked),key=JSON.stringify([$('show-archived').checked,list.map(b=>[b.id,b.name,b.type,b.setId,b.language,b.setName,b.setCode,b.setTotal,b.archived])]);if($('binder-grid').dataset.renderKey===key)return;$('binder-grid').dataset.renderKey=key;$('binder-grid').innerHTML=list.length?list.map(b=>'<button class="binder" data-binder="'+esc(b.id)+'">'+binderCover(b)+'<span class="binder-caption"><strong>'+esc(b.name)+'</strong><span>'+esc(languages[b.language])+' · '+esc(b.archived?'Archived':b.type==='set'?(b.setTotal??'—')+' cards':'Custom collection')+'</span></span></button>').join(''):'<div class="empty"><h3>'+($('show-archived').checked?'No archived binders.':'Your first binder starts here.')+'</h3><p>'+($('show-archived').checked?'Archived collections can be restored here.':'Discover a set to start collecting, or create a custom binder for your favourites.')+'</p></div>';}
-async function loadBinders(reset=true){const gen=++generation;if(reset)libraryOffset=0;const r=await api(query({archived:$('show-archived').checked?'1':'0',offset:libraryOffset}));if(gen!==generation||locked)return;if(reset)binders=r.binders;else binders=[...binders,...r.binders.filter(b=>!binders.some(old=>old.id===b.id))];libraryOffset=r.nextOffset;$('more-binders').hidden=!r.hasMore;renderBinders();}
-function setProgress(p){$('binder-progress').hidden=!p;if(!p)return;const valid=Number.isSafeInteger(p.total)&&p.total>0&&p.owned<=p.total;const percent=valid?Math.round(p.owned/p.total*100):0;$('progress-label').textContent=p.owned+' / '+(p.total??'unconfirmed')+' unique cards owned';$('progress-percent').textContent=valid?percent+'%':'Total pending';$('progress-bar').value=percent;$('progress-date').textContent=(p.source==='public-catalogue-snapshot'?(p.stale?'Cached checklist':'Checklist')+' captured ':'Set total checked ')+(p.checkedAt?new Date(p.checkedAt).toLocaleDateString('en-GB'):'date unavailable')+(p.source==='public-catalogue-snapshot'?'. Your saved quantities were checked now.':'. Multiple finishes count as one card here.');}
-function binderHeader(data){active=data.binder;
+function rememberBinderSummary(data){
+ const b=data.binder,owned=data.summary?.uniqueCards;
+ if(!b||!Number.isSafeInteger(owned)||owned<0)return false;
+ const candidate=data.progress&&Object.hasOwn(data.progress,'total')?data.progress.total:b.setTotal;
+ const total=Number.isSafeInteger(candidate)&&candidate>=owned?candidate:null;
+ binderSummaries.set(b.id,{state:'ready',revision:b.revision,owned,total,copies:data.summary.totalQuantity});return true;
+}
+function savedProgress(b){
+ if(b.type!=='set')return '';
+ const p=binderSummaries.get(b.id),ready=p?.state==='ready'&&p.revision===b.revision;
+ if(!ready)return '<span class="saved-binder-progress pending">'+(p?.state==='error'?'Progress unavailable':'Loading progress…')+'</span>';
+ if(!Number.isSafeInteger(p.total)||p.total<=0)return '<span class="saved-binder-progress pending">'+p.owned+' collected · total unconfirmed</span>';
+ const percent=Math.round(p.owned/p.total*100);
+ return '<span class="saved-binder-progress"><span><span>'+p.owned+' / '+p.total+' collected</span><b>'+percent+'%</b></span><progress max="100" value="'+percent+'" aria-label="'+p.owned+' of '+p.total+' cards collected"></progress></span>';
+}
+function renderBinders(){
+ updateFeaturedActions();
+ const list=binders.filter(b=>b.archived===$('show-archived').checked),key=JSON.stringify([$('show-archived').checked,list.map(b=>[b.id,b.name,b.type,b.setId,b.language,b.setName,b.setCode,b.setTotal,b.archived,b.revision,binderSummaries.get(b.id)])]);
+ if($('binder-grid').dataset.renderKey===key)return;
+ $('binder-grid').dataset.renderKey=key;
+ $('binder-grid').innerHTML=list.length?list.map(b=>'<button class="binder" data-binder="'+esc(b.id)+'">'+binderCover(b)+'<span class="binder-caption"><strong>'+esc(b.name)+'</strong><span>'+esc(languages[b.language])+' · '+esc(b.archived?'Archived':b.type==='set'?(b.setTotal??'—')+' cards':'Custom collection')+'</span>'+savedProgress(b)+'<span class="binder-open">Open binder <span aria-hidden="true">→</span></span></span></button>').join(''):'<div class="empty"><h3>'+($('show-archived').checked?'No archived binders.':'Your first binder starts here.')+'</h3><p>'+($('show-archived').checked?'Archived collections can be restored here.':'Discover a set to start collecting, or create a custom binder for your favourites.')+'</p></div>';
+}
+async function loadSavedBinderProgress(){
+ const gen=++progressGeneration;
+ if(progressRun)await progressRun;
+ if(gen!==progressGeneration||view!=='library'||locked)return;
+ const pending=binders.filter(b=>b.type==='set'&&b.archived===$('show-archived').checked&&(binderSummaries.get(b.id)?.state!=='ready'||binderSummaries.get(b.id)?.revision!==b.revision));
+ let index=0;
+ const run=Promise.all(Array.from({length:Math.min(3,pending.length)},async()=>{
+  while(index<pending.length&&gen===progressGeneration&&view==='library'&&!locked){
+   const b=pending[index++];
+   try{
+    const data=await api('/'+b.id);
+    if(gen!==progressGeneration||view!=='library'||locked)return;
+    if(data.binder?.id!==b.id||!rememberBinderSummary(data))throw Error('Progress could not be confirmed.');
+    const at=binders.findIndex(item=>item.id===b.id);if(at>=0)binders[at]=data.binder;
+   }catch{
+    if(gen===progressGeneration&&!locked)binderSummaries.set(b.id,{state:'error',revision:b.revision});
+   }
+  }
+ }));
+ progressRun=run;
+ try{await run;if(gen===progressGeneration&&view==='library'&&!locked)renderBinders();}
+ finally{if(progressRun===run)progressRun=null;}
+}
+async function loadBinders(reset=true){const gen=++generation;progressGeneration++;if(reset)libraryOffset=0;const r=await api(query({archived:$('show-archived').checked?'1':'0',offset:libraryOffset}));if(gen!==generation||locked)return;if(reset)binders=r.binders;else binders=[...binders,...r.binders.filter(b=>!binders.some(old=>old.id===b.id))];libraryOffset=r.nextOffset;$('more-binders').hidden=!r.hasMore;renderBinders();if(view==='library')void loadSavedBinderProgress();}
+function setProgress(p){
+ $('binder-progress').hidden=!p;if(!p)return;
+ const valid=Number.isSafeInteger(p.owned)&&p.owned>=0&&Number.isSafeInteger(p.total)&&p.total>0&&p.owned<=p.total,percent=valid?Math.round(p.owned/p.total*100):0;
+ $('progress-label').textContent=p.owned+' / '+(p.total??'unconfirmed')+' unique cards owned';$('progress-percent').textContent=valid?percent+'%':'Total pending';$('progress-bar').value=percent;
+ $('progress-date').textContent=(p.source==='public-catalogue-snapshot'?(p.stale?'Cached checklist':'Checklist')+' captured ':'Set total checked ')+(p.checkedAt?new Date(p.checkedAt).toLocaleDateString('en-GB'):'date unavailable')+(p.source==='public-catalogue-snapshot'?'. Your saved quantities were checked now.':'. Multiple finishes count as one card here.');
+ const saved=active&&binderSummaries.get(active.id);
+ if(saved&&Number.isSafeInteger(p.owned)&&p.owned>=0)binderSummaries.set(active.id,{...saved,owned:p.owned,total:valid?p.total:null});
+}
+function binderHeader(data){active=data.binder;rememberBinderSummary(data);
  const cover=$('binder-cover-preview'),coverKey=JSON.stringify([active.type,active.setId,active.language,active.setName,active.setCode]);
  if(cover.dataset.coverKey!==coverKey){cover.innerHTML=binderCover(active);cover.dataset.coverKey=coverKey;}
  const logo=$('binder-set-logo'),url=active.type==='set'?setLogoUrl(active.setId,active.language):'';
  logo.hidden=!url;if(logo.dataset.sourceUrl!==url){logo.dataset.sourceUrl=url;logo.dataset.logoStatus=url?'available':'unavailable';logo.innerHTML=url?'<img src="'+esc(url)+'" alt="" decoding="async">':'';}
- const shopHref=shopHrefForBinder(active);$('binder-shop-link').hidden=!shopHref;$('binder-shop-link').href=shopHref||'/shop';const i=binders.findIndex(b=>b.id===active.id);if(i>=0)binders[i]=active;else binders.unshift(active);$('binder-title').textContent=active.name;$('binder-language').textContent=languages[active.language]+(active.archived?' · Archived':'');const description=active.type==='set'&&active.setName&&active.setName!==active.name?active.setName:'';$('binder-description').textContent=description;$('binder-description').hidden=!description;$('binder-summary').innerHTML=[['Cards',data.summary.uniqueCards],['Copies',data.summary.totalQuantity],['Variants',data.summary.totalVariants]].map(([l,n])=>'<div class="stat"><strong>'+n+'</strong><span>'+l+'</span></div>').join('');setProgress(data.progress);$('trial30-help').hidden=!isTrialBinder(active);$('checklist-tab').hidden=active.type!=='set';$('search-tab').disabled=active.archived;$('owned-tab').disabled=false;}
+ const shopHref=shopHrefForBinder(active);$('binder-shop-link').hidden=!shopHref;$('binder-shop-link').href=shopHref||'/shop';const i=binders.findIndex(b=>b.id===active.id);if(i>=0)binders[i]=active;else binders.unshift(active);$('binder-title').textContent=active.name;$('binder-language').textContent=languages[active.language]+(active.archived?' · Archived':'');const description=active.type==='set'&&active.setName&&active.setName!==active.name?active.setName:'';$('binder-description').textContent=description;$('binder-description').hidden=!description;$('binder-summary').innerHTML=[['Cards',data.summary.uniqueCards],['Copies',data.summary.totalQuantity],['Variants',data.summary.totalVariants]].map(([l,n])=>'<div class="stat"><strong>'+n+'</strong><span>'+l+'</span></div>').join('');setProgress(data.progress);$('trial30-help').hidden=active.type!=='set';$('trial30-help').textContent='Tap a card to mark it owned. Choose a finish when asked. Tap an owned card to edit its quantity, or use Inspect artwork for a larger view.';$('checklist-tab').hidden=active.type!=='set';$('search-tab').disabled=active.archived;$('owned-tab').disabled=false;updateFeaturedActions();}
 async function openBinder(id){
  ownershipEpoch++;trialLoading=false;searchGeneration++;const gen=++generation;status('Opening your binder…');
  const data=await api('/'+id);if(gen!==generation||locked)return;
  binderHeader(data);showView('binder');mode=active.type==='set'?'checklist':'owned';
+ const savedView=binderViews.get(active.id);cardFilter=savedView?.filter||'all';$('card-query').value=savedView?.query||'';checklistComplete=false;checklistContext='';
  cardOffset=data.nextOffset;cardCursor=null;cardObjects.clear();modeButtons();
  if(mode==='checklist'){try{await loadChecklist(true);}catch(e){if(view==='binder'&&active?.id===id&&!locked)status(e.message,true);}return;}
  $('binder-cards').innerHTML=data.items.length?data.items.map(item=>ownedTile(item)).join(''):emptyCards('Your binder is ready.','Find a card, choose its finish and record how many you own.');
@@ -175,22 +237,27 @@ async function refreshSavedQuantity(draft){
   if(entry.item)entry.item.quantity=payload.quantity;
   const count=entry.item?payload.quantity:entry.ownedVariants.reduce((sum,v)=>sum+v.quantity,0);
   const node=[...document.querySelectorAll('[data-card-key]')].find(n=>n.dataset.cardKey===key);
+  if(entry.item&&!count){(node?.closest('.trial-card')||node)?.remove();cardObjects.delete(key);continue;}
   if(!node)continue;
-  if(entry.item&&!count){node.remove();cardObjects.delete(key);continue;}
   node.dataset.owned=String(count>0);if(node.hasAttribute('aria-pressed'))node.setAttribute('aria-pressed',String(count>0));let badge=node.querySelector('.owned-badge');
   if(!count)badge?.remove();else{if(!badge){badge=document.createElement('span');badge.className='owned-badge';node.querySelector('.card-art').append(badge);}badge.textContent=count+' owned';}
  }
- try{const data=await api('/'+b.id);if(gen===generation&&search===searchGeneration&&active?.id===b.id&&view==='binder'&&!locked){if(mode==='checklist'&&checklistReference?.binderId===b.id)data.progress={...checklistReference,owned:data.summary.uniqueCards,total:checklistReference.total!==null&&data.summary.uniqueCards<=checklistReference.total?checklistReference.total:null};binderHeader(data);syncQuickControls();status('Quantity saved.');}}
- catch{if(gen===generation&&!locked)status('Quantity saved. Reopen the binder to refresh its totals.',true);}
+ try{const data=await api('/'+b.id);if(gen===generation&&search===searchGeneration&&active?.id===b.id&&view==='binder'&&!locked){if(mode==='checklist'&&checklistReference?.binderId===b.id)data.progress={...checklistReference,owned:data.summary.uniqueCards,total:checklistReference.total!==null&&data.summary.uniqueCards<=checklistReference.total?checklistReference.total:null};binderHeader(data);syncQuickControls();applyChecklistFilter();status('Quantity saved.');}}
+ catch{if(gen===generation&&!locked){syncQuickControls();applyChecklistFilter();status('Quantity saved. Reopen the binder to refresh its totals.',true);}}
 }
 
 function syncQuickControls(){
  for(const button of document.querySelectorAll('[data-own-card]')){
   const entry=cardObjects.get(button.dataset.ownCard),draft=active&&quickDrafts.get(active.id+':'+button.dataset.ownCard),owned=entry?.ownedVariants?.some(v=>v.quantity>0);
   button.disabled=locked||trialLoading||!!draft?.sending||!!active?.archived;
-  button.textContent=draft?.sending?'Saving…':owned?'Owned ✓':draft?.error?'Retry save':'Mark owned';button.dataset.owned=String(!!owned);button.setAttribute('aria-label',button.textContent+' · '+(entry?.card.names?.englishDisplay||entry?.card.names?.native||'card'));
+  button.textContent=draft?.sending?'Saving…':owned?'Owned · Edit':draft?.error?'Retry save':'Mark owned';button.dataset.owned=String(!!owned);button.setAttribute('aria-label',button.textContent+' · '+(entry?.card.names?.englishDisplay||entry?.card.names?.native||'card'));
   const article=button.closest('.trial-card'),tile=article?.querySelector('.card-tile'),feedback=article?.querySelector('.own-status');
-  if(tile){tile.disabled=locked||trialLoading||!!draft?.sending;tile.setAttribute('aria-pressed',String(!!owned));tile.setAttribute('aria-label',(owned?'Edit owned card: ':'Mark owned: ')+(entry?.card.names?.englishDisplay||entry?.card.names?.native||'card'));}if(feedback)feedback.textContent=draft?.error||'';
+  if(tile){tile.disabled=locked||trialLoading||!!draft?.sending||!!active?.archived;tile.setAttribute('aria-pressed',String(!!owned));tile.setAttribute('aria-label',(owned?'Edit owned card: ':'Mark owned: ')+(entry?.card.names?.englishDisplay||entry?.card.names?.native||'card'));}if(feedback)feedback.textContent=draft?.error||'';
+ }
+ for(const button of document.querySelectorAll('[data-edit-card]')){
+  const entry=cardObjects.get(button.dataset.editCard),owned=entry?.ownedVariants.some(v=>v.quantity>0);
+  button.disabled=locked||trialLoading||!!active?.archived;button.dataset.owned=String(!!owned);button.textContent=owned?'Owned · Edit':'Mark owned';button.setAttribute('aria-label',button.textContent+' · '+(entry?.card.names?.englishDisplay||entry?.card.names?.native||'card'));
+  const tile=button.closest('.trial-card')?.querySelector('.card-tile');if(tile)tile.disabled=locked||trialLoading||!!active?.archived;
  }
 }
 function tapCard(key){
@@ -226,28 +293,35 @@ function markOwned(key){
  });return quickQueue;
 }
 async function loadChecklist(reset=true){
- if(!isTrialBinder(active)||mode!=='checklist')return loadCards(reset);
+ if(active?.type!=='set'||mode!=='checklist')return loadCards(reset);
  const epoch=ownershipEpoch,id=active.id,stagedRows=reset?new Map():null;let terminal=false;
- trialLoading=true;syncQuickControls();$('binder-cards').setAttribute('aria-busy','true');
+ if(reset){checklistComplete=false;checklistContext='';}
+ trialLoading=true;syncQuickControls();$('card-filter-empty').hidden=true;$('binder-cards').setAttribute('aria-busy','true');
  try{
   for(let page=0;page<20;page++){
    const result=await loadCards(reset&&page===0,stagedRows);if(epoch!==ownershipEpoch||active?.id!==id||mode!=='checklist'||locked||!result)return;
-   if(!result.hasMore){terminal=true;status(checklistExpected!==null&&checklistSeen.size===checklistExpected?'All '+checklistSeen.size+' cards loaded. Mark the ones you own.':'The catalogue checklist is incomplete. Your saved cards are safe.');return;}
+   if(!result.hasMore){
+    terminal=true;checklistComplete=Number.isSafeInteger(checklistExpected)&&checklistSeen.size===checklistExpected;
+    status(checklistComplete?'All '+checklistSeen.size+' cards loaded. Mark the ones you own.':'The catalogue checklist is incomplete. Your saved cards are safe.');return;
+   }
    $('cards-context').textContent='Loading checklist · '+checklistSeen.size+' / '+(checklistExpected??'unconfirmed')+' cards…';
    status('Loading the full set · '+checklistSeen.size+' / '+(checklistExpected??'unconfirmed')+' cards…');
   }
   status('More checklist pages remain. Continue loading below.');
  }finally{if(epoch===ownershipEpoch&&active?.id===id&&mode==='checklist'&&!locked){
-  if(stagedRows?.size){
+  if(stagedRows&&(stagedRows.size||terminal)){
    const cards=[...checklistCards.values()].filter(card=>stagedRows.has(card.cardId)).sort((a,b)=>String(a.collectorNumber?.sortKey||a.collectorNumber?.value||'').localeCompare(String(b.collectorNumber?.sortKey||b.collectorNumber?.value||''),'en',{numeric:true})||a.cardId.localeCompare(b.cardId));
-   const context=$('cards-context').textContent;$('cards-context').textContent='Loading card artwork…';await warmCardImages(cards);
+   const context=$('cards-context').textContent;if(cards.length){$('cards-context').textContent='Loading card artwork…';await warmCardImages(cards);}
    if(epoch===ownershipEpoch&&active?.id===id&&mode==='checklist'&&!locked){
     cardObjects.clear();$('binder-cards').innerHTML=cards.map(card=>{const row=stagedRows.get(card.cardId);return tile(card,row.ownedQuantity,null,row.ownedVariants);}).join('');
     $('cards-context').textContent=terminal?context:'Checklist partially loaded: '+cards.length+' / '+(checklistExpected??'unconfirmed')+' cards. Continue loading below.';
-    $('more-cards').hidden=!cardCursor;
    }
   }else if(!stagedRows){const tiles=[...$('binder-cards').querySelectorAll('.trial-card')].sort((a,b)=>a.dataset.printingSort.localeCompare(b.dataset.printingSort,'en',{numeric:true}));if(tiles.length)$('binder-cards').append(...tiles);}
-  if(epoch===ownershipEpoch&&active?.id===id&&mode==='checklist'&&!locked){$('binder-cards').setAttribute('aria-busy','false');trialLoading=false;syncQuickControls();}
+  if(epoch===ownershipEpoch&&active?.id===id&&mode==='checklist'&&!locked){
+   $('binder-cards').setAttribute('aria-busy','false');trialLoading=false;checklistContext=$('cards-context').textContent;
+   $('more-cards').textContent=cardCursor?'Continue loading cards':'Retry loading cards';$('more-cards').hidden=checklistComplete||terminal;
+   syncQuickControls();applyChecklistFilter();
+  }
  }}
 }
 
@@ -264,9 +338,64 @@ function openDeltaCard(button){
  $('delta-card-title').textContent=button.getAttribute('aria-label').replace(/^View /,'');$('delta-card-image').src=src;$('delta-card-image').alt=image.alt;$('delta-card-dialog').showModal();
 }
 function openDeltaList(){showView('delta-list');status('');window.scrollTo?.({top:0,left:0,behavior:'instant'});}
-function tile(card,quantity=null,item=null,ownedVariants=[]){const variant=item?{variantId:item.variantId}:card.variants?.find(v=>v.variantId===card.defaultVariantId)||card.variants?.[0],name=card.names?.englishDisplay||card.names?.native||'Card',native=card.names?.native||'',image=item?safeImage(item.imageUrl):imageFor(card,variant),key=card.cardId+':'+(item?.variantId||'catalogue');cardObjects.set(key,{card,item,ownedVariants});const selection=isTrialBinder(active)&&mode==='checklist',markup='<button class="card-tile"'+(selection?' aria-pressed="'+String(quantity>0)+'" aria-label="'+esc((quantity>0?'Edit owned card: ':'Mark owned: ')+name)+'"':'')+(selection&&trialLoading?' disabled':'')+(quantity===null?'':' data-owned="'+String(quantity>0)+'"')+' data-card-key="'+esc(key)+'"><span class="card-art">'+(image?'<img src="'+esc(image)+'" alt="'+esc(native||name)+'" loading="lazy" decoding="async" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="image-missing" hidden>Image unavailable</span>':'<span class="image-missing">Image unavailable</span>')+(quantity>0?'<span class="owned-badge">'+quantity+' owned</span>':'')+'</span><strong>'+esc(name)+'</strong><small>'+esc((card.collectorNumber?.value||'')+' · '+(languages[card.languageCode]||card.languageCode))+'</small>'+(native&&native!==name?'<small>'+esc(native)+'</small>':'')+(item?'<small>'+esc(item.finishCode||item.variantCode)+'</small>':'')+'</button>';if(!isTrialBinder(active)||mode!=='checklist')return markup;const label=quantity>0?'Owned ✓':'Mark owned',order=card.collectorNumber?.sortKey||card.collectorNumber?.value||'';return '<article class="trial-card" data-printing-sort="'+esc(order)+'">'+markup+'<button class="own-toggle" data-own-card="'+esc(key)+'" data-owned="'+String(quantity>0)+'"'+(active.archived||trialLoading?' disabled':'')+'>'+label+'</button><p class="own-status" data-own-status="'+esc(key)+'" role="status"></p></article>';}
+function openCardPreview(key){
+ const source=cardObjects.get(key);if(!source||locked)return;
+ const card=source.card,variant=card.variants?.find(v=>v.variantId===(source.item?.variantId||card.defaultVariantId))||card.variants?.[0],asset=variant?.image;
+ const detail=asset?.permissionStatus==='approved'?safeImage(asset.derivatives?.find(d=>d.role==='detail-page')?.deliveryUrl||asset.derivatives?.find(d=>d.role==='detail-page')?.url||asset.deliveryUrl)||imageFor(card,variant):'';
+ const url=detail||safeImage(source.item?.imageUrl),name=card.names?.englishDisplay||card.names?.native||'Card',identity=[card.collectorNumber?.value,languages[card.languageCode]||card.languageCode,source.item?.finishCode].filter(Boolean).join(' · ');
+ $('card-preview-title').textContent=name;$('card-preview-identity').textContent=identity+(url?'':' · Image unavailable');
+ const image=$('card-preview-image');image.src=url;image.alt=name;image.hidden=!url;image.onerror=()=>{image.hidden=true;$('card-preview-identity').textContent=identity+' · Image unavailable';};
+ $('card-preview-dialog').showModal();
+}
+function tile(card,quantity=null,item=null,ownedVariants=[]){
+ const variant=item?{variantId:item.variantId}:card.variants?.find(v=>v.variantId===card.defaultVariantId)||card.variants?.[0],name=card.names?.englishDisplay||card.names?.native||'Card',native=card.names?.native||'',number=card.collectorNumber?.value||'',image=item?safeImage(item.imageUrl):imageFor(card,variant),key=card.cardId+':'+(item?.variantId||'catalogue');
+ cardObjects.set(key,{card,item,ownedVariants});
+ const quick=isTrialBinder(active)&&mode==='checklist',label=quantity>0?'Owned · Edit':'Mark owned',order=card.collectorNumber?.sortKey||number;
+ const selection=quick?' aria-pressed="'+String(quantity>0)+'" aria-label="'+esc((quantity>0?'Edit owned card: ':'Mark owned: ')+name)+'"':' aria-label="'+esc((quantity>0?'Edit owned card: ':'Mark owned: ')+name)+'"';
+ const markup='<button type="button" class="card-tile"'+selection+(trialLoading||active?.archived?' disabled':'')+(quantity===null?'':' data-owned="'+String(quantity>0)+'"')+' data-card-key="'+esc(key)+'"><span class="card-art">'+(image?'<img src="'+esc(image)+'" alt="'+esc(native||name)+'" loading="lazy" decoding="async" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="image-missing" hidden>Image unavailable</span>':'<span class="image-missing">Image unavailable</span>')+(quantity>0?'<span class="owned-badge">'+quantity+' owned</span>':'')+'</span><strong>'+esc(name)+'</strong><small>'+esc(number+' · '+(languages[card.languageCode]||card.languageCode))+'</small>'+(native&&native!==name?'<small>'+esc(native)+'</small>':'')+(item?'<small>'+esc(item.finishCode||item.variantCode)+'</small>':'')+'</button>';
+ return '<article class="trial-card" data-printing-sort="'+esc(order)+'">'+markup+'<button type="button" class="own-toggle" '+(quick?'data-own-card':'data-edit-card')+'="'+esc(key)+'" data-owned="'+String(quantity>0)+'" aria-label="'+esc(label+' · '+name)+'"'+(active?.archived||trialLoading?' disabled':'')+'>'+label+'</button><button type="button" class="inspect-card" data-inspect-card="'+esc(key)+'" aria-label="Inspect artwork: '+esc(name+' '+number)+'">Inspect artwork</button><p class="own-status" data-own-status="'+esc(key)+'" role="status"></p></article>';
+}
 function ownedTile(item){const card={cardId:item.cardId,languageCode:item.language,set:{setId:item.setId},names:{native:item.nativeName,englishDisplay:item.englishName},collectorNumber:{value:item.collectorNumber},variants:[{variantId:item.variantId,variantCode:item.variantCode,finishCode:item.finishCode,variantLabel:item.variantCode,finishLabel:item.finishCode}],defaultVariantId:item.variantId};return tile(card,item.quantity,item,[{variantId:item.variantId,quantity:item.quantity}]);}
-function modeButtons(){for(const m of ['owned','checklist','search'])$(m+'-tab').setAttribute('aria-pressed',String(mode===m));$('card-search').hidden=mode!=='search';}
+function modeButtons(){
+ const set=active?.type==='set',entries=[...cardObjects.values()],owned=entries.filter(entry=>entry.ownedVariants.some(v=>v.quantity>0)).length;
+ $('checklist-tab').hidden=!set;$('missing-tab').hidden=!set;$('search-tab').hidden=set;
+ for(const [id,label,filter,count] of [['checklist-tab','All','all',entries.length],['owned-tab','Owned','owned',owned],['missing-tab','Missing','missing',entries.length-owned]]){
+  $(id).setAttribute('aria-pressed',String(set?cardFilter===filter:mode==='owned'&&filter==='owned'));
+  $(id).textContent=label+(set&&checklistComplete?' '+count:'');
+ }
+ $('search-tab').setAttribute('aria-pressed',String(mode==='search'));
+ $('card-search').hidden=!set&&mode!=='search';$('card-query').placeholder=set?'Find a card or number':'Find a card to add';
+}
+function cardMatches(card,value){
+ const normal=text=>String(text||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase(),q=normal(value).trim();
+ if(!q)return true;
+ const number=String(card.collectorNumber?.value||'').split('/')[0];
+ if(/^\d+(?:\/\d+)?$/.test(q)&&/^\d+$/.test(number))return Number(q.split('/')[0])===Number(number);
+ const text=normal([card.names?.englishDisplay,card.names?.native,card.collectorNumber?.value].join(' '));
+ return q.split(/\s+/).every(part=>text.includes(part));
+}
+function applyChecklistFilter(){
+ if(active?.type!=='set'||mode!=='checklist'){$('card-filter-empty').hidden=true;return;}
+ const q=$('card-query').value.trim();binderViews.set(active.id,{query:$('card-query').value,filter:cardFilter});modeButtons();
+ if(trialLoading){$('card-filter-empty').hidden=true;return;}
+ const entries=[...cardObjects.entries()],visible=new Set(entries.filter(([,entry])=>{
+  const owned=entry.ownedVariants.some(v=>v.quantity>0);
+  return (cardFilter==='all'||(cardFilter==='owned'?owned:!owned))&&cardMatches(entry.card,q);
+ }).map(([key])=>key));
+ for(const node of document.querySelectorAll('#binder-cards [data-card-key]'))(node.closest('.trial-card')||node).hidden=!visible.has(node.dataset.cardKey);
+ const empty=$('card-filter-empty');empty.hidden=visible.size>0||!entries.length&&!checklistComplete;
+ if(!empty.hidden){
+  const title=!checklistComplete?'No matches in the loaded cards':q?'No matching cards':cardFilter==='owned'?'No owned cards yet':cardFilter==='missing'?'No missing cards':'No cards to show';
+  const copy=!checklistComplete?(cardCursor?'The full checklist has not loaded yet. Continue loading below.':'The full checklist could not be confirmed. Reopen this binder to retry.'):
+   q?'Try another name or number, or clear your search.':cardFilter==='owned'?'Mark the cards you own to see them here.':cardFilter==='missing'?'Every card in this set is marked as owned.':'This set has no published cards yet.';
+  empty.innerHTML='<h3>'+esc(title)+'</h3><p>'+esc(copy)+'</p>'+(q||cardFilter!=='all'?'<button type="button" class="secondary" data-clear-card-filter>Show all cards</button>':'');
+ }
+ $('cards-context').textContent=q||cardFilter!=='all'?visible.size+' of '+entries.length+' cards'+(cardFilter==='all'?'':cardFilter==='owned'?' · owned':' · missing')+(checklistComplete?' · complete set':' · loaded so far'):checklistContext;
+}
+function selectCardFilter(filter){
+ if(active?.type!=='set')return;
+ cardFilter=filter;mode='checklist';applyChecklistFilter();
+}
 function nextCursor(meta,prior){const page=meta?.pagination;if(!page||!Object.hasOwn(page,'nextCursor'))throw Error('The catalogue did not confirm whether more cards are available.');const next=page.nextCursor;if(next!==null&&(typeof next!=='string'||!next||next===prior||seenCursors.has(next)))throw Error('The catalogue repeated a page. Your saved cards are safe.');if(next)seenCursors.add(next);return next;}
 function checklistMarkup(rows){
  const ownership=new Map(rows.map(row=>[row.card.cardId,row])),incoming=mergeCataloguePrintings(rows.map(row=>row.card));let markup='';
@@ -291,25 +420,25 @@ async function checklistPage(id,current,attempt=0){
   if(!sameReady(cached.ready,data.ready)||data.ready?.complete!==true||data.binderRevision!==revision||!Array.isArray(data.ownership)||data.ownership.length>50||!Number.isSafeInteger(data.ownershipTotal)||data.ownershipTotal<0||data.ownershipTotal>10000||total!==null&&data.ownershipTotal!==total||pagination?.limit!==50||pagination.offset!==offset||data.ownership.length!==Math.min(50,data.ownershipTotal-offset))throw Error('The checklist snapshot or binder revision changed. Reopen this binder to refresh it.');
   if(!data.progress||!Number.isSafeInteger(data.progress.owned)||data.progress.owned<0||data.progress.total!==cached.ready.total||data.progress.referenceConsistent!==true||data.progress.catalogueVersionId!==cached.ready.catalogueVersionId||data.progress.checkedAt!==cached.ready.capturedAt||data.progress.capturedAt!==cached.ready.capturedAt||data.progress.source!=='public-catalogue-snapshot'||progress&&['owned','total','checkedAt','catalogueVersionId','referenceConsistent'].some(key=>progress[key]!==data.progress[key]))throw Error('Your saved quantities and checklist reference could not be confirmed. Reopen this binder.');
   total=data.ownershipTotal;progress=data.progress;
-  for(const item of data.ownership){const key=item.cardId+':'+item.variantId;if(typeof item.cardId!=='string'||!knownCards.has(item.cardId)||typeof item.variantId!=='string'||!item.variantId||!Number.isSafeInteger(item.quantity)||item.quantity<1||item.quantity>9999||seen.has(key))throw Error('Your saved quantities could not be matched to this checklist. Review Owned cards before retrying.');seen.add(key);if(!owned.has(item.cardId))owned.set(item.cardId,[]);owned.get(item.cardId).push({variantId:item.variantId,quantity:item.quantity});}
+  for(const item of data.ownership){const key=item.cardId+':'+item.variantId;if(typeof item.cardId!=='string'||!knownCards.has(item.cardId)||typeof item.variantId!=='string'||!item.variantId||!Number.isSafeInteger(item.quantity)||item.quantity<1||item.quantity>9999||seen.has(key))throw Error('Your saved quantities could not be matched to this checklist. Your collection is unchanged. Retry loading later.');seen.add(key);if(!owned.has(item.cardId))owned.set(item.cardId,[]);owned.get(item.cardId).push({variantId:item.variantId,quantity:item.quantity});}
   const expected=seen.size<total?String(seen.size):null;if(pagination.nextCursor!==expected)throw Error('Your saved quantity pages were incomplete. Reopen this binder.');
   cursor=pagination.nextCursor;if(cursor===null){if(seen.size!==total||owned.size!==progress.owned)throw Error('Your saved quantity totals could not be confirmed. Reopen this binder.');return {cards:cached.cards.map(card=>({card,ownedQuantity:(owned.get(card.cardId)||[]).reduce((sum,row)=>sum+row.quantity,0),ownedVariants:owned.get(card.cardId)||[]})),ready:data.ready,progress,binderRevision:revision,meta:{pagination:{nextCursor:null}}};}
  }}catch(error){if(error.status===409&&isCurrent()){readyPublic.delete(setId);if(attempt===0){const latest=await api('/'+id);if(!isCurrent())return null;binderHeader(latest);status('Your binder changed. Refreshing its checklist…');return checklistPage(id,null,1);}}throw error;}
  throw Error('Your saved quantity pages exceeded the binder limit. Reopen this binder.');
 }
-async function loadCards(reset,stagedRows=null){if(!active)return;const id=active.id,gen=++searchGeneration;if(reset){cardOffset=0;cardCursor=null;cardObjects.clear();checklistReference=null;trialVersion=null;checklistSeen=new Set();checklistCards=new Map();seenCursors=new Set();$('binder-cards').innerHTML=stagedRows?loadingCards():emptyCards('Loading cards…','Reading the StackR catalogue.');$('cards-context').textContent='Loading this set’s checklist…';$('more-cards').hidden=true;}status('Loading cards…');
+async function loadCards(reset,stagedRows=null){if(!active)return;if(active.type==='set'&&mode==='search'){mode='checklist';modeButtons();return cardObjects.size?applyChecklistFilter():loadChecklist(true);}const id=active.id,gen=++searchGeneration;if(reset){cardOffset=0;cardCursor=null;cardObjects.clear();checklistReference=null;trialVersion=null;checklistSeen=new Set();checklistCards=new Map();seenCursors=new Set();$('binder-cards').innerHTML=stagedRows?loadingCards():emptyCards('Loading cards…','Reading the StackR catalogue.');$('cards-context').textContent='Loading this set’s checklist…';$('more-cards').hidden=true;}status('Loading cards…');
  let markup='',hasMore=false;
  try{if(mode==='owned'){const data=await api('/'+id+query({offset:cardOffset}));if(gen!==searchGeneration||id!==active?.id||locked)return;binderHeader(data);markup=data.items.map(ownedTile).join('');cardOffset=data.nextOffset;hasMore=data.hasMore;}
- else if(mode==='checklist'){const current=cardCursor,data=await checklistPage(id,current);if(gen!==searchGeneration||id!==active?.id||locked)return;if(isTrialBinder(active)&&checklistReference&&checklistReference.total!==data.progress.total)throw Error('The set total changed while loading. Reopen this binder to refresh the checklist.');setProgress(data.progress);checklistReference={binderId:id,...data.progress};checklistExpected=data.progress.total;const rows=data.cards;if(isTrialBinder(active)){const versions=new Set(rows.map(row=>row.card.catalogueVersionId).filter(Boolean));if(versions.size>1||trialVersion&&versions.size&&![...versions].includes(trialVersion))throw Error('The set catalogue changed while loading. Reopen this binder to load a consistent checklist.');if(versions.size)trialVersion=[...versions][0];}markup=checklistMarkup(rows);if(Number.isSafeInteger(checklistExpected)&&checklistSeen.size>checklistExpected)throw Error('The catalogue returned more cards than the confirmed set total. Reopen this binder to retry.');cardCursor=nextCursor(data.meta,current);if(stagedRows)for(const row of rows)stagedRows.set(row.card.cardId,row);hasMore=!!cardCursor;$('cards-context').textContent=hasMore?checklistSeen.size+' checklist cards loaded. Load the next page to continue.':checklistExpected!==null&&checklistSeen.size===checklistExpected?'Complete checklist loaded: '+checklistSeen.size+' cards.':'Catalogue checklist incomplete: '+checklistSeen.size+' returned; '+(checklistExpected??'unconfirmed')+' expected. Your ownership is still saved.';}
- else{const current=cardCursor,data=await api('/catalogue/search'+query({q:$('card-query').value.trim(),language:active.language,limit:50,cursor:current}));if(gen!==searchGeneration||id!==active?.id||locked)return;const cards=(data.data.results||[]).filter(r=>r.type==='card'&&r.card).map(r=>r.card).filter(c=>active.type!=='set'||c.set?.setId===active.setId);markup=cards.map(c=>tile(c)).join('');cardCursor=nextCursor(data.meta,current);hasMore=!!cardCursor;$('cards-context').textContent='Exact-language results'+(active.type==='set'?' matching this set':'')+'. Choose a card to select its finish.';}
- if(!stagedRows){if(reset)$('binder-cards').innerHTML=markup||emptyCards('No matching cards on this page.',mode==='search'?'Try another name or number, or continue to the next page.':'Find cards to add to this binder.');else $('binder-cards').insertAdjacentHTML('beforeend',markup);}$('more-cards').hidden=!!stagedRows||!hasMore;syncQuickControls();status('Cards loaded.');return {hasMore};}catch(e){if(gen===searchGeneration&&id===active?.id&&!locked&&reset){$('binder-cards').innerHTML=emptyCards('Cards could not load.','Your saved collection is safe. Retry this tab or your search.');$('more-cards').hidden=true;}throw e;}}
+ else if(mode==='checklist'){const current=cardCursor,data=await checklistPage(id,current);if(gen!==searchGeneration||id!==active?.id||locked||!data)return;if(checklistReference&&checklistReference.total!==data.progress.total)throw Error('The set total changed while loading. Reopen this binder to refresh the checklist.');setProgress(data.progress);checklistReference={binderId:id,...data.progress};checklistExpected=data.progress.total;const rows=data.cards;{const versions=new Set(rows.map(row=>row.card.catalogueVersionId).filter(Boolean));if(versions.size>1||trialVersion&&versions.size&&![...versions].includes(trialVersion))throw Error('The set catalogue changed while loading. Reopen this binder to load a consistent checklist.');if(versions.size)trialVersion=[...versions][0];}markup=checklistMarkup(rows);if(Number.isSafeInteger(checklistExpected)&&checklistSeen.size>checklistExpected)throw Error('The catalogue returned more cards than the confirmed set total. Reopen this binder to retry.');cardCursor=nextCursor(data.meta,current);if(stagedRows)for(const row of rows)stagedRows.set(row.card.cardId,row);hasMore=!!cardCursor;$('cards-context').textContent=hasMore?checklistSeen.size+' checklist cards loaded. Load the next page to continue.':checklistExpected!==null&&checklistSeen.size===checklistExpected?'Complete checklist loaded: '+checklistSeen.size+' cards.':'Catalogue checklist incomplete: '+checklistSeen.size+' returned; '+(checklistExpected??'unconfirmed')+' expected. Your ownership is still saved.';}
+ else{const current=cardCursor,data=await api('/catalogue/search'+query({q:$('card-query').value.trim(),language:active.language,limit:50,cursor:current}));if(gen!==searchGeneration||id!==active?.id||locked)return;const cards=(data.data.results||[]).filter(r=>r.type==='card'&&r.card).map(r=>r.card);markup=cards.map(c=>tile(c)).join('');cardCursor=nextCursor(data.meta,current);hasMore=!!cardCursor;$('cards-context').textContent='Exact-language results. Inspect a card, then use Mark owned to choose its finish.';}
+ if(!stagedRows){if(reset)$('binder-cards').innerHTML=markup||emptyCards('No matching cards'+(hasMore?' on this page.':'.'),mode==='search'?(hasMore?'Try another name or number, or load more results below.':'Try another name or number.'):'Find cards to add to this binder.');else $('binder-cards').insertAdjacentHTML('beforeend',markup);}$('more-cards').hidden=!!stagedRows||!hasMore;syncQuickControls();status('Cards loaded.');return {hasMore};}catch(e){if(gen===searchGeneration&&id===active?.id&&!locked&&reset){$('binder-cards').innerHTML=emptyCards('Cards could not load.',mode==='checklist'?'Your saved collection is safe. Retry loading below.':'Your saved collection is safe. Retry this tab or search again.');$('cards-context').textContent='Cards unavailable. Your saved ownership is unchanged.';$('more-cards').hidden=true;}throw e;}}
 function setMatches(set,q){const normal=v=>String(v||'').normalize('NFKC').toLocaleLowerCase();return !q||normal([set.englishDisplayName,set.nativeName,set.setCode].join(' ')).includes(normal(q));}
 function renderSets(){
  if(setsLoading){$('set-result-count').textContent='Discovering sets · '+sets.length+' found…';return;}
  const q=$('set-query').value.trim(),sorted=[...sets].filter(s=>setMatches(s,q)).sort((a,b)=>(b.releaseDate||'').localeCompare(a.releaseDate||'')||(a.englishDisplayName||a.nativeName).localeCompare(b.englishDisplayName||b.nativeName));
  $('set-result-count').textContent=sorted.length+(q?' matches from '+sets.length+' sets':' sets')+' loaded'+' · newest first'+(setsLoading?' · discovering more…':setCursor?' · more sets available':'');
  $('set-grid').innerHTML=sorted.map(s=>{
-  return '<button class="set-card" '+('data-create-set="'+esc(s.setId)+'"')+'>'+binderCover({setId:s.setId,language:s.languageCode,setName:s.englishDisplayName||s.nativeName,setCode:s.setCode},'set-cover')+'<span class="set-info"><strong class="set-name">'+esc(s.englishDisplayName||s.nativeName)+'</strong>'+(s.englishDisplayName&&s.nativeName!==s.englishDisplayName?'<span class="set-native">'+esc(s.nativeName)+'</span>':'')+'<span>'+esc(languages[s.languageCode])+' · '+esc(s.total===null||s.total===undefined?'Card total pending':s.total+' cards')+'</span><small>'+esc(s.releaseDate?.slice(0,10)||'Release date unavailable')+'</small><b>'+'Collect this set'+' <span aria-hidden="true">→</span></b></span></button>';
+  return '<button class="set-card" '+('data-create-set="'+esc(s.setId)+'"')+'>'+binderCover({setId:s.setId,language:s.languageCode,setName:s.englishDisplayName||s.nativeName,setCode:s.setCode},'set-cover')+'<span class="set-info"><strong class="set-name">'+esc(s.englishDisplayName||s.nativeName)+'</strong>'+(s.englishDisplayName&&s.nativeName!==s.englishDisplayName?'<span class="set-native">'+esc(s.nativeName)+'</span>':'')+'<span>'+esc(languages[s.languageCode])+' · '+esc(s.total===null||s.total===undefined?'Card total pending':s.total+' cards')+'</span><small>'+esc(s.releaseDate?.slice(0,10)||'Release date unavailable')+'</small><b>'+(binders.some(b=>b.type==='set'&&b.setId===s.setId&&b.language===s.languageCode&&!b.archived)?'Open binder':'Start binder')+' <span aria-hidden="true">→</span></b></span></button>';
  }).join('')||emptyCards(setsLoading?'Looking for your set…':'No matching sets loaded.',setCursor||setsLoading?'More catalogue pages are available. Try the set name or code.':'Try another name or printed language.');
 }
 async function loadSets(reset=true){
@@ -361,9 +490,37 @@ $('start-linked-binder').addEventListener('click',()=>{if(linkedSet)openCreate(l
 $('retry-collection').addEventListener('click',e=>act(e.target,start));$('new-binder').addEventListener('click',()=>openCreate());$('retry-sets').addEventListener('click',e=>act(e.target,()=>loadSets(!sets.length)));$('set-query').addEventListener('input',renderSets);$('discover-sets').addEventListener('click',()=>{showView('sets');status('');$('trial30-open').focus();});$('back-binders').addEventListener('click',()=>{active=null;showView('library');status('');loadBinders().catch(e=>status(e.message,true));});
 document.querySelectorAll('button[data-view]').forEach(b=>b.addEventListener('click',()=>{showView(b.dataset.view);status('');if(view==='library')loadBinders().catch(e=>status(e.message,true));if(view==='sets')status('');}));
 $('show-archived').addEventListener('change',()=>loadBinders().catch(e=>status(e.message,true)));$('more-binders').addEventListener('click',e=>act(e.target,()=>loadBinders(false)));$('set-language').addEventListener('change',()=>loadSets().catch(e=>status(e.message,true)));$('more-sets').addEventListener('click',e=>act(e.target,()=>loadSets(false)));
-document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.deltaCard){openDeltaCard(b);return;}if(b.dataset.ownCard){markOwned(b.dataset.ownCard);return;}if(b.dataset.binder)openBinder(b.dataset.binder).catch(e=>status(e.message,true));if(b.dataset.createSet){const selected=sets.find(s=>s.setId===b.dataset.createSet);if(selected)openSetCollection(selected).catch(e=>status(e.message,true));}if(b.dataset.cardKey)tapCard(b.dataset.cardKey).catch(e=>status(e.message,true));});
-for(const m of ['owned','checklist','search'])$(m+'-tab').addEventListener('click',()=>{mode=m;searchGeneration++;modeButtons();if(m==='search'){$('binder-cards').innerHTML=emptyCards('Find the card you own.','Search in '+languages[active.language]+', then choose the exact finish.');$('more-cards').hidden=true;$('card-query').focus();}else loadChecklist(true).catch(e=>status(e.message,true));});
-$('card-search').addEventListener('submit',e=>{e.preventDefault();act(e.submitter,()=>loadCards(true));});$('more-cards').addEventListener('click',e=>act(e.target,()=>loadChecklist(false)));
+document.addEventListener('click',e=>{
+ const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.clearCardFilter!==undefined){$('card-query').value='';selectCardFilter('all');$('card-query').focus();return;}
+ if(b.dataset.deltaCard){openDeltaCard(b);return;}
+ if(b.dataset.inspectCard){openCardPreview(b.dataset.inspectCard);return;}
+ if(b.dataset.ownCard){markOwned(b.dataset.ownCard);return;}
+ if(b.dataset.editCard){openCard(b.dataset.editCard).catch(e=>status(e.message,true));return;}
+ if(b.dataset.binder)openBinder(b.dataset.binder).catch(e=>status(e.message,true));
+ if(b.dataset.createSet){const selected=sets.find(s=>s.setId===b.dataset.createSet);if(selected)openSetCollection(selected).catch(e=>status(e.message,true));}
+ if(b.dataset.cardKey)tapCard(b.dataset.cardKey).catch(e=>status(e.message,true));
+});
+for(const m of ['owned','checklist','search'])$(m+'-tab').addEventListener('click',()=>{
+ if(active?.type==='set'){selectCardFilter(m==='owned'?'owned':'all');if(m==='search')$('card-query').focus();return;}
+ mode=m;searchGeneration++;modeButtons();$('card-filter-empty').hidden=true;
+ if(m==='search'){$('binder-cards').innerHTML=emptyCards('Find the card you own.','Search in '+languages[active.language]+', then choose the exact finish.');$('more-cards').hidden=true;$('card-query').focus();}
+ else loadChecklist(true).catch(e=>status(e.message,true));
+});
+$('missing-tab').addEventListener('click',()=>selectCardFilter('missing'));
+$('card-query').addEventListener('input',applyChecklistFilter);
+$('cards-context').setAttribute('role','status');
+$('card-search').addEventListener('submit',e=>{
+ e.preventDefault();
+ if(active?.type==='set'){
+  applyChecklistFilter();
+  if(!trialLoading&&!checklistSeen.size&&!checklistComplete)act(e.submitter||$('card-search').querySelector('button'),()=>loadChecklist(true));
+  return;
+ }
+ act(e.submitter||$('card-search').querySelector('button'),()=>loadCards(true));
+});
+$('more-cards').addEventListener('click',e=>act(e.target,()=>loadChecklist(mode==='checklist'&&!cardCursor)));
+
 function freezeFields(form,disabled){form.querySelectorAll('input,select,textarea').forEach(field=>field.disabled=disabled);}
 function resetForm(form,label){freezeFields(form,false);const button=form.querySelector('button.primary');button.disabled=false;button.textContent=label;}
 async function saveDraft(draft,getCurrent,form,dialog,path,makePayload,onSuccess){
@@ -386,7 +543,7 @@ $('card-form').addEventListener('submit',e=>{e.preventDefault();const f=e.target
 $('edit-binder').addEventListener('click',()=>{modalGeneration++;editDraft={id:newId(),binder:{...active}};const f=$('edit-form');resetForm(f,'Save changes');f.elements.name.value=active.name;f.elements.archived.checked=active.archived;f.querySelector('.dialog-status').textContent='';$('edit-dialog').showModal();});
 $('edit-form').addEventListener('submit',e=>{e.preventDefault();const f=e.target,draft=editDraft;saveDraft(draft,()=>editDraft,f,$('edit-dialog'),'/'+draft.binder.id,()=>({id:draft.id,expectedRevision:draft.binder.revision,name:f.elements.name.value,archived:f.elements.archived.checked}),async()=>{$('edit-dialog').close();await openBinder(draft.binder.id);status('Binder settings saved.');});});
 window.addEventListener('pagehide',lock);window.addEventListener('pageshow',e=>{if(e.persisted)location.reload();});
-async function start(){$('retry-collection').hidden=true;try{$('ascended-heroes-cover').innerHTML=binderCover({setId:ASCENDED_HEROES_SET_ID,language:'en',setName:'Ascended Heroes',setCode:'me02.5'});$('phantasmal-flames-cover').innerHTML=binderCover({setId:PHANTASMAL_FLAMES_SET_ID,language:'en',setName:'Phantasmal Flames',setCode:'me02'});$('journey-together-cover').innerHTML=binderCover({setId:JOURNEY_TOGETHER_SET_ID,language:'en',setName:'Journey Together',setCode:'sv09'});$('chaos-rising-cover').innerHTML=binderCover({setId:CHAOS_RISING_SET_ID,language:'en',setName:'Chaos Rising',setCode:'me04'});$('pitch-black-cover').innerHTML=binderCover({setId:PITCH_BLACK_SET_ID,language:'en',setName:'Pitch Black',setCode:'me05'});$('trial30-cover').innerHTML=binderCover({setId:TRIAL_SET_ID,language:'en',setName:'30th Celebration',setCode:'30C'});const params=new URLSearchParams(location.search||'');await loadBinders();if(locked)return;const hash=location.hash.slice(1);if(/^binder\/[0-9a-f-]{36}$/.test(hash))await openBinder(hash.slice(7));else if(params.has('set'))await openSetCollection(setTargetFromQuery(location.search));else if(hash==='account'){showView('account');await loadAccount();status('Your collection account.');}else if(hash==='library'||!hash&&!params.size&&binders.length){showView('library');status(binders.length?'Welcome back. Your saved binders are ready.':'Choose a set to start your first binder.');}else if(hash==='delta-list'){openDeltaList();}else if(hash==='pokedex'){showView('library');status('Your saved binders.');}else{if(Object.hasOwn(languages,params.get('language')))$('set-language').value=params.get('language');if(params.get('q'))$('set-query').value=params.get('q').slice(0,150);showView('sets');status('');}scheduleReadySets();}catch(e){$('collection-main').setAttribute('aria-busy','false');$('retry-collection').hidden=locked||!$('collection-app').hidden;status(e.message,true);}}
+async function start(){$('retry-collection').hidden=true;try{$('ascended-heroes-cover').innerHTML=binderCover({setId:ASCENDED_HEROES_SET_ID,language:'en',setName:'Ascended Heroes',setCode:'me02.5'});$('phantasmal-flames-cover').innerHTML=binderCover({setId:PHANTASMAL_FLAMES_SET_ID,language:'en',setName:'Phantasmal Flames',setCode:'me02'});$('journey-together-cover').innerHTML=binderCover({setId:JOURNEY_TOGETHER_SET_ID,language:'en',setName:'Journey Together',setCode:'sv09'});$('chaos-rising-cover').innerHTML=binderCover({setId:CHAOS_RISING_SET_ID,language:'en',setName:'Chaos Rising',setCode:'me04'});$('pitch-black-cover').innerHTML=binderCover({setId:PITCH_BLACK_SET_ID,language:'en',setName:'Pitch Black',setCode:'me05'});$('trial30-cover').innerHTML=binderCover({setId:TRIAL_SET_ID,language:'en',setName:'30th Celebration',setCode:'30C'});const params=new URLSearchParams(location.search||'');await loadBinders();if(locked)return;const hash=location.hash.slice(1);if(/^binder\/[0-9a-f-]{36}$/.test(hash))await openBinder(hash.slice(7));else if(params.has('set'))await openSetCollection(setTargetFromQuery(location.search));else if(hash==='account'){showView('account');await loadAccount();status('Your collection account.');}else if(hash==='library'||!hash&&!params.size&&binders.length){showView('library');status(binders.length?'Welcome back. Your saved binders are ready.':'Choose a set to start your first binder.');}else if(hash==='delta-list'){openDeltaList();}else if(hash==='pokedex'){showView('library');status('Your saved binders.');}else{if(Object.hasOwn(languages,params.get('language')))$('set-language').value=params.get('language');if(params.get('q'))$('set-query').value=params.get('q').slice(0,150);showView('sets');status('');}if(view==='library')void loadSavedBinderProgress();scheduleReadySets();}catch(e){$('collection-main').setAttribute('aria-busy','false');$('retry-collection').hidden=locked||!$('collection-app').hidden;status(e.message,true);}}
 
 
 start();

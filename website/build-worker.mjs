@@ -41,7 +41,7 @@ const binderReady=(await fs.readFile(path.join(root,'worker/binder-ready.mjs'),'
 const sitePages=(await fs.readFile(path.join(root,'worker/site-pages.mjs'),'utf8')).replace(/^export (?=(?:const|function)\b)/gm,'');
 worker=worker.replace("import {renderSitePage} from './site-pages.mjs';",()=>sitePages);
 worker=worker.replace("import {createPriceService} from './pricing.mjs';",()=>`const createPriceService=(()=>{\n${pricing}\nreturn createPriceService;\n})();`);
-for(const[file,name]of [['shop-state.mjs','createShopService'],['media.mjs','createMediaService'],['checkout.mjs','createCheckoutService'],['owner.mjs','createOwnerService'],['binders.mjs','createBinderService']]){
+for(const[file,name]of [['shop-state.mjs','createShopService'],['media.mjs','createMediaService'],['checkout.mjs','createCheckoutService'],['owner.mjs','createOwnerService'],['stockroom.mjs','createStockroomService'],['binders.mjs','createBinderService']]){
  let source=await fs.readFile(path.join(root,'worker',file),'utf8');
  if(file==='binders.mjs')source=source.replace("import {mergeCataloguePrintings} from './catalogue-printings.mjs';",()=>'__PRINTING_HELPERS__');
  if(file==='binders.mjs')source=source.replace('__PRINTING_HELPERS__',()=>printingHelpers);

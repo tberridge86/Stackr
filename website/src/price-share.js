@@ -1,9 +1,9 @@
 /* A dated, user-initiated image export of the same validated live quote. */
 let activePriceCard=null;
-const quoteSignature=q=>JSON.stringify([q.productId,q.marketPence,q.shopPence,q.asOf,q.observedAt,q.selectedSourceId]);
-function priceShareButton(p){return '<button class="share-price-button" data-price-card="'+p.id+'" '+(!currentQuote(p)?'disabled':'')+'>'+(!currentQuote(p)?'Price card · awaiting reference':'Share a price comparison')+icon('arrow')+'</button>';}
+const quoteSignature=q=>JSON.stringify([q.productId,q.marketPence,q.shopPence,q.asOf,q.observedAt,q.selectedSourceId,q.priceOverride?.revision]);
+function priceShareButton(p){return '<button class="share-price-button" data-price-card="'+p.id+'" '+(!currentQuote(p)?'disabled hidden':'')+'>'+(!currentQuote(p)?'Price card · awaiting reference':'Share a price comparison')+icon('arrow')+'</button>';}
 function syncPriceCardAvailability(){
- document.querySelectorAll('[data-price-card]').forEach(button=>{const available=!!currentQuote(byId(button.dataset.priceCard));button.disabled=!available;button.innerHTML=(available?'Share a price comparison':'Price card · awaiting reference')+icon('arrow');});
+ document.querySelectorAll('[data-price-card]').forEach(button=>{const available=!!currentQuote(byId(button.dataset.priceCard));button.disabled=!available;button.hidden=!available;button.innerHTML=(available?'Share a price comparison':'Price card · awaiting reference')+icon('arrow');});
  if(activePriceCard){const q=currentQuote(byId(activePriceCard.id));if(!q||quoteSignature(q)!==activePriceCard.signature){activePriceCard=null;if(get('price-share-status'))get('price-share-status').textContent='The reference changed or expired. Reopen the comparison for the current price.';document.querySelectorAll('[data-download-price-card],[data-native-share-price-card]').forEach(button=>{button.disabled=true;});}}
 }
 function canvasImage(source){return new Promise((resolve,reject)=>{const image=new Image(),timer=setTimeout(()=>reject(Error('Image timed out')),12000);image.onload=()=>{clearTimeout(timer);resolve(image);};image.onerror=()=>{clearTimeout(timer);reject(Error('Image unavailable'));};image.src=source;});}
@@ -32,16 +32,16 @@ async function renderPriceCard(canvas,p,q){
  ctx.fillStyle=purple;ctx.font='500 24px Inter, Arial';ctx.fillText('STACKR PRICE',64,772);ctx.font='600 92px Inter, Arial';ctx.fillText(money(q.shopPence/100),64,875);
  ctx.fillStyle=ink;ctx.font='500 24px Inter, Arial';ctx.fillText('SAVE '+money(q.savingsPence/100),650,782);ctx.fillStyle=muted;ctx.font='400 24px Inter, Arial';ctx.fillText('Against the reference below',650,823);
  const axisMax=Math.ceil(q.marketPence/1000)*1000,barWidth=850;
- const rows=[{label:'UK retail reference',value:q.marketPence,y:946,color:'#a8abc0'},{label:'StackR',value:q.shopPence,y:1053,color:purple}];
+ const rows=[{label:priceReferenceLabel(q),value:q.marketPence,y:946,color:'#a8abc0'},{label:'StackR',value:q.shopPence,y:1053,color:purple}];
  for(const row of rows){ctx.fillStyle=ink;ctx.font='500 25px Inter, Arial';ctx.fillText(row.label,64,row.y);ctx.textAlign='right';ctx.fillText(money(row.value/100),1016,row.y);ctx.textAlign='left';ctx.fillStyle='#f1f0f7';ctx.fillRect(64,row.y+18,barWidth,28);ctx.fillStyle=row.color;ctx.fillRect(64,row.y+18,barWidth*row.value/axisMax,28);}
  ctx.strokeStyle='#d9dbe4';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(64,1124);ctx.lineTo(914,1124);ctx.stroke();ctx.fillStyle=muted;ctx.font='400 20px Inter, Arial';ctx.fillText('£0',64,1154);ctx.textAlign='right';ctx.fillText(money(axisMax/100),914,1154);ctx.textAlign='left';
  const stamp=new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Europe/London'}).format(new Date(q.asOf));
  const source=q.sources.find(s=>s.id===q.selectedSourceId);
  ctx.fillStyle=ink;ctx.font='500 22px Inter, Arial';ctx.fillText('Checked '+stamp+' · UK time',64,1210);
- ctx.fillStyle=muted;ctx.font='400 20px Inter, Arial';const label=(source?.name||'Retail reference')+' · '+q.currentSourceCount+' retailer'+(q.currentSourceCount===1?' (indicative)':'s checked');ctx.fillText(label,64,1247,952);
- ctx.fillText('Exact product, language and unit. VAT included; delivery excluded.',64,1280);
- ctx.fillText('Dated asking-price comparison. Shop preview; orders not open.',64,1313);
- return {stamp,source:source?.name||'Retail reference',axisMax,marketBar:barWidth*q.marketPence/axisMax,shopBar:barWidth*q.shopPence/axisMax};
+ ctx.fillStyle=muted;ctx.font='400 20px Inter, Arial';const label=q.priceOverride?.basis==='owner'?'Owner-entered reference · not independently verified':(source?.name||'Retail reference')+' · '+q.currentSourceCount+' retailer'+(q.currentSourceCount===1?' (indicative)':'s checked');ctx.fillText(label,64,1247,952);
+ ctx.fillText(q.priceOverride?.basis==='owner'?'Owner-entered product reference; see the shop for its dated source.':'Exact product, language and unit. VAT included; delivery excluded.',64,1280);
+ ctx.fillText(q.priceOverride?.basis==='owner'?'Dated owner reference. Not independently verified.':'Dated asking-price comparison. Shop preview; orders not open.',64,1313);
+ return {stamp,source:q.priceOverride?.basis==='owner'?'Owner-entered reference (not independently verified)':source?.name||'Retail reference',axisMax,marketBar:barWidth*q.marketPence/axisMax,shopBar:barWidth*q.shopPence/axisMax};
 }
 async function showPriceCard(id){
  const p=byId(id),q=currentQuote(p);if(!p||!q){toast('A current reference is needed to share this price.');return;}
@@ -52,7 +52,7 @@ async function showPriceCard(id){
   const details=await renderPriceCard(canvas,p,q);
   if(generation!==infoViewGeneration||!canvas.isConnected||!get('info-dialog').open)return;
   const current=currentQuote(p);if(!current||quoteSignature(current)!==quoteSignature(q))throw Error('The reference changed. Reopen this card for the latest price.');
-  const description=p.name+' '+p.type+' · '+p.language+'. StackR '+money(q.shopPence/100)+'; UK retail reference '+money(q.marketPence/100)+'. Save '+money(q.savingsPence/100)+' (10%). Checked '+details.stamp+'. '+details.source+'.';
+  const description=p.name+' '+p.type+' · '+p.language+'. StackR '+money(q.shopPence/100)+'; '+priceReferenceLabel(q)+' '+money(q.marketPence/100)+'. Save '+money(q.savingsPence/100)+' (10%). Checked '+details.stamp+'. '+details.source+'.';
   canvas.setAttribute('aria-label',description);get('price-share-status').textContent=description;
   activePriceCard={id,signature:quoteSignature(q),canvas,details};
   document.querySelector('[data-download-price-card]').disabled=false;

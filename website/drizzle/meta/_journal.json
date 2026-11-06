@@ -29,6 +29,13 @@
       "when": 1793820000000,
       "tag": "0003_web_binders",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1793980800000,
+      "tag": "0004_stockroom_bridge",
+      "breakpoints": true
     }
   ]
 }

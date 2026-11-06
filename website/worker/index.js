@@ -1,5 +1,6 @@
 import {createBinderService} from './binders.mjs';
 import {createOwnerService} from './owner.mjs';
+import {createStockroomService} from './stockroom.mjs';
 import {createPriceService} from './pricing.mjs';
 import {createShopService} from './shop-state.mjs';
 import {createMediaService} from './media.mjs';
@@ -19,10 +20,11 @@ const PRICE_SOURCES=__PRICE_SOURCES__;
 const PRICE_SEEDS=__PRICE_SEEDS__;
 const MEDIA_SOURCES=__MEDIA_SOURCES__;
 const webBinders=createBinderService({onUpstreamFailure:issue=>console.error('stackr_catalogue_upstream',JSON.stringify(issue))});
-const ownerBooks=createOwnerService({products:PRICE_PRODUCTS,getPrices:async env=>service(env).getSnapshot()});
+const stockroom=createStockroomService({products:PRICE_PRODUCTS,getFeed:async env=>service(env).getSnapshot()});
+const ownerBooks=createOwnerService({products:PRICE_PRODUCTS,getPrices:env=>stockroom.getPrices(env)});
 const shop=createShopService({products:PRICE_PRODUCTS});
 const media=createMediaService({sources:MEDIA_SOURCES});
-const checkout=createCheckoutService({products:PRICE_PRODUCTS,getPrices:async env=>service(env).getSnapshot()});
+const checkout=createCheckoutService({products:PRICE_PRODUCTS,getPrices:env=>stockroom.getPrices(env)});
 let priceService;
 let refreshPromise;
 let priceStorage='memory';
@@ -71,7 +73,10 @@ async function priceResponse(request,env,ctx){
  }
  const current=ctx?.waitUntil?snapshot:await prices.getSnapshot();
  const paused=['failed','conflict'].includes(current.persistenceStatus),pendingDue=current.refreshPending&&Date.parse(current.nextRefreshAt)<=Date.now(),refreshing=!paused&&(Boolean(refreshPromise)||pendingDue);
- return new Response(JSON.stringify({...current,priceStorage,refreshing,nextPollSeconds:refreshing?5:300}),{headers});
+ try{
+  const effective=await stockroom.applyPrices(env,current);
+  return new Response(JSON.stringify({...effective,priceStorage,refreshing,nextPollSeconds:refreshing?5:300}),{headers});
+ }catch{return new Response(JSON.stringify({error:'Price storage is temporarily unavailable.'}),{status:503,headers});}
 }
 export default {
  async fetch(request,env,ctx){
@@ -86,6 +91,7 @@ export default {
   if(['/api/checkout/config','/api/checkout','/api/checkout/status','/api/stripe/webhook'].includes(url.pathname))return checkout.handleRequest(request,env);
   if(url.pathname==='/api/binders'||url.pathname.startsWith('/api/binders/'))return webBinders.handleRequest(request,env,ctx);
   if(url.pathname.startsWith('/api/owner/'))return ownerBooks.handleRequest(request,env);
+  if(url.pathname.startsWith('/api/stockroom/'))return stockroom.handleRequest(request,env);
   if(url.pathname==='/api/prices')return priceResponse(request,env,ctx);
   if(url.pathname.startsWith('/api/admin/media/'))return media.handleImport(request,env);
   if(['/api/shop','/api/interests','/api/admin/stock','/api/admin/interests'].includes(url.pathname))return shop.handleRequest(request,env);

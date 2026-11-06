@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "createdAt": "2026-11-06T14:53:47.143Z",
-  "sourceRevision": "16d618ebe11d0c014e750e0918862df26a1c4f5a",
+  "createdAt": "2026-11-06T15:16:12.011Z",
+  "sourceRevision": "a3ff2629d24769b95f06ffa8c4dd87ed2c5c034d",
   "sourceState": "Current selected working-tree contents, identified by file checksums; may include uncommitted source changes.",
   "exportAdjustments": [
     "Added media restoration commands, Node 24 pin and media check before build. Product source is copied without transformation."
@@ -109,13 +109,13 @@
     },
     {
       "path": "build-site.mjs",
-      "bytes": 36882,
-      "sha256": "141701b4cb183a3283cde359eb39a0dc5f7611f6d4bee459b01b01f2763b1926"
+      "bytes": 37277,
+      "sha256": "676cb0b6a3f12b935904b70073d3b705c8f79945f916b767afcad01e601f217c"
     },
     {
       "path": "build-worker.mjs",
-      "bytes": 7756,
-      "sha256": "192c5ef111035b7c83e7fa0f7fd07286dbdaa44657468106ff1d4fa4dc891764"
+      "bytes": 7799,
+      "sha256": "b2b12cb8490d7fea8a5ca4ee3e183373aa8e7dd68dbb3b11727146d95e5ceb95"
     },
     {
       "path": "catalogue-cache/258cb8e5-c769-540d-9e3c-40d4ed4dafdb-en.json.gz",
@@ -174,8 +174,8 @@
     },
     {
       "path": "db/schema.ts",
-      "bytes": 3550,
-      "sha256": "40e15ada1b055e2240b8b13e6233141c576b71689aaf5a4b6b241f492f116a4a"
+      "bytes": 4737,
+      "sha256": "d8cd4c07440f2b08255c06af43918af5f3ae6917660a7ac4c177a92688c96197"
     },
     {
       "path": "dev.mjs",
@@ -184,8 +184,8 @@
     },
     {
       "path": "docs/delta-reign-catalogue-release-20261106.json",
-      "bytes": 1325,
-      "sha256": "5f517be473c392460f6a932664fd59ee317f9a3af1875b9770518e15cd3e4ccb"
+      "bytes": 26319,
+      "sha256": "4fc25c476e6edfe31916552a8f9bf79784c6a0edb8b4e019cdd24b2aeba6d03e"
     },
     {
       "path": "drizzle/0000_shop_stock_interest.sql",
@@ -208,9 +208,14 @@
       "sha256": "c37c4f9fcb7b24c66910b270cb2dbd10df04046a14243e6878a724d9b262e99e"
     },
     {
+      "path": "drizzle/0004_stockroom_bridge.sql",
+      "bytes": 2124,
+      "sha256": "d2cea843f9f11d315c9a1a35a90d006c00e95369c4d0f38af659dc5c8cc459eb"
+    },
+    {
       "path": "drizzle/meta/_journal.json",
-      "bytes": 631,
-      "sha256": "3a02473455f1fb9824ca17c692a69ba16d9176f2065de9c728ff2b72a0ef9000"
+      "bytes": 775,
+      "sha256": "8cd3824684f5a0428363dbbda8964f7d7de99d644f572a8aaf1bde6310b7bf22"
     },
     {
       "path": "export-preview.mjs",
@@ -244,18 +249,18 @@
     },
     {
       "path": "src/about-page.css",
-      "bytes": 5689,
-      "sha256": "8aa057d920597ac2e0963ae0ee2e0f06f168c4c43c0930727a6833bb33c8cf07"
+      "bytes": 8124,
+      "sha256": "e50b3523a299b15678dbd1d291eb2c86c6ca597363dbd9adb3366dee96648c3a"
     },
     {
       "path": "src/about-page.html",
-      "bytes": 5292,
-      "sha256": "73f86d26befc682ef020153fe3168dfce755818a4db5afb50460c038ef7a6ae2"
+      "bytes": 8443,
+      "sha256": "61bb81c3cd5d81e1ae76956738de7e349b9106b262c2e3fe5a3f45dfe0a19b02"
     },
     {
       "path": "src/app.js",
-      "bytes": 22927,
-      "sha256": "13f3126492553901b5f03d74c1c97a91799cb4474f16ed7826172514e22d544e"
+      "bytes": 23561,
+      "sha256": "3cdb1eed70d962835d71f334070dae48abb9a0a2abfee0e263272cc047bec9c1"
     },
     {
       "path": "src/art-quality.css",
@@ -354,18 +359,18 @@
     },
     {
       "path": "src/collection.css",
-      "bytes": 32784,
-      "sha256": "3ebbbf95bc3b4bd01b3d3c62b2a2867608745241101af0535889f6d781a82894"
+      "bytes": 37401,
+      "sha256": "5588ec15fd179aace47afb4261209b018b7cb662f50e346b0696ca14df60d638"
     },
     {
       "path": "src/collection.html",
-      "bytes": 14124,
-      "sha256": "6c4af3aee54c2867d9aed3bf6e065c99cf1acb04120e79d42c9c04c386b67810"
+      "bytes": 17095,
+      "sha256": "9a0540c51543bac232af9fdf6d9651526ea19b7ee600551f545ec0a4003a7278"
     },
     {
       "path": "src/collection.js",
-      "bytes": 69141,
-      "sha256": "bf8fbfa461e4da055363e8a70f59986c15ec685f79306d0ba61c18bee33029df"
+      "bytes": 80503,
+      "sha256": "806dbb05063dc5c752bb30656db083cde3cc6769e2f3c71bfe8d435178026815"
     },
     {
       "path": "src/collector.css",
@@ -399,8 +404,8 @@
     },
     {
       "path": "src/history-page.html",
-      "bytes": 4643,
-      "sha256": "9d4a296c741e89237376b8cf95da895b4b163f858138db926122b4d59d1a54d9"
+      "bytes": 6916,
+      "sha256": "ad0dd9fb985e7c16ff9b6293ac427a75de79046eb60cafe432b314d693c8008d"
     },
     {
       "path": "src/history-page.js",
@@ -434,8 +439,8 @@
     },
     {
       "path": "src/index.html",
-      "bytes": 25971,
-      "sha256": "a080f1a67f5ff8f705a59281efd29af6f2ac655e0b8316e1e7831263a65fbc5d"
+      "bytes": 26968,
+      "sha256": "16b302a0d0b28e6c689eee9cf2fe37c3818b73750c424e9c0b60612dad6f12e7"
     },
     {
       "path": "src/interaction-geometry.js",
@@ -459,8 +464,8 @@
     },
     {
       "path": "src/live-pricing.js",
-      "bytes": 11053,
-      "sha256": "7a2013ed8868f4197da8695d73648a95376265c6434e1ead7465a2dbe8cddcde"
+      "bytes": 12072,
+      "sha256": "eeaf9469455e0d68fd15c4b21cc661f6f98403ed43a76c3d166f9ac9eca3eda3"
     },
     {
       "path": "src/loading.js",
@@ -484,18 +489,18 @@
     },
     {
       "path": "src/owner.css",
-      "bytes": 7481,
-      "sha256": "e558a9255bb6a61d47149211af56a279ef664ad4667081a2de5f5ff4d49dde09"
+      "bytes": 12935,
+      "sha256": "2670240ee867087cb452b8a2df8e6713783e978cf4c887dac0c997d18ebe7a23"
     },
     {
       "path": "src/owner.html",
-      "bytes": 10792,
-      "sha256": "8c92372cfc11c943e5c5288fa0b284a5f106f58cb9272ca54de234a0d96f10e8"
+      "bytes": 15134,
+      "sha256": "9088e9ee01223275c365e9ace4b3a6aafd5865154abe44888342374c5610f059"
     },
     {
       "path": "src/owner.js",
-      "bytes": 13926,
-      "sha256": "8bb36382dcdab4c297ec3798be727b980c0dd4ff43e6da6ab970d6751bfa8bdc"
+      "bytes": 15729,
+      "sha256": "e531f2adc1a9a4e2ac384106929a5f5e14dee0439c4742c5b23e505150126c26"
     },
     {
       "path": "src/phone-commerce.css",
@@ -504,8 +509,8 @@
     },
     {
       "path": "src/phone-commerce.js",
-      "bytes": 16155,
-      "sha256": "8ca649e62c3a8dcdbbb76cc519cfc28d9b2838d14121863a6f63229d37cad87c"
+      "bytes": 16441,
+      "sha256": "984796ce12cd0cdf8c7c2ce84711afd60488f9665e99fb508d11d70c27593094"
     },
     {
       "path": "src/pokemon-history.json",
@@ -514,8 +519,8 @@
     },
     {
       "path": "src/price-share.js",
-      "bytes": 9445,
-      "sha256": "831f23d5deb0fffa150414c805cb3d33ad0db391aa73f9ba5b8d5520bd0269e9"
+      "bytes": 9877,
+      "sha256": "25d954742b028ddaacf3d6b1a304beca1fd4f0e974bc6e4ab8ee00a11a369f54"
     },
     {
       "path": "src/pricing-seeds.json",
@@ -554,8 +559,8 @@
     },
     {
       "path": "src/set-browser.js",
-      "bytes": 14675,
-      "sha256": "4f82db16da4bc9d51f318fbdb5dcb5d2889c099d1c5ac76538a2d4b85cc751cf"
+      "bytes": 14650,
+      "sha256": "330f680e8e723ea367f87dbc01f1efb3459eb1286ea84e8c2e2afc6ca96abbaa"
     },
     {
       "path": "src/set-groups.css",
@@ -564,8 +569,8 @@
     },
     {
       "path": "src/set-groups.js",
-      "bytes": 11172,
-      "sha256": "1bcea704f50a29cccfd99d0fe65333650e894e480f74fc32997475282193d12d"
+      "bytes": 11187,
+      "sha256": "5f546f0c0986ddc54483e17469252f0a2aeb252ce75b93fdd212f2bdd8239f08"
     },
     {
       "path": "src/set-highlights.json",
@@ -581,6 +586,16 @@
       "path": "src/set-release-dates.json",
       "bytes": 20551,
       "sha256": "a9f8870c5e8dc2df8fc9b948c83bc60daadfff09f3d54b062fc90150da558c1f"
+    },
+    {
+      "path": "src/shared-shell.css",
+      "bytes": 10399,
+      "sha256": "f644b98946cf98363eb25747123d8ab2dd79a08b7ee9da687af162cd0624d8ce"
+    },
+    {
+      "path": "src/shared-shell.js",
+      "bytes": 1722,
+      "sha256": "22d49713566f44f81b1431f8ad1b50b3feb327132bc239bdd4ec9053d84a52c3"
     },
     {
       "path": "src/shop-polish.css",
@@ -599,8 +614,8 @@
     },
     {
       "path": "src/shop-state.js",
-      "bytes": 24004,
-      "sha256": "8a436c8d0d5e67c427c6aa49f879a5ead4b647085bc3fff5c70b13b896346d65"
+      "bytes": 24887,
+      "sha256": "84b17f5f8a24ec747b94444f11eb7a8739763ea2c279f674e28cfc3c379255c4"
     },
     {
       "path": "src/shop-tools.css",
@@ -609,8 +624,8 @@
     },
     {
       "path": "src/shop-tools.js",
-      "bytes": 30011,
-      "sha256": "950c13cd0a4de0dd531e7871468fd3787a61703c8d489e1f93b4ce83716c27af"
+      "bytes": 31468,
+      "sha256": "a467fce13d384bc9cafd4244315b068efe00c030f0d89aa4a01ee38233e8a71e"
     },
     {
       "path": "src/showcase.css",
@@ -668,6 +683,11 @@
       "sha256": "1e7240d19ecf2f873f274bd00c6363126d2c0cc6b515628c5520342f150bdb5c"
     },
     {
+      "path": "src/ui-finesse.css",
+      "bytes": 12657,
+      "sha256": "bde86ce6e90e04d18172fac0998556e2d5689b372aada5892cf5570d13307e31"
+    },
+    {
       "path": "src/website.css",
       "bytes": 28629,
       "sha256": "9049f76500e051b7a96eddef0ac690bc552338cc9ad58f5b6ba1c57b9a872aef"
@@ -694,13 +714,13 @@
     },
     {
       "path": "worker/browse-context.test.mjs",
-      "bytes": 9700,
-      "sha256": "e4177a64f50cff77c82f3e65e91e47a872eab2d454dc72d315a038b352da9a81"
+      "bytes": 9832,
+      "sha256": "8d03d0a9c2a4938a00cd3e4f43d29296749d18b7da39d7196b5306dd15e4c656"
     },
     {
       "path": "worker/browse-defaults.test.mjs",
-      "bytes": 7710,
-      "sha256": "4b8d36c85e3c2cf108c86a0b3beb7c01fc1cd4f11147048e5fc386524cf772ed"
+      "bytes": 7705,
+      "sha256": "001d189ce75054153365ea1ea8bbe5bdb67696180c700c236009c5913a42f336"
     },
     {
       "path": "worker/catalogue-check.test.mjs",
@@ -734,8 +754,8 @@
     },
     {
       "path": "worker/collection-client.test.mjs",
-      "bytes": 66866,
-      "sha256": "d1f6bef40aee1ff1955fadb0b9fb6e777c8df6552dd69517a8ab3f557565c1ca"
+      "bytes": 78265,
+      "sha256": "1973f4eede056c51e31f68d208ac8178428b33cfb8082a6601f53075bab8fb8e"
     },
     {
       "path": "worker/collector-artwork.test.mjs",
@@ -764,8 +784,8 @@
     },
     {
       "path": "worker/index.js",
-      "bytes": 9093,
-      "sha256": "9781b31560ed1299fcd70bd55315d03e734797d71440be00d2452e1ed3a4edd8"
+      "bytes": 9528,
+      "sha256": "55c4ca8a01b8b88449c2f6e9df6fd54f8a39b248aca6c66e38153a139305bd50"
     },
     {
       "path": "worker/interactions.test.mjs",
@@ -794,8 +814,8 @@
     },
     {
       "path": "worker/owner.mjs",
-      "bytes": 20579,
-      "sha256": "41ebfd8598f3d704369f71b3b4d81c2e781e15298f9b5d1070a3b21876450449"
+      "bytes": 20658,
+      "sha256": "b1dc12058e05c52cfce2bbbe1db7e6d499f3e9dc79b6f0af87cb64f224028de4"
     },
     {
       "path": "worker/owner.test.mjs",
@@ -819,8 +839,8 @@
     },
     {
       "path": "worker/pricing-storage.test.mjs",
-      "bytes": 5867,
-      "sha256": "3aae3c117378aef4c23eff5caf1d4bd7f0c029b2a05510a9d04345a0295991e4"
+      "bytes": 6018,
+      "sha256": "dea58cf5d35ac951ba8ef5fcfd45f866120e09959b121954b802e4da5e81f2a3"
     },
     {
       "path": "worker/pricing.mjs",
@@ -849,8 +869,8 @@
     },
     {
       "path": "worker/set-collection-links.test.mjs",
-      "bytes": 2056,
-      "sha256": "1dc9e37a3f235f3852086dff6eeea07b36623f70eac4dba9b8fda1679611d49d"
+      "bytes": 2920,
+      "sha256": "d1fe07669f1006240cec6bbd98550468f5ccea887c2613374438233b3c044788"
     },
     {
       "path": "worker/shop-state.mjs",
@@ -883,9 +903,24 @@
       "sha256": "a8e7729d26ef8e17a07ad79defe523aae92e3fe11b862e7dc3798b091f19f684"
     },
     {
+      "path": "worker/stockroom.mjs",
+      "bytes": 15708,
+      "sha256": "07cd2f7b114de2c4b30bce5d99e0fa75d0c1b9c997d4354f1e181867cdc84aa1"
+    },
+    {
+      "path": "worker/stockroom.test.mjs",
+      "bytes": 15281,
+      "sha256": "ea69f657e4459550044197c20b975bb40970c340984da3eec908cc569c7fd3e4"
+    },
+    {
       "path": "worker/story-navigation.test.mjs",
       "bytes": 6527,
       "sha256": "94539d07c935e6dcec1ed2b04fd26c7b46cea10a8cb1866e0da431a69a3ab72b"
+    },
+    {
+      "path": "worker/ui-journeys.test.mjs",
+      "bytes": 10920,
+      "sha256": "b07bf2f5472c9b25849b387f5ea012a7c1305565eb8bc7b1503c6f229e016f79"
     }
   ]
 }

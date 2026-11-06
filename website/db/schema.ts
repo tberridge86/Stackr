@@ -50,3 +50,19 @@ export const shopPaymentEvents = sqliteTable('shop_payment_events', {
  eventId: text('event_id').primaryKey().notNull(), orderId: text('order_id').notNull().references(()=>shopOrders.id),
  eventType: text('event_type').notNull(), receivedAt: text('received_at').notNull(),
 });
+
+// The existing owner tables/triggers remain authored SQL. New bridge tables mirror
+// 0004_stockroom_bridge.sql; that migration supplies the owner_actions references
+// and the atomic paid/reserved/override guards.
+export const shopPriceOverrides = sqliteTable('shop_price_overrides', {
+ productId: text('product_id').primaryKey().notNull(),
+ salePence: integer('sale_pence').notNull(), marketPence: integer('market_pence').notNull(),
+ basis: text('basis', {enum:['owner','feed']}).notNull(), marketSource: text('market_source').notNull(),
+ marketChecked: text('market_checked').notNull(), expiresAt: text('expires_at').notNull(),
+ referenceJson: text('reference_json'), revision: text('revision').notNull(), updatedAt: text('updated_at').notNull(),
+});
+export const stockroomSyncChanges = sqliteTable('stockroom_sync_changes', {
+ actionId: text('action_id').notNull(), productId: text('product_id').notNull(),
+ expectedReservedQuantity: integer('expected_reserved_quantity').notNull(),
+ expectedPaidQuantity: integer('expected_paid_quantity').notNull(), expectedOverrideRevision: text('expected_override_revision'),
+},table=>[primaryKey({columns:[table.actionId,table.productId]})]);

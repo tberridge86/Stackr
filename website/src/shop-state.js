@@ -3,7 +3,7 @@ let shopState={products:{},visitor:{signedIn:false,isOwner:false},interests:[]};
 let shopReady=false,shopRequest=null,availability='all',adminDemand=null,adminLimit=60;
 let shopReadGeneration=0;
 let shopPrivateEpoch=0;
-let infoViewGeneration=0,shopTimer;
+let infoViewGeneration=0,shopTimer,interestReturnProduct=null;
 function clearPrivateShopData(invalidate=false){
  shopPrivateEpoch++;
  if(invalidate){shopReadGeneration++;shopRequest=null;}
@@ -74,6 +74,8 @@ function showInterest(id){
  const contents=renderContents(p).replaceAll('id="product-contents"','id="interest-contents"').replaceAll('id="contents-title"','id="interest-contents-title"').replaceAll('aria-labelledby="contents-title"','aria-labelledby="interest-contents-title"');
  body+='<details class="interest-product-details"><summary>Product details &amp; contents '+icon('chevron')+'</summary><p>'+escapeHtml(p.description)+'</p>'+contents+renderSetHighlights(p).replace('id="product-chases"','id="interest-chases"')+'</details>';
  if(currentQuote(p))body+=priceShareButton(p);
+ if(get('quick-dialog').open){interestReturnProduct=id;get('quick-dialog').close();}
+ if(interestReturnProduct===id)body='<button type="button" class="text-link interest-back" data-interest-back>← Back to product</button>'+body;
  openInfo('Register interest',body);
 }
 async function submitInterest(form){
@@ -162,8 +164,11 @@ function renderSetHighlights(p){
  return '<section class="set-highlights" id="product-chases" tabindex="-1" aria-label="'+title+' chase cards"><div class="contents-heading"><div><span class="section-kicker">Set: '+title+'</span><h3>'+heading+'</h3></div><span>'+escapeHtml(p.language)+'</span></div>'+gallery+(cards.length?'<p class="chase-method">Collector picks · not a current price ranking. Booster contents are random.</p>':'')+'<div class="app-set-cta"><img src="assets/stackr-mark-original.png" alt="" width="48" height="54"><div><h3>Your collection</h3>'+action+'</div></div></section>';
 }
 function initShopState(){
- get('availability-controls').innerHTML='<div class="shop-state-toolbar"><label for="availability-filter">Availability</label><select id="availability-filter"><option value="all">All products</option><option value="in_stock">In stock</option><option value="out_of_stock">Out of stock</option><option value="unknown">Stock not set</option></select><small id="shop-connection">Loading stock…</small><button id="manage-shop" class="manage-shop" hidden>Manage stock & interest '+icon('arrow')+'</button><a id="owner-portal-link" class="manage-shop" href="/owner" hidden>Business portal</a></div>';
+ get('availability-controls').innerHTML='<div class="shop-state-toolbar"><label for="availability-filter">Availability</label><select id="availability-filter"><option value="all">All products</option><option value="in_stock">In stock</option><option value="out_of_stock">Out of stock</option><option value="unknown">Availability to be confirmed</option></select><small id="shop-connection">Loading stock…</small><button id="manage-shop" class="manage-shop" hidden>Manage stock & interest '+icon('arrow')+'</button><a id="owner-portal-link" class="manage-shop" href="/owner" hidden>Business portal</a></div>';
  document.body.insertAdjacentHTML('beforeend','<dialog id="shop-admin-dialog" class="shop-admin-dialog" aria-labelledby="shop-admin-title"><div class="dialog-head"><div><span class="dialog-kicker">Owner controls</span><h2 id="shop-admin-title">Stock & interest</h2></div><button class="close-dialog" data-close aria-label="Close shop management">'+icon('close')+'</button></div><div class="shop-admin-body"><p class="admin-intro">Set your actual shop availability here. Supplier availability does not set your stock. Saving a stock status does not open checkout or take payments.</p><p id="admin-error" role="status"></p><div class="admin-stock-tools"><label>Find a product<input id="admin-search" type="search" placeholder="Set, format or language"></label><label>Show<select id="admin-status-filter"><option value="all">All statuses</option><option value="in_stock">In stock</option><option value="out_of_stock">Out of stock</option><option value="unknown">Stock not set</option></select></label><span id="admin-product-count"></span></div><div id="admin-stock-list"></div><section id="admin-demand"></section></div></dialog>');
+ get('info-dialog').addEventListener('close',()=>{if(!interestReturnProduct)return;const id=interestReturnProduct;interestReturnProduct=null;if(location.hash==='#product/'+encodeURIComponent(id)){quick(id);get('quick-body').querySelector('[data-interest]')?.focus({preventScroll:true});}});
+ window.addEventListener('popstate',()=>{if(interestReturnProduct&&location.hash!=='#product/'+encodeURIComponent(interestReturnProduct)){interestReturnProduct=null;get('info-dialog').close();}});
+ document.addEventListener('click',event=>{if(event.target.closest('[data-interest-back]'))get('info-dialog').close();});
  get('availability-filter').addEventListener('change',event=>{availability=event.target.value;renderProducts();});
  get('manage-shop').addEventListener('click',openShopAdmin);
  get('admin-search').addEventListener('input',()=>{adminLimit=60;stockAdminRows();});get('admin-status-filter').addEventListener('change',()=>{adminLimit=60;stockAdminRows();});

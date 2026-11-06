@@ -22,7 +22,7 @@ function setMark(entry,className=''){
 function stockStatus(p){return !p||!shopReady?'unknown':isProductInStock(p)?'in_stock':liveStock(p.id).status==='out_of_stock'||liveStock(p.id).quantity===0?'out_of_stock':'unknown';}
 function renderSetGroup(group){
  const first=group.items[0],open=openCatalogueSets.has(group.key),out=group.items.filter(p=>stockStatus(p)==='out_of_stock').length;
- const label=out===group.items.length?'Out of stock':out?'Register interest':'Stock not set';
+ const label=out===group.items.length?'Out of stock':out?'Register interest':'Availability to be confirmed';
  return '<details class="catalogue-set" data-catalogue-set="'+group.key+'" '+(open?'open':'')+'><summary>'+setMark(group.entry)+
  '<span class="catalogue-set-copy"><strong>'+escapeHtml(group.entry.setName||first.setName||first.name)+'</strong><small>'+languageBadge(first)+'<span>'+escapeHtml(setReleaseLabel(group.entry))+'</span><span>'+group.items.length+' product'+(group.items.length===1?'':'s')+'</span>'+(setHighlights.sets[group.key]?.cards?.length===3?'<span class="set-chase-badge">3 chase cards</span>':'')+'</small></span>'+
  '<span class="catalogue-set-photo">'+productPhoto(first,'lazy')+'</span><span class="catalogue-set-status"><span>'+label+'</span><small>View products</small></span>'+icon('chevron')+'</summary>'+

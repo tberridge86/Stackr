@@ -33,7 +33,7 @@ test('shop reset restores English and default sort while intentional history lan
  const context=vm.createContext({get,byId:()=>({}),clearSetFilter(){},renderFeature(){},renderProducts(){}});
  const reset=app.slice(app.indexOf('function reset(){'),app.indexOf('function add('));
  vm.runInContext("let category='Boxes',language='Korean',availability='all',onlySaved=true,query='x',priceRange='over75',sort='high';"+reset+'reset();',context);
- assert.deepEqual(clone(vm.runInContext('({category,language,availability,onlySaved,query,priceRange,sort})',context)),{category:'All',language:'English',availability:'in_stock',onlySaved:false,query:'',priceRange:'all',sort:'featured'});
+ assert.deepEqual(clone(vm.runInContext('({category,language,availability,onlySaved,query,priceRange,sort})',context)),{category:'All',language:'English',availability:'all',onlySaved:false,query:'',priceRange:'all',sort:'featured'});
  assert.equal(get('sort').value,'featured');
  const rules=vm.runInNewContext(browse+';browseContext');
  const allowed={categories:['All'],sets:['all'],languages:['all','English','Japanese']};

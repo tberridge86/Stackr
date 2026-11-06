@@ -28,6 +28,13 @@ function currentQuote(p){
  if(!Number.isSafeInteger(q.marketPence)||q.marketPence<=0||q.marketPence>100000000)return null;
  const expectedPrice=Math.floor((q.marketPence*9000+5000)/10000);
  if(q.shopPence!==expectedPrice||q.savingsPence!==q.marketPence-q.shopPence)return null;
+ // Owner references are deliberately separate from the configured retailer feed.
+ // Their original check time is retained and can never be extended by a publish.
+ if(q.priceOrigin==='stockroom'&&q.priceOverride?.basis==='owner'){
+  const ref=q.priceOverride,expiry=Date.parse(q.expiresAt);
+  if(q.referenceType!=='Owner-entered reference'||typeof ref.source!=='string'||!ref.source.trim()||ref.source.length>2000||/[\x00-\x1f\x7f]/.test(ref.source)||typeof ref.revision!=='string'||ref.checkedAt!==q.asOf||ref.expiresAt!==q.expiresAt||expiry!==asOf+priceMaximumAge||expiry<=Date.now()||q.selectedSourceId!==null||q.currentSourceCount!==0)return null;
+  return q;
+ }
  const configured=priceSourceIdentities[p.id]||[];
  if(!Array.isArray(q.sources)||!q.sources.length||q.sources.length>4||q.configuredSourceCount!==q.sources.length||q.sources.length!==configured.length)return null;
  const ids=new Set();
@@ -43,8 +50,9 @@ function currentQuote(p){
  return q;
 }
 function productPence(p){return currentQuote(p)?.shopPence??null;}
-function priceText(p){const value=productPence(p);return value===null?'Price pending':money(value/100);}
-function addLabel(p){return stockStatus(p)==='out_of_stock'?'Out of stock':!isProductInStock(p)?'Stock not set':!currentQuote(p)?'Price pending':(state.cart[p.id]||0)>=cartMaximum(p.id)?state.cart[p.id]+' in your bag':'Add to bag';}
+function priceReferenceLabel(q){return q?.priceOrigin==='stockroom'&&q.priceOverride?.basis==='owner'?'Owner-entered reference':'UK retail reference';}
+function priceText(p){const value=productPence(p);return value===null?'Price to be confirmed':money(value/100);}
+function addLabel(p){return stockStatus(p)==='out_of_stock'?'Out of stock':!isProductInStock(p)?'Availability to be confirmed':!currentQuote(p)?'Price to be confirmed':(state.cart[p.id]||0)>=cartMaximum(p.id)?state.cart[p.id]+' in your bag':'Add to bag';}
 function priceStamp(q){
  return new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'Europe/London'}).format(new Date(q.asOf||q.observedAt));
 }
@@ -58,6 +66,7 @@ function renderPricingStatus(){
  node.dataset.connection=priceConnection;
  get('pricing-status-text').textContent=['failed','conflict'].includes(priceFeed?.persistenceStatus)?'Price update paused. Please try again shortly.':priceConnection==='live'?(priceFeed.refreshPending||priceFeed.refreshing?'Updating weekly retail references':count?'Weekly retail references · next check '+(priceNextCheck()||'pending'):'No current retail references'):priceConnection==='refreshing'?'Checking weekly references.':priceConnection==='snapshot'?'Saved retail references':'Price service unavailable';
  get('pricing-coverage').textContent=count+'/'+products.length+' products priced';
+ if(products.some(p=>currentQuote(p)?.priceOverride?.basis==='owner'))get('pricing-status-text').textContent='Current references · owner-entered values are labelled';
  if(get('reference-state'))get('reference-state').textContent=count?count+' current references':'Prices pending';
 }
 function refreshPriceSurfaces(){

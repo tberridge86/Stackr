@@ -33,17 +33,22 @@ function syncSaveButtons(){
   button.setAttribute('aria-label',(saved?'Unsave ':'Save ')+p.name+' '+p.type+' '+p.language);
  });
 }
-function stockLabel(id){const p=byId(id),item=liveStock(id);return !shopReady?'Stock not set':stockStatus(p)==='out_of_stock'?'Out of stock':isProductInStock(p)?(item.quantity===null?'In stock':item.quantity+' in stock'):'Stock not set';}
+function stockLabel(id){const p=byId(id),item=liveStock(id);return !shopReady?'Availability to be confirmed':stockStatus(p)==='out_of_stock'?'Out of stock':isProductInStock(p)?(item.quantity===null?'In stock':item.quantity+' in stock'):'Availability to be confirmed';}
 function cartMaximum(id){const p=byId(id);if(!isProductInStock(p)||!currentQuote(p))return 0;const n=liveStock(id).quantity;return Math.min(customerLimit,n===null?customerLimit:n);}
 function pricePair(p){
  const q=currentQuote(p);
- if(!q)return '<div class="price-pair is-unpriced" data-pricing-for="'+p.id+'"><button class="unpriced-evidence" data-price-evidence="'+p.id+'" aria-label="Why a price is pending for '+escapeHtml(p.name+' '+p.type+' '+p.language)+'">Price pending '+icon('arrow')+'</button></div>';
- return '<div class="price-pair" data-pricing-for="'+p.id+'"><div class="product-price"><span class="price-label">StackR</span><strong class="price">'+money(q.shopPence/100)+'</strong></div><button class="market-compare" data-price-evidence="'+p.id+'" aria-label="View dated UK retail reference for '+escapeHtml(p.name+' '+p.type+' '+p.language)+'"><span>UK retail reference</span><strong>'+money(q.marketPence/100)+'</strong><small>Checked '+priceStamp(q)+'</small></button><small class="saving-label">10% lower · save '+money(q.savingsPence/100)+'</small></div>';
+ if(!q)return '<div class="price-pair is-unpriced" data-pricing-for="'+p.id+'"><button class="unpriced-evidence" data-price-evidence="'+p.id+'" aria-label="Why a price is not yet confirmed for '+escapeHtml(p.name+' '+p.type+' '+p.language)+'">Price to be confirmed '+icon('arrow')+'</button></div>';
+ return '<div class="price-pair" data-pricing-for="'+p.id+'"><div class="product-price"><span class="price-label">StackR</span><strong class="price">'+money(q.shopPence/100)+'</strong></div><button class="market-compare" data-price-evidence="'+p.id+'" aria-label="View dated '+priceReferenceLabel(q)+' for '+escapeHtml(p.name+' '+p.type+' '+p.language)+'"><span>'+priceReferenceLabel(q)+'</span><strong>'+money(q.marketPence/100)+'</strong><small>Checked '+priceStamp(q)+'</small></button><small class="saving-label">10% lower · save '+money(q.savingsPence/100)+'</small></div>';
 }
 function showPriceEvidence(id){
  const p=byId(id);if(!p)return;const q=currentQuote(p),historical=priceFeed?.products?.[id];
  let body='<p><strong>'+escapeHtml(p.name+' · '+p.type+' · '+p.language)+'</strong></p>';
- if(q){
+ if(q?.priceOverride?.basis==='owner'){
+  body+='<dl class="info-facts"><dt>Owner-entered reference</dt><dd>'+money(q.marketPence/100)+'</dd><dt>StackR price</dt><dd>'+money(q.shopPence/100)+'</dd><dt>Saving against this reference</dt><dd>10% · '+money(q.savingsPence/100)+'</dd><dt>Reference checked</dt><dd>'+priceStamp(q)+'</dd><dt>Reference supplied</dt><dd>'+escapeHtml(q.priceOverride.source)+'</dd></dl>';
+  body+='<p>This reference was entered by the shop owner. It has not been independently checked by the pricing feed and is not a verified market value or RRP. It expires seven days after its recorded check date.</p>';
+  const feed=q.feedReference;
+  if(feed?.sources?.some(source=>source.status==='current'))body+='<h3>Separate configured retail evidence</h3>'+feed.sources.filter(source=>currentSource(source)&&source.url?.startsWith('https://')).map(source=>'<a class="reference-source" href="'+escapeHtml(source.url)+'" target="_blank" rel="noreferrer">'+escapeHtml(source.name)+' · '+money(source.marketPence/100)+' · checked '+priceStamp(source)+' '+icon('arrow')+'</a>').join('');
+ }else if(q){
   body+='<dl class="info-facts"><dt>UK retail reference</dt><dd>'+money(q.marketPence/100)+'</dd><dt>StackR price</dt><dd>'+money(q.shopPence/100)+'</dd><dt>Saving</dt><dd>10% · '+money(q.savingsPence/100)+'</dd><dt>Reference checked</dt><dd>'+priceStamp(q)+'</dd><dt>Next weekly check</dt><dd>'+(priceNextCheck()||'Pending')+'</dd><dt>Coverage</dt><dd>'+escapeHtml(q.currentSourceCount)+' retailer'+(q.currentSourceCount===1?' · indicative':'s')+'</dd></dl>';
   body+='<p>Lowest exact in-stock UK retail asking price among the sources checked. VAT included; delivery excluded. One retailer gives an indicative reference, not a market-wide valuation.</p>';
   if(q.sources.some(source=>source.error))body+='<p>A source could not be checked in the latest update. Its previous dated reference remains available until it expires.</p>';
@@ -53,7 +58,7 @@ function showPriceEvidence(id){
   const configured=priceSourceIdentities[p.id]||[],past=(historical?.sources||[]).filter(source=>source&&source.currency==='GBP'&&Number.isSafeInteger(source.marketPence)&&source.marketPence>0&&priceTimestamp(source.asOf||source.observedAt)!==null&&configured.some(item=>item.id===source.id&&item.url===source.url&&item.name===source.name));
   if(past.length)body+='<h3>Previous retail references</h3><p>Historical records only. These do not set a current StackR price.</p>'+past.map(source=>'<a class="reference-source" href="'+escapeHtml(source.url)+'" target="_blank" rel="noreferrer">'+escapeHtml(source.name)+' · '+money(source.marketPence/100)+' · checked '+priceStamp(source)+' '+icon('arrow')+'</a>').join('');
  }
- openInfo('How your price is calculated',body+'<p>StackR price = 90% of the checked retail reference, rounded to the nearest penny. References are checked weekly and expire after seven days.</p><p>Completed-sale data is not connected. No last-sold value is claimed.</p>');
+ openInfo('How your price is calculated',body+'<p>StackR price = 90% of the dated reference, rounded to the nearest penny. A reference expires after seven days; publishing a price does not renew its check date.</p><p>Completed-sale data is not connected. No last-sold value is claimed.</p>');
 }
 function setLanguage(value){
  if(value!=='all'&&!languageDefinitions[value])return;
@@ -155,6 +160,7 @@ function showProductStock(id){
  get('stock-board').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
  get('stock-title').setAttribute('tabindex','-1');get('stock-title').focus({preventScroll:true});
 }
+get('shop-language-select')?.addEventListener('change',event=>setLanguage(event.target.value));
 get('search-submit').addEventListener('click',showCatalogue);
 get('search').addEventListener('keydown',event=>{
  if(event.key==='Enter'){event.preventDefault();showCatalogue();}
@@ -231,7 +237,7 @@ function pendingFilterCount(draft){
 function openFilterSheet(){
  if(!filterSheet){
   filterSheet=document.createElement('dialog');filterSheet.className='filter-sheet';filterSheet.id='filter-sheet';filterSheet.setAttribute('aria-labelledby','filter-sheet-title');
-  filterSheet.innerHTML='<form><header class="filter-sheet-head"><h2 id="filter-sheet-title">Filter products</h2><button type="button" data-sheet-cancel aria-label="Cancel filter changes">'+icon('close')+'</button></header><div class="filter-sheet-fields"><label for="sheet-language">Language<select id="sheet-language" name="language"></select></label><label for="sheet-category">Product format<select id="sheet-category" name="category"></select></label><label for="sheet-set">Expansion<select id="sheet-set" name="setKey"></select></label><label for="sheet-availability">Availability<select id="sheet-availability" name="availability"><option value="all">All products</option><option value="in_stock">In stock</option><option value="out_of_stock">Out of stock</option><option value="unknown">Stock not set</option></select></label><label for="sheet-price">Price per product<select id="sheet-price" name="priceRange"></select></label><p>Price filters include only products with a current retail reference. Changes apply when you select Apply filters.</p></div><footer class="filter-sheet-foot"><output id="filter-sheet-count" aria-live="polite"></output><button type="button" class="filter-sheet-reset" data-sheet-reset>Reset filters</button><button type="submit" class="filter-sheet-apply">Apply filters</button></footer></form>';
+  filterSheet.innerHTML='<form><header class="filter-sheet-head"><h2 id="filter-sheet-title">Filter products</h2><button type="button" data-sheet-cancel aria-label="Cancel filter changes">'+icon('close')+'</button></header><div class="filter-sheet-fields"><label for="sheet-language">Language<select id="sheet-language" name="language"></select></label><label for="sheet-category">Product format<select id="sheet-category" name="category"></select></label><label for="sheet-set">Expansion<select id="sheet-set" name="setKey"></select></label><label for="sheet-availability">Availability<select id="sheet-availability" name="availability"><option value="all">All products</option><option value="in_stock">In stock</option><option value="out_of_stock">Out of stock</option><option value="unknown">Availability to be confirmed</option></select></label><label for="sheet-price">Price per product<select id="sheet-price" name="priceRange"></select></label><p>Price filters include only products with a current retail reference. Changes apply when you select Apply filters.</p></div><footer class="filter-sheet-foot"><output id="filter-sheet-count" aria-live="polite"></output><button type="button" class="filter-sheet-reset" data-sheet-reset>Reset filters</button><button type="submit" class="filter-sheet-apply">Apply filters</button></footer></form>';
   document.body.append(filterSheet);
   filterSheet.querySelector('[data-sheet-cancel]').addEventListener('click',()=>filterSheet.close());
   filterSheet.addEventListener('close',()=>{get('filter-toggle').setAttribute('aria-expanded','false');get('filter-toggle').focus({preventScroll:true});});
@@ -253,8 +259,10 @@ function openFilterSheet(){
 function readFilterDraft(){return Object.fromEntries(['language','category','setKey','availability','priceRange'].map(key=>[key,filterSheet.querySelector('[name="'+key+'"]').value]));}
 function refreshFilterDraft(){
  const draft=readFilterDraft(),setSelect=filterSheet.querySelector('[name="setKey"]');
- for(const option of setSelect.options){const entry=setEntries.find(item=>item.key===option.value);option.disabled=!!entry?.language&&draft.language!=='all'&&entry.language!==draft.language;}
- if(setSelect.selectedOptions[0]?.disabled){setSelect.value='all';draft.setKey='all';}
+ const matchingSets=setEntries.filter(entry=>(!entry.language||draft.language==='all'||entry.language===draft.language)&&(entry.key!=='collections'||draft.language==='all'||draft.language==='English'));
+ if(!matchingSets.some(entry=>entry.key===draft.setKey))draft.setKey='all';
+ setSelect.innerHTML=matchingSets.map(entry=>'<option value="'+entry.key+'">'+escapeHtml(entry.name)+'</option>').join('');
+ setSelect.value=draft.setKey;
  const count=pendingFilterCount(draft);get('filter-sheet-count').textContent=count+' product'+(count===1?'':'s')+' match';
 }
 if(initialBrowseSnapshot)restoreBrowseContext(initialBrowseSnapshot);

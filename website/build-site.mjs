@@ -164,13 +164,16 @@ const historyScript=(await fs.readFile(path.join(src,'history-page.js'),'utf8'))
 new vm.Script(historyScript,{filename:'StackR-history.js'});
 const historyMarkup=new vm.Script(historyScript+'\nhistoryTimelineMarkup();').runInNewContext({URL});
 const historyOpeningMarkup=new vm.Script(historyScript+'\nhistoryOpeningMarkup();').runInNewContext({URL});
+const sharedCss=await fs.readFile(path.join(src,'shared-shell.css'),'utf8');
+const sharedJs=await fs.readFile(path.join(src,'shared-shell.js'),'utf8');
+new vm.Script(sharedJs,{filename:'StackR-shared-shell.js'});
 const css=(await fs.readFile(path.join(src,'styles.css'),'utf8'))+'\n'+(await fs.readFile(path.join(src,'retail.css'),'utf8'))+'\n'+(await fs.readFile(path.join(src,'collector.css'),'utf8'))+'\n'+(await fs.readFile(path.join(src,'shop-polish.css'),'utf8'))+'\n'+(await fs.readFile(path.join(src,'shop-tools.css'),'utf8'))+'\n'+(await fs.readFile(path.join(src,'brand.css'),'utf8'))+'\n'+(await fs.readFile(path.join(src,'shop-state.css'),'utf8'))+'\n'+(await fs.readFile(path.join(src,'image-quality.css'),'utf8'))+'\n'+(await fs.readFile(path.join(src,'typography.css'),'utf8'))+'\n'+(await fs.readFile(path.join(src,'editorial.css'),'utf8'))+'\n'+(await fs.readFile(path.join(src,'studio-photo.css'),'utf8'))+'\n'+(await fs.readFile(path.join(src,'artwork-layout.css'),'utf8'))+'\n'+(await fs.readFile(path.join(src,'set-groups.css'),'utf8'))+'\n'+(await fs.readFile(path.join(src,'brand-refinement.css'),'utf8'))+'\n'+(await fs.readFile(path.join(src,'interactions.css'),'utf8'))+'\n'+(await fs.readFile(path.join(src,'showcase.css'),'utf8'));
 const websiteCss=(await fs.readFile(path.join(src,'browse-context.css'),'utf8'))+'\n'+(await fs.readFile(path.join(src,'website.css'),'utf8'))+'\n'+(await fs.readFile(path.join(src,'art-quality.css'),'utf8'))+'\n'+(await fs.readFile(path.join(src,'art-showcase.css'),'utf8'))+'\n'+(await fs.readFile(path.join(src,'story.css'),'utf8'));
 const phoneCommerce=await fs.readFile(path.join(src,'phone-commerce.js'),'utf8');
 new vm.Script(phoneCommerce,{filename:'phone-commerce.js'});
-const phoneCss=(await fs.readFile(path.join(src,'phone-commerce.css'),'utf8'))+'\n'+(await fs.readFile(path.join(src,'home-showcase.css'),'utf8'));
+const phoneCss=(await fs.readFile(path.join(src,'phone-commerce.css'),'utf8'))+'\n'+(await fs.readFile(path.join(src,'home-showcase.css'),'utf8'))+'\n'+(await fs.readFile(path.join(src,'ui-finesse.css'),'utf8'));
 const baseCss=css.replace(/@font-face\s*\{[^}]*\}/g,'');
-const shopRuntime=script+'\n'+collector+'\n'+priceShare+'\n'+interactionGeometry+'\n'+interactions+'\n'+showcase+'\n'+cardViewer+'\nrenderOpeningProduct();renderLanguageFilters();renderFormatBrowser();initProductCutouts();initLivePricing();initShopState();\n'+storyNavigation+'\n'+phoneCommerce+'\ninitPhoneCommerce();';
+const shopRuntime=script+'\n'+collector+'\n'+priceShare+'\n'+interactionGeometry+'\n'+interactions+'\n'+showcase+'\n'+cardViewer+'\nrenderOpeningProduct();renderLanguageFilters();renderFormatBrowser();initProductCutouts();initLivePricing();initShopState();\n'+storyNavigation+'\n'+phoneCommerce+'\ninitPhoneCommerce();\n'+sharedJs;
 const shopRuntimeFile='shop-'+createHash('sha256').update(shopRuntime).digest('hex').slice(0,12)+'.js';
 // Current HTML never points at older bundles. Do not carry retired disclosure
 // payloads into a privacy release or its static deployment archive.
@@ -191,18 +194,18 @@ html=html.replaceAll('__HERO_IMAGE__',products.find(product=>product.id==='cn-te
 html=html.replaceAll('__HOME_HISTORY_IMAGE__',historyResolved['game-boy-500'].src);
 for(const[key,value]of Object.entries({'__CSS__':baseCss+'\n'+websiteCss+'\n'+phoneCss,'__SHOP_SCRIPT__':'/assets/'+shopRuntimeFile,'__LOGO__':imageAsset('stackr-shop-wordmark.png'),'__MARK__':imageAsset('stackr-shop-mark.png')}))html=html.replaceAll(key,()=>value);
 if(/__(CSS|SCRIPT|LOADER|LOGO|MARK|STAR|BACKDROP|ETB|PRODUCTS|POKEMON_HISTORY)__/.test(html))throw Error('Unfilled page template');
-html=renderSitePage(html.replace('</style>',foundationsCss+'\n</style>'));
+html=renderSitePage(html.replace('</style>',foundationsCss+'\n'+sharedCss+'\n</style>'));
 await fs.writeFile(path.join(out,'index.html'),html);
 let historyHtml=await fs.readFile(path.join(src,'history-page.html'),'utf8');
-const historyTokens={'__HISTORY_CSS__':(await fs.readFile(path.join(src,'history-page.css'),'utf8'))+'\n'+(await fs.readFile(path.join(src,'history-reveal.css'),'utf8'))+'\n'+(await fs.readFile(path.join(src,'history-polish.css'),'utf8')),'__MOMENT_COUNT__':String(pokemonHistory.events.length),'__HISTORY_CONTENT__':historyMarkup,'__HISTORY_OPENING_ART__':historyOpeningMarkup,'__HISTORY_SCRIPT__':historyScript,'__LOGO__':imageAsset('stackr-shop-wordmark.png'),'__MARK__':imageAsset('stackr-shop-mark.png'),'__MAP_IMAGE__':imageAsset(historyMap.file),'__MAP_WIDTH__':String(historyMap.width),'__MAP_HEIGHT__':String(historyMap.height),'__MAP_SOURCE__':historyMap.sourcePage,'__MAP_CREDIT__':historyMap.credit};
+const historyTokens={'__HISTORY_CSS__':(await fs.readFile(path.join(src,'history-page.css'),'utf8'))+'\n'+(await fs.readFile(path.join(src,'history-reveal.css'),'utf8'))+'\n'+(await fs.readFile(path.join(src,'history-polish.css'),'utf8')),'__MOMENT_COUNT__':String(pokemonHistory.events.length),'__HISTORY_CONTENT__':historyMarkup,'__HISTORY_OPENING_ART__':historyOpeningMarkup,'__HISTORY_SCRIPT__':historyScript+'\n'+sharedJs,'__LOGO__':imageAsset('stackr-shop-wordmark.png'),'__MARK__':imageAsset('stackr-shop-mark.png'),'__MAP_IMAGE__':imageAsset(historyMap.file),'__MAP_WIDTH__':String(historyMap.width),'__MAP_HEIGHT__':String(historyMap.height),'__MAP_SOURCE__':historyMap.sourcePage,'__MAP_CREDIT__':historyMap.credit};
 for(const[key,value]of Object.entries(historyTokens))historyHtml=historyHtml.replaceAll(key,()=>value);
 if(/__(?:HISTORY|MAP|LOGO|MARK)_[A-Z_]*__/.test(historyHtml))throw Error('Unfilled history page template');
-historyHtml=renderSitePage(historyHtml.replace('</style>',foundationsCss+'\n</style>'),'/history');
+historyHtml=renderSitePage(historyHtml.replace('</style>',foundationsCss+'\n'+sharedCss+'\n</style>'),'/history');
 await fs.writeFile(path.join(out,'history.html'),historyHtml);
 let aboutHtml=await fs.readFile(path.join(src,'about-page.html'),'utf8');
-for(const[key,value]of Object.entries({'__ABOUT_CSS__':await fs.readFile(path.join(src,'about-page.css'),'utf8'),'__ABOUT_SCRIPT__':await fs.readFile(path.join(src,'return-shop.js'),'utf8'),'__LOGO__':imageAsset('stackr-shop-wordmark.png'),'__MARK__':imageAsset('stackr-shop-mark.png')}))aboutHtml=aboutHtml.replaceAll(key,()=>value);
+for(const[key,value]of Object.entries({'__ABOUT_CSS__':await fs.readFile(path.join(src,'about-page.css'),'utf8'),'__ABOUT_SCRIPT__':(await fs.readFile(path.join(src,'return-shop.js'),'utf8'))+'\n'+sharedJs,'__LOGO__':imageAsset('stackr-shop-wordmark.png'),'__MARK__':imageAsset('stackr-shop-mark.png')}))aboutHtml=aboutHtml.replaceAll(key,()=>value);
 if(/__[A-Z_]+__/.test(aboutHtml))throw Error('Unfilled About page template');
-aboutHtml=renderSitePage(aboutHtml.replace('</style>',foundationsCss+'\n</style>'),'/about');
+aboutHtml=renderSitePage(aboutHtml.replace('</style>',foundationsCss+'\n'+sharedCss+'\n</style>'),'/about');
 await fs.writeFile(path.join(out,'about.html'),aboutHtml);
 const notFoundHtml=await fs.readFile(path.join(src,'not-found.html'),'utf8');
 await fs.writeFile(path.join(out,'404.html'),notFoundHtml);
@@ -215,9 +218,9 @@ const fsSyncOwnerCss=await fs.readFile(path.join(src,'owner.css'),'utf8');
 const ownerHtml=(await fs.readFile(path.join(src,'owner.html'),'utf8')).replace('__OWNER_CSS__',()=>fsSyncOwnerCss).replace('__OWNER_JS__',()=>ownerJs);
 await fs.writeFile(path.join(out,'owner.html'),ownerHtml);
 
-const collectionJs=(await fs.readFile(path.join(root,'worker/catalogue-printings.mjs'),'utf8')).replace(/^export /gm,'')+'\n'+await fs.readFile(path.join(src,'collection.js'),'utf8');
+const collectionJs=(await fs.readFile(path.join(root,'worker/catalogue-printings.mjs'),'utf8')).replace(/^export /gm,'')+'\n'+(await fs.readFile(path.join(src,'collection.js'),'utf8'))+'\n'+sharedJs;
 new vm.Script(collectionJs,{filename:'StackR-collection.js'});
-const collectionCss=(await fs.readFile(path.join(src,'collection.css'),'utf8'))+'\n'+(await fs.readFile(path.join(src,'stackr-loading.css'),'utf8'));
+const collectionCss=(await fs.readFile(path.join(src,'collection.css'),'utf8'))+'\n'+(await fs.readFile(path.join(src,'stackr-loading.css'),'utf8'))+'\n'+sharedCss;
 const stackrLoadingMarkup=await fs.readFile(path.join(src,'stackr-loading.html'),'utf8');
 const loadingAssets=JSON.parse(await fs.readFile(path.join(src,'stackr-loading-assets.json'),'utf8'));
 for(const asset of loadingAssets.assets){
